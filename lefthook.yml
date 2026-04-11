@@ -1,0 +1,18 @@
+# =============================================================================
+# lefthook.yml — Git hooks for pi-extension-settings
+# =============================================================================
+# Install hooks:  mise run git:hooks
+# Docs: https://github.com/evilmartians/lefthook
+# =============================================================================
+
+# Run all linters before pushing to catch issues early.
+pre-push:
+  commands:
+    lint:
+      run: mise run lint
+
+# Validate the commit message against the project's commitlint rules.
+commit-msg:
+  commands:
+    commitlint:
+      run: commitlint --edit {1}

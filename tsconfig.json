@@ -1,0 +1,26 @@
+{
+  // Extension build configuration.
+  //
+  // Compiles index.ts + src/ to dist/ for distribution and production use.
+  // During local development, pi loads .ts files directly — no build needed.
+  // Run `mise run build:extension` (tsc -p tsconfig.json) to emit JS.
+  //
+  // The SDK has its own tsconfig at sdk/tsconfig.json.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "lib": ["ES2022"],
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    "strict": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": ["index.ts", "src"],
+  "exclude": ["node_modules", "dist", "sdk", "**/*.spec.ts"]
+}
