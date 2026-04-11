@@ -4,8 +4,8 @@
 # =============================================================================
 # Validates every PR (and merge-queue entry) before it lands on main:
 #
-#   lint        — Biome (TypeScript/JS, GitHub annotations) +
-#                 markdownlint-cli2 (Markdown, reviewdog PR comments)
+#   lint        — Biome (TypeScript/JS/Markdown, GitHub annotations) +
+#                 markdownlint-cli2 (Markdown style, reviewdog PR comments)
 #   commitlint  — Conventional Commits on every commit in the PR
 #   actionlint  — Lint the GitHub Actions workflow files themselves
 #   typecheck   — tsc (SDK only — extension has no tsconfig.json yet)
@@ -55,10 +55,10 @@ jobs:
       # --reporter=github emits ::error:: annotation commands that GitHub renders
       # as inline PR diff comments — same tool, same config as `mise run lint:biome`.
       # continue-on-error so markdownlint still runs even when Biome finds issues.
-      - name: ⚡️ Lint TypeScript/JS with Biome
+      - name: ⚡️ Lint TypeScript/JS/Markdown with Biome
         id: biome
         continue-on-error: true
-        run: biome check --reporter=github src/ sdk/src/ index.ts
+        run: biome check --reporter=github .
 
       # ── markdownlint-cli2 + reviewdog ──────────────────────────────────────
       # reviewdog converts markdownlint-cli2's output into PR review comments so

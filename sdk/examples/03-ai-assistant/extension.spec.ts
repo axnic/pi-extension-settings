@@ -23,7 +23,7 @@
  *   settings.getAll()    — full 13-key typed snapshot
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createAiAssistant, schema } from "./extension.ts";
 
 // ─── Mock: storage ────────────────────────────────────────────────────────────
@@ -35,9 +35,9 @@ vi.mock("../../../src/core/storage.ts", () => ({
 }));
 
 import {
+  getAllSettingsForExtension,
   getExtensionSetting,
   setExtensionSetting,
-  getAllSettingsForExtension,
 } from "../../../src/core/storage.ts";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -75,9 +75,7 @@ function emitChange(pi: ReturnType<typeof makePi>, key: string, value: string) {
  * Build a fully-populated storage snapshot using schema defaults + overrides.
  * Used by tests that call `buildRequest()` or `settings.getAll()`.
  */
-function makeSnapshot(
-  overrides: Record<string, string> = {},
-): Record<string, string> {
+function makeSnapshot(overrides: Record<string, string> = {}): Record<string, string> {
   return {
     endpoint: "https://api.openai.com/v1",
     apiKey: "",
@@ -85,8 +83,7 @@ function makeSnapshot(
     "model.sampling.temperature": "0.7",
     "model.sampling.maxTokens": "2048",
     "model.sampling.topP": "1",
-    "prompt.system":
-      "You are a helpful coding assistant embedded in a terminal IDE.",
+    "prompt.system": "You are a helpful coding assistant embedded in a terminal IDE.",
     "prompt.locale": "en",
     "context.maxTurns": "10",
     "context.pinned": "[]",
@@ -115,24 +112,24 @@ describe("AiAssistant — createAiAssistant()", () => {
     it("registers a listener for pi-extension-settings:ready", () => {
       expect(pi.events.on).toHaveBeenCalledWith(
         "pi-extension-settings:ready",
-        expect.any(Function),
+        expect.any(Function)
       );
     });
 
     it("registers a listener for pi-extension-settings:changed", () => {
       expect(pi.events.on).toHaveBeenCalledWith(
         "pi-extension-settings:changed",
-        expect.any(Function),
+        expect.any(Function)
       );
     });
 
     it("emits pi-extension-settings:register with the full schema when ready fires", () => {
       pi.triggerEvent("pi-extension-settings:ready");
 
-      expect(pi.events.emit).toHaveBeenCalledWith(
-        "pi-extension-settings:register",
-        { extension: "ai-assistant", nodes: schema },
-      );
+      expect(pi.events.emit).toHaveBeenCalledWith("pi-extension-settings:register", {
+        extension: "ai-assistant",
+        nodes: schema,
+      });
     });
   });
 
@@ -157,10 +154,7 @@ describe("AiAssistant — createAiAssistant()", () => {
     it("reads from 'ai-assistant' extension with key 'apiKey'", () => {
       vi.mocked(getExtensionSetting).mockReturnValue(undefined);
       assistant.isAuthenticated();
-      expect(getExtensionSetting).toHaveBeenCalledWith(
-        "ai-assistant",
-        "apiKey",
-      );
+      expect(getExtensionSetting).toHaveBeenCalledWith("ai-assistant", "apiKey");
     });
   });
 
@@ -173,16 +167,12 @@ describe("AiAssistant — createAiAssistant()", () => {
     });
 
     it("returns true when endpoint hostname is 'localhost'", () => {
-      vi.mocked(getExtensionSetting).mockReturnValue(
-        "http://localhost:11434/v1",
-      );
+      vi.mocked(getExtensionSetting).mockReturnValue("http://localhost:11434/v1");
       expect(assistant.isLocalModel()).toBe(true);
     });
 
     it("returns true when endpoint hostname is '127.0.0.1'", () => {
-      vi.mocked(getExtensionSetting).mockReturnValue(
-        "http://127.0.0.1:8080/v1",
-      );
+      vi.mocked(getExtensionSetting).mockReturnValue("http://127.0.0.1:8080/v1");
       expect(assistant.isLocalModel()).toBe(true);
     });
 
@@ -192,9 +182,7 @@ describe("AiAssistant — createAiAssistant()", () => {
     });
 
     it("returns false for a remote custom endpoint", () => {
-      vi.mocked(getExtensionSetting).mockReturnValue(
-        "https://my-proxy.example.com/v1",
-      );
+      vi.mocked(getExtensionSetting).mockReturnValue("https://my-proxy.example.com/v1");
       expect(assistant.isLocalModel()).toBe(false);
     });
 
@@ -214,16 +202,12 @@ describe("AiAssistant — createAiAssistant()", () => {
         if (key === "context.pinned") return "[]";
         return undefined;
       });
-      expect(assistant.buildSystemPrompt()).toBe(
-        "You are a helpful assistant.",
-      );
+      expect(assistant.buildSystemPrompt()).toBe("You are a helpful assistant.");
     });
 
     it("returns the schema default system prompt when nothing is stored", () => {
       vi.mocked(getExtensionSetting).mockReturnValue(undefined);
-      expect(assistant.buildSystemPrompt()).toContain(
-        "helpful coding assistant",
-      );
+      expect(assistant.buildSystemPrompt()).toContain("helpful coding assistant");
     });
 
     it("appends enabled pinned messages after the base prompt", () => {
@@ -265,9 +249,7 @@ describe("AiAssistant — createAiAssistant()", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
         if (key === "prompt.system") return "Base.";
         if (key === "context.pinned")
-          return JSON.stringify([
-            { label: "A", content: "Pinned A.", enabled: true },
-          ]);
+          return JSON.stringify([{ label: "A", content: "Pinned A.", enabled: true }]);
         return undefined;
       });
       expect(assistant.buildSystemPrompt()).toBe("Base.\n\nPinned A.");
@@ -277,9 +259,7 @@ describe("AiAssistant — createAiAssistant()", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
         if (key === "prompt.system") return "Only base.";
         if (key === "context.pinned")
-          return JSON.stringify([
-            { label: "Off", content: "Never shown.", enabled: false },
-          ]);
+          return JSON.stringify([{ label: "Off", content: "Never shown.", enabled: false }]);
         return undefined;
       });
       expect(assistant.buildSystemPrompt()).toBe("Only base.");
@@ -309,7 +289,7 @@ describe("AiAssistant — createAiAssistant()", () => {
 
     it("sets the URL to endpoint + /chat/completions", () => {
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ endpoint: "https://api.openai.com/v1" }),
+        makeSnapshot({ endpoint: "https://api.openai.com/v1" })
       );
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.url).toBe("https://api.openai.com/v1/chat/completions");
@@ -317,7 +297,7 @@ describe("AiAssistant — createAiAssistant()", () => {
 
     it("uses a custom endpoint when stored", () => {
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ endpoint: "http://localhost:11434/v1" }),
+        makeSnapshot({ endpoint: "http://localhost:11434/v1" })
       );
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.url).toBe("http://localhost:11434/v1/chat/completions");
@@ -331,16 +311,14 @@ describe("AiAssistant — createAiAssistant()", () => {
 
     it("includes Authorization: Bearer when apiKey is set", () => {
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ apiKey: "sk-secret-token" }),
+        makeSnapshot({ apiKey: "sk-secret-token" })
       );
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.headers["Authorization"]).toBe("Bearer sk-secret-token");
     });
 
     it("omits Authorization header when apiKey is empty", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ apiKey: "" }),
-      );
+      vi.mocked(getAllSettingsForExtension).mockReturnValue(makeSnapshot({ apiKey: "" }));
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.headers["Authorization"]).toBeUndefined();
     });
@@ -348,7 +326,7 @@ describe("AiAssistant — createAiAssistant()", () => {
     it("merges extraHeaders into the request headers", () => {
       const extra = { "X-Custom-Header": "my-value", "X-Proxy-Auth": "token" };
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ extraHeaders: JSON.stringify(extra) }),
+        makeSnapshot({ extraHeaders: JSON.stringify(extra) })
       );
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.headers["X-Custom-Header"]).toBe("my-value");
@@ -356,18 +334,14 @@ describe("AiAssistant — createAiAssistant()", () => {
     });
 
     it("extraHeaders override nothing when they are an empty dict", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ extraHeaders: "{}" }),
-      );
+      vi.mocked(getAllSettingsForExtension).mockReturnValue(makeSnapshot({ extraHeaders: "{}" }));
       const req = assistant.buildRequest({ messages: userMessages });
-      expect(Object.keys(req.headers)).toEqual(
-        expect.arrayContaining(["Content-Type"]),
-      );
+      expect(Object.keys(req.headers)).toEqual(expect.arrayContaining(["Content-Type"]));
     });
 
     it("includes the model name in the body", () => {
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "model.name": "gpt-4o" }),
+        makeSnapshot({ "model.name": "gpt-4o" })
       );
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.body.model).toBe("gpt-4o");
@@ -387,7 +361,7 @@ describe("AiAssistant — createAiAssistant()", () => {
 
     it("converts temperature string to a number in the body", () => {
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "model.sampling.temperature": "0.3" }),
+        makeSnapshot({ "model.sampling.temperature": "0.3" })
       );
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.body.temperature).toBe(0.3);
@@ -396,7 +370,7 @@ describe("AiAssistant — createAiAssistant()", () => {
 
     it("converts maxTokens string to a number in the body", () => {
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "model.sampling.maxTokens": "4096" }),
+        makeSnapshot({ "model.sampling.maxTokens": "4096" })
       );
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.body.max_tokens).toBe(4096);
@@ -405,7 +379,7 @@ describe("AiAssistant — createAiAssistant()", () => {
 
     it("converts topP string to a number in the body", () => {
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "model.sampling.topP": "0.9" }),
+        makeSnapshot({ "model.sampling.topP": "0.9" })
       );
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.body.top_p).toBe(0.9);
@@ -413,7 +387,7 @@ describe("AiAssistant — createAiAssistant()", () => {
 
     it("sets stream: true in the body when streamResponses is enabled", () => {
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ streamResponses: "true" }),
+        makeSnapshot({ streamResponses: "true" })
       );
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.body.stream).toBe(true);
@@ -421,7 +395,7 @@ describe("AiAssistant — createAiAssistant()", () => {
 
     it("sets stream: false in the body when streamResponses is disabled", () => {
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ streamResponses: "false" }),
+        makeSnapshot({ streamResponses: "false" })
       );
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.body.stream).toBe(false);
@@ -429,18 +403,14 @@ describe("AiAssistant — createAiAssistant()", () => {
 
     it("reads a fresh snapshot on every call — no stale cache", () => {
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "model.name": "gpt-4o" }),
+        makeSnapshot({ "model.name": "gpt-4o" })
       );
-      expect(
-        assistant.buildRequest({ messages: userMessages }).body.model,
-      ).toBe("gpt-4o");
+      expect(assistant.buildRequest({ messages: userMessages }).body.model).toBe("gpt-4o");
 
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "model.name": "o3-mini" }),
+        makeSnapshot({ "model.name": "o3-mini" })
       );
-      expect(
-        assistant.buildRequest({ messages: userMessages }).body.model,
-      ).toBe("o3-mini");
+      expect(assistant.buildRequest({ messages: userMessages }).body.model).toBe("o3-mini");
     });
 
     it("calls getAllSettingsForExtension with 'ai-assistant'", () => {
@@ -566,7 +536,7 @@ describe("AiAssistant — createAiAssistant()", () => {
         expect(setExtensionSetting).toHaveBeenCalledWith(
           "ai-assistant",
           "prompt.system",
-          "Be concise.",
+          "Be concise."
         );
       });
 
@@ -575,7 +545,7 @@ describe("AiAssistant — createAiAssistant()", () => {
         expect(setExtensionSetting).toHaveBeenCalledWith(
           "ai-assistant",
           "prompt.system",
-          "Trimmed.",
+          "Trimmed."
         );
       });
 
@@ -584,15 +554,13 @@ describe("AiAssistant — createAiAssistant()", () => {
         expect(setExtensionSetting).toHaveBeenCalledWith(
           "ai-assistant",
           "prompt.system",
-          "No extra spaces.",
+          "No extra spaces."
         );
       });
 
       it("fires onChange with the trimmed value, not the raw input", () => {
         const received: string[] = [];
-        assistant.settings.onChange("prompt.system", (v) =>
-          received.push(v as string),
-        );
+        assistant.settings.onChange("prompt.system", (v) => received.push(v as string));
         assistant.settings.set("prompt.system", "   trimmed   ");
         expect(received[0]).toBe("trimmed");
       });
@@ -602,16 +570,12 @@ describe("AiAssistant — createAiAssistant()", () => {
       it("lowercases the protocol and hostname", () => {
         assistant.settings.set("endpoint", "HTTPS://API.OPENAI.COM/v1");
         const [, , written] = vi.mocked(setExtensionSetting).mock.calls[0]!;
-        expect((written as string).startsWith("https://api.openai.com")).toBe(
-          true,
-        );
+        expect((written as string).startsWith("https://api.openai.com")).toBe(true);
       });
 
       it("fires onChange with the normalized URL", () => {
         const received: string[] = [];
-        assistant.settings.onChange("endpoint", (v) =>
-          received.push(v as string),
-        );
+        assistant.settings.onChange("endpoint", (v) => received.push(v as string));
         assistant.settings.set("endpoint", "HTTPS://API.OPENAI.COM/v1");
         expect(received[0]).toMatch(/^https:\/\/api\.openai\.com/);
       });
@@ -623,11 +587,7 @@ describe("AiAssistant — createAiAssistant()", () => {
   describe("settings.set() — nested dot-notation keys", () => {
     it("writes 'model.name' with the dotted key to storage", () => {
       assistant.settings.set("model.name", "gpt-4o");
-      expect(setExtensionSetting).toHaveBeenCalledWith(
-        "ai-assistant",
-        "model.name",
-        "gpt-4o",
-      );
+      expect(setExtensionSetting).toHaveBeenCalledWith("ai-assistant", "model.name", "gpt-4o");
     });
 
     it("writes 'model.sampling.temperature' with the two-level dotted key", () => {
@@ -635,7 +595,7 @@ describe("AiAssistant — createAiAssistant()", () => {
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "ai-assistant",
         "model.sampling.temperature",
-        "1.2",
+        "1.2"
       );
     });
 
@@ -644,26 +604,18 @@ describe("AiAssistant — createAiAssistant()", () => {
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "ai-assistant",
         "model.sampling.maxTokens",
-        "8192",
+        "8192"
       );
     });
 
     it("writes 'prompt.locale' with the dotted key", () => {
       assistant.settings.set("prompt.locale", "fr");
-      expect(setExtensionSetting).toHaveBeenCalledWith(
-        "ai-assistant",
-        "prompt.locale",
-        "fr",
-      );
+      expect(setExtensionSetting).toHaveBeenCalledWith("ai-assistant", "prompt.locale", "fr");
     });
 
     it("writes 'context.maxTurns' as a plain string", () => {
       assistant.settings.set("context.maxTurns", "20");
-      expect(setExtensionSetting).toHaveBeenCalledWith(
-        "ai-assistant",
-        "context.maxTurns",
-        "20",
-      );
+      expect(setExtensionSetting).toHaveBeenCalledWith("ai-assistant", "context.maxTurns", "20");
     });
 
     it("serializes 'context.pinned' as a JSON string", () => {
@@ -672,7 +624,7 @@ describe("AiAssistant — createAiAssistant()", () => {
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "ai-assistant",
         "context.pinned",
-        JSON.stringify(pinned),
+        JSON.stringify(pinned)
       );
     });
 
@@ -682,17 +634,13 @@ describe("AiAssistant — createAiAssistant()", () => {
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "ai-assistant",
         "extraHeaders",
-        JSON.stringify(headers),
+        JSON.stringify(headers)
       );
     });
 
     it("serializes the boolean 'streamResponses' as the string 'false'", () => {
       assistant.settings.set("streamResponses", false);
-      expect(setExtensionSetting).toHaveBeenCalledWith(
-        "ai-assistant",
-        "streamResponses",
-        "false",
-      );
+      expect(setExtensionSetting).toHaveBeenCalledWith("ai-assistant", "streamResponses", "false");
     });
   });
 
@@ -726,15 +674,13 @@ describe("AiAssistant — createAiAssistant()", () => {
 
     it("parses boolean 'streamResponses' correctly in the snapshot", () => {
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ streamResponses: "false" }),
+        makeSnapshot({ streamResponses: "false" })
       );
       expect(assistant.settings.getAll().streamResponses).toBe(false);
     });
 
     it("parses boolean 'logRequests' correctly in the snapshot", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ logRequests: "true" }),
-      );
+      vi.mocked(getAllSettingsForExtension).mockReturnValue(makeSnapshot({ logRequests: "true" }));
       expect(assistant.settings.getAll().logRequests).toBe(true);
     });
 
@@ -744,7 +690,7 @@ describe("AiAssistant — createAiAssistant()", () => {
         { label: "B", content: "Use markdown.", enabled: false },
       ];
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "context.pinned": JSON.stringify(pinned) }),
+        makeSnapshot({ "context.pinned": JSON.stringify(pinned) })
       );
       expect(assistant.settings.getAll()["context.pinned"]).toEqual(pinned);
     });
@@ -752,14 +698,14 @@ describe("AiAssistant — createAiAssistant()", () => {
     it("deserializes the 'extraHeaders' JSON object in the snapshot", () => {
       const headers = { "X-Custom": "value", "X-Trace": "id-123" };
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ extraHeaders: JSON.stringify(headers) }),
+        makeSnapshot({ extraHeaders: JSON.stringify(headers) })
       );
       expect(assistant.settings.getAll().extraHeaders).toEqual(headers);
     });
 
     it("returns empty array for 'context.pinned' when stored JSON is invalid", () => {
       vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "context.pinned": "NOT VALID JSON" }),
+        makeSnapshot({ "context.pinned": "NOT VALID JSON" })
       );
       expect(assistant.settings.getAll()["context.pinned"]).toEqual([]);
     });

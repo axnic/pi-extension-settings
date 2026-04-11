@@ -24,7 +24,7 @@
  */
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { ExtensionSettings, S, v, t } from "../../index.ts";
+import { ExtensionSettings, S, t, v } from "../../index.ts";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
@@ -55,8 +55,7 @@ export const schema = S.settings({
 
   formatting: S.section({
     tooltip: "Formatting rules",
-    description:
-      "Low-level formatting options passed to the underlying engine.",
+    description: "Low-level formatting options passed to the underlying engine.",
     children: {
       indentStyle: S.enum({
         tooltip: "Indent style",
@@ -69,16 +68,14 @@ export const schema = S.settings({
 
       indentWidth: S.number({
         tooltip: "Indent width (spaces)",
-        description:
-          "Number of spaces per indent level. Ignored when using tabs.",
+        description: "Number of spaces per indent level. Ignored when using tabs.",
         default: 2,
         validation: v.all(v.integer(), v.range({ min: 1, max: 8 })),
       }),
 
       lineWidth: S.number({
         tooltip: "Print width (characters)",
-        description:
-          "Soft wrap column. Lines longer than this value will be wrapped.",
+        description: "Soft wrap column. Lines longer than this value will be wrapped.",
         default: 80,
         validation: v.all(v.integer(), v.range({ min: 40, max: 200 })),
       }),
@@ -95,8 +92,7 @@ export const schema = S.settings({
 
       singleQuote: S.boolean({
         tooltip: "Single quotes",
-        description:
-          "Use single quotes instead of double quotes where possible.",
+        description: "Use single quotes instead of double quotes where possible.",
         default: false,
       }),
 
@@ -115,8 +111,7 @@ export const schema = S.settings({
   /** Glob patterns for paths the formatter should skip. */
   ignore: S.list({
     tooltip: "Ignored paths",
-    description:
-      "Glob patterns for files and directories to skip. Supports `*`, `**`, and `?`.",
+    description: "Glob patterns for files and directories to skip. Supports `*`, `**`, and `?`.",
     addLabel: "Add pattern",
     default: [{ pattern: "node_modules/**" }, { pattern: "dist/**" }],
     items: S.struct({
@@ -167,10 +162,7 @@ export function createCodeFormatter(pi: ExtensionAPI) {
         lineWidth: all["formatting.lineWidth"] as number,
         semicolons: all["formatting.semicolons"] as "always" | "never" | "auto",
         singleQuote: all["formatting.singleQuote"] as boolean,
-        trailingComma: all["formatting.trailingComma"] as
-          | "none"
-          | "es5"
-          | "all",
+        trailingComma: all["formatting.trailingComma"] as "none" | "es5" | "all",
       };
     },
 

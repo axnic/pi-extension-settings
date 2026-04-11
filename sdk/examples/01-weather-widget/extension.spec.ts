@@ -9,7 +9,7 @@
  * Each describe block exercises one aspect of the widget's public API.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createWeatherWidget, schema } from "./extension.ts";
 
 // ─── Mock: storage ────────────────────────────────────────────────────────────
@@ -21,9 +21,9 @@ vi.mock("../../../src/core/storage.ts", () => ({
 }));
 
 import {
+  getAllSettingsForExtension,
   getExtensionSetting,
   setExtensionSetting,
-  getAllSettingsForExtension,
 } from "../../../src/core/storage.ts";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -83,24 +83,24 @@ describe("WeatherWidget — createWeatherWidget()", () => {
     it("registers a listener for pi-extension-settings:ready", () => {
       expect(pi.events.on).toHaveBeenCalledWith(
         "pi-extension-settings:ready",
-        expect.any(Function),
+        expect.any(Function)
       );
     });
 
     it("registers a listener for pi-extension-settings:changed", () => {
       expect(pi.events.on).toHaveBeenCalledWith(
         "pi-extension-settings:changed",
-        expect.any(Function),
+        expect.any(Function)
       );
     });
 
     it("emits pi-extension-settings:register with the schema when ready fires", () => {
       pi.triggerEvent("pi-extension-settings:ready");
 
-      expect(pi.events.emit).toHaveBeenCalledWith(
-        "pi-extension-settings:register",
-        { extension: "weather-widget", nodes: schema },
-      );
+      expect(pi.events.emit).toHaveBeenCalledWith("pi-extension-settings:register", {
+        extension: "weather-widget",
+        nodes: schema,
+      });
     });
   });
 
@@ -118,9 +118,7 @@ describe("WeatherWidget — createWeatherWidget()", () => {
     });
 
     it("returns true when a non-empty API key is stored", () => {
-      vi.mocked(getExtensionSetting).mockReturnValue(
-        "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
-      );
+      vi.mocked(getExtensionSetting).mockReturnValue("a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4");
       expect(widget.isConfigured()).toBe(true);
     });
   });
@@ -135,21 +133,21 @@ describe("WeatherWidget — createWeatherWidget()", () => {
 
     it("uses a stored city name", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) =>
-        key === "city" ? "Tokyo" : undefined,
+        key === "city" ? "Tokyo" : undefined
       );
       expect(widget.renderTitle()).toBe("Weather · Tokyo (°C)");
     });
 
     it("reflects the fahrenheit symbol when unit is fahrenheit", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) =>
-        key === "units" ? "fahrenheit" : undefined,
+        key === "units" ? "fahrenheit" : undefined
       );
       expect(widget.renderTitle()).toBe("Weather · Paris (°F)");
     });
 
     it("reflects the kelvin symbol when unit is kelvin", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) =>
-        key === "units" ? "kelvin" : undefined,
+        key === "units" ? "kelvin" : undefined
       );
       expect(widget.renderTitle()).toBe("Weather · Paris (K)");
     });
@@ -170,7 +168,7 @@ describe("WeatherWidget — createWeatherWidget()", () => {
 
       // Second call: city changed in storage
       vi.mocked(getExtensionSetting).mockImplementation((_, key) =>
-        key === "city" ? "Berlin" : undefined,
+        key === "city" ? "Berlin" : undefined
       );
       expect(widget.renderTitle()).toContain("Berlin");
     });
@@ -460,29 +458,17 @@ describe("WeatherWidget — createWeatherWidget()", () => {
   describe("settings.set() — storage calls", () => {
     it("writes city to storage via setExtensionSetting", () => {
       widget.settings.set("city", "Lisbon");
-      expect(setExtensionSetting).toHaveBeenCalledWith(
-        "weather-widget",
-        "city",
-        "Lisbon",
-      );
+      expect(setExtensionSetting).toHaveBeenCalledWith("weather-widget", "city", "Lisbon");
     });
 
     it("serializes the boolean showHumidity as the string 'false'", () => {
       widget.settings.set("showHumidity", false);
-      expect(setExtensionSetting).toHaveBeenCalledWith(
-        "weather-widget",
-        "showHumidity",
-        "false",
-      );
+      expect(setExtensionSetting).toHaveBeenCalledWith("weather-widget", "showHumidity", "false");
     });
 
     it("serializes the boolean showWind as the string 'true'", () => {
       widget.settings.set("showWind", true);
-      expect(setExtensionSetting).toHaveBeenCalledWith(
-        "weather-widget",
-        "showWind",
-        "true",
-      );
+      expect(setExtensionSetting).toHaveBeenCalledWith("weather-widget", "showWind", "true");
     });
   });
 

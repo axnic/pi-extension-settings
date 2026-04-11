@@ -88,31 +88,31 @@ auto = true
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Biome — TypeScript / JavaScript
+# Biome — TypeScript / JavaScript / Markdown
 # Docs: https://biomejs.dev
 # Config: biome.json
 # -----------------------------------------------------------------------------
 
 [tasks."lint:biome"]
-description = "Lint TypeScript/JS with Biome (check only)"
+description = "Lint all files with Biome (check only)"
 alias       = "lb"
-run         = "biome check src/ sdk/src/ index.ts"
+run         = "biome check ."
 sources     = [
-  "src/**/*.ts",
-  "sdk/src/**/*.ts",
-  "index.ts",
+  "**/*.ts",
+  "**/*.md",
   "biome.json",
+  ".editorconfig",
 ]
 
 [tasks."lint:biome:fix"]
-description = "Lint TypeScript/JS with Biome and auto-fix safe issues"
+description = "Lint all files with Biome and auto-fix safe issues"
 alias       = "lbf"
-run         = "biome check --fix src/ sdk/src/ index.ts"
+run         = "biome check --fix ."
 sources     = [
-  "src/**/*.ts",
-  "sdk/src/**/*.ts",
-  "index.ts",
+  "**/*.ts",
+  "**/*.md",
   "biome.json",
+  ".editorconfig",
 ]
 
 # -----------------------------------------------------------------------------
@@ -148,7 +148,7 @@ sources     = [
 # -----------------------------------------------------------------------------
 
 [tasks.lint]
-description = "Run all linters in parallel (Biome + markdownlint)"
+description = "Run all linters in parallel (Biome + markdownlint-cli2)"
 alias       = "l"
 depends     = ["lint:biome", "lint:markdownlint"]
 

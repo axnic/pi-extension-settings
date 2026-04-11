@@ -9,41 +9,35 @@
  */
 
 export { ExtensionSettings } from "./src/core/extension-settings.ts";
-
-export { S } from "./src/core/schema.ts";
-export type { InferConfig } from "./src/core/schema.ts";
-
-export { v, t, c, d } from "./src/hooks/index.ts";
-
-export {
-  isLeafNode,
-  isSectionNode,
-  enumValues,
-  enumLabel,
-  defaultAsString,
-} from "./src/core/nodes.ts";
 export type {
-  TextValue,
-  BoolValue,
-  ListItem,
-  DictEntry,
-} from "./src/core/nodes.ts";
-export type {
-  ValidationResult,
-  ValidationFn,
-  TransformFn,
-  CompleteFn,
-  DisplayFn,
-  ListDisplayFn,
-} from "./src/core/nodes.ts";
-export type {
-  Struct,
-  Text,
   Boolean,
-  Enum,
-  List,
+  BoolValue,
+  CompleteFn,
   Dict,
+  DictEntry,
+  DisplayFn,
+  Enum,
+  LeafNode,
+  List,
+  ListDisplayFn,
+  ListItem,
   Section,
   SettingNode,
-  LeafNode,
+  Struct,
+  Text,
+  TextValue,
+  TransformFn,
+  ValidationFn,
+  ValidationResult,
 } from "./src/core/nodes.ts";
+
+export {
+  defaultAsString,
+  enumLabel,
+  enumValues,
+  isLeafNode,
+  isSectionNode,
+} from "./src/core/nodes.ts";
+export type { InferConfig } from "./src/core/schema.ts";
+export { S } from "./src/core/schema.ts";
+export { c, d, t, v } from "./src/hooks/index.ts";

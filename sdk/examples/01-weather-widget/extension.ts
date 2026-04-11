@@ -34,8 +34,7 @@ export const schema = S.settings({
 
   city: S.text({
     tooltip: "City to display weather for",
-    description:
-      "Accepts a city name (`Paris`), a `City,CC` pair (`London,GB`), or a zip code.",
+    description: "Accepts a city name (`Paris`), a `City,CC` pair (`London,GB`), or a zip code.",
     default: "Paris",
     validation: v.notEmpty(),
   }),
@@ -110,8 +109,7 @@ export function createWeatherWidget(pi: ExtensionAPI) {
     renderTitle(): string {
       const city = settings.get("city");
       const units = settings.get("units");
-      const symbol =
-        units === "celsius" ? "°C" : units === "fahrenheit" ? "°F" : "K";
+      const symbol = units === "celsius" ? "°C" : units === "fahrenheit" ? "°F" : "K";
       return `Weather · ${city} (${symbol})`;
     },
 

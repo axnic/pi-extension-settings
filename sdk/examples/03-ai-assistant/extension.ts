@@ -18,8 +18,8 @@
  */
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { ExtensionSettings, S, v, t, d } from "../../index.ts";
 import type { InferConfig } from "../../index.ts";
+import { d, ExtensionSettings, S, t, v } from "../../index.ts";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
@@ -67,8 +67,7 @@ export const schema = S.settings({
         children: {
           temperature: S.number({
             tooltip: "Temperature (0 – 2)",
-            description:
-              "Controls randomness. 0 = deterministic, 2 = very creative.",
+            description: "Controls randomness. 0 = deterministic, 2 = very creative.",
             default: 0.7,
             validation: v.range({ min: 0, max: 2 }),
           }),
@@ -95,10 +94,8 @@ export const schema = S.settings({
     children: {
       system: S.text({
         tooltip: "System prompt",
-        description:
-          "Injected as the first `system` message in every conversation.",
-        default:
-          "You are a helpful coding assistant embedded in a terminal IDE.",
+        description: "Injected as the first `system` message in every conversation.",
+        default: "You are a helpful coding assistant embedded in a terminal IDE.",
         transform: t.trim(),
       }),
 
@@ -147,8 +144,7 @@ export const schema = S.settings({
   // ── Extra HTTP headers (dict) ────────────────────────────────────────────────
   extraHeaders: S.dict({
     tooltip: "Extra HTTP headers",
-    description:
-      "Arbitrary headers forwarded with every API request. Useful for proxies.",
+    description: "Arbitrary headers forwarded with every API request. Useful for proxies.",
     addLabel: "Add header",
   }),
 
@@ -272,11 +268,7 @@ export function createAiAssistant(pi: ExtensionAPI): AiAssistant {
     const endpoint = settings.get("endpoint");
     try {
       const { hostname } = new URL(endpoint);
-      return (
-        hostname === "localhost" ||
-        hostname === "127.0.0.1" ||
-        hostname === "[::1]"
-      );
+      return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
     } catch {
       return false;
     }
