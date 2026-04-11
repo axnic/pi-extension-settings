@@ -1,0 +1,225 @@
+# =============================================================================
+# pi-extension-settings — Development Environment
+# =============================================================================
+# Manages the Node runtime, linting tools, and build tasks for the extension
+# and its SDK.
+#
+# First run:
+#   mise trust      # Trust this config (prompted on first use)
+#   mise install    # Install all pinned tools
+#
+# Daily workflow:
+#   mise run lint       # Check everything
+#   mise run lint:fix   # Fix what can be fixed
+#   mise run build      # Type-check extension + compile SDK
+#
+# All tasks and their short aliases:
+#   lint                  (l)    — run all linters in parallel
+#   lint:fix              (lf)   — fix all linters in parallel
+#   lint:biome            (lb)   — Biome: check TS/JS
+#   lint:biome:fix        (lbf)  — Biome: check + auto-fix TS/JS
+#   lint:markdownlint     (lm)   — markdownlint: check Markdown
+#   lint:markdownlint:fix (lmf)  — markdownlint: check + fix Markdown
+#   lint:commitlint       (lc)   — commitlint: validate last commit message
+#   build                 (b)    — compile extension to dist/ + SDK to sdk/dist/
+#   build:extension       (be)   — compile extension to dist/ only (tsc -p tsconfig.json)
+#   build:sdk             (bs)   — compile SDK to sdk/dist/ only
+#   git:hooks             (ghk)  — install git hooks via lefthook (run once after clone)
+# =============================================================================
+
+# =============================================================================
+# Settings
+# =============================================================================
+# jobs     = 8     — parallel tool installs and task executions (default: 4).
+#                    Tune down if your machine has fewer cores.
+# lockfile = true  — pin exact tool versions in mise.lock so the whole team
+#                    installs identical binaries. Commit mise.lock to git.
+# =============================================================================
+
+[settings]
+jobs     = 8
+lockfile = true
+
+# =============================================================================
+# Environment
+# =============================================================================
+# Extends PATH so that locally-installed npm binaries (tsc, biome, vitest, …)
+# are available without a global install or `npx` prefix.
+#
+#   node_modules/.bin      — root package devDependencies (tsc, vitest, …)
+#   sdk/node_modules/.bin  — SDK package devDependencies (tsc for the SDK build)
+# =============================================================================
+
+[env]
+_.path = ["{{config_root}}/node_modules/.bin", "{{config_root}}/sdk/node_modules/.bin"]
+
+# =============================================================================
+# Tools
+# =============================================================================
+
+[tools]
+node                  = "25"      # JavaScript runtime  (package.json engines: >=24)
+lefthook              = "latest"  # Git hooks manager
+
+# =============================================================================
+# Prepare
+# =============================================================================
+# Steps that run automatically after `mise install` (or `mise run prepare`).
+# Each step is idempotent — safe to re-run.
+#
+#   npm         — installs root devDependencies (tsc, vitest, biome, …)
+#   npm:sdk     — installs SDK devDependencies (separate package.json under sdk/)
+#
+# Both are required: the root and the SDK have independent node_modules.
+# Run `mise install` once after cloning; mise handles the rest automatically.
+# =============================================================================
+
+[prepare.npm]
+auto = true
+
+# =============================================================================
+# Linters
+# =============================================================================
+# One task per linter, two variants each: plain check and :fix (auto-fix).
+#
+# Linter configs live at the repo root:
+#   biome.json          — Biome rules and formatter settings
+#   .markdownlint.json  — markdownlint rule overrides
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Biome — TypeScript / JavaScript
+# Docs: https://biomejs.dev
+# Config: biome.json
+# -----------------------------------------------------------------------------
+
+[tasks."lint:biome"]
+description = "Lint TypeScript/JS with Biome (check only)"
+alias       = "lb"
+run         = "biome check src/ sdk/src/ index.ts"
+sources     = [
+  "src/**/*.ts",
+  "sdk/src/**/*.ts",
+  "index.ts",
+  "biome.json",
+]
+
+[tasks."lint:biome:fix"]
+description = "Lint TypeScript/JS with Biome and auto-fix safe issues"
+alias       = "lbf"
+run         = "biome check --fix src/ sdk/src/ index.ts"
+sources     = [
+  "src/**/*.ts",
+  "sdk/src/**/*.ts",
+  "index.ts",
+  "biome.json",
+]
+
+# -----------------------------------------------------------------------------
+# markdownlint — Markdown
+# Docs: https://github.com/DavidAnson/markdownlint-cli2
+# Config: .markdownlint.json
+# -----------------------------------------------------------------------------
+
+[tasks."lint:markdownlint"]
+description = "Lint Markdown files with markdownlint (check only)"
+alias       = "lm"
+run         = "markdownlint-cli2 '**/*.md' '#node_modules' '#sdk/node_modules'"
+sources     = [
+  "*.md",
+  "docs/**/*.md",
+  "sdk/docs/**/*.md",
+  ".markdownlint.json",
+]
+
+[tasks."lint:markdownlint:fix"]
+description = "Lint Markdown files with markdownlint and auto-fix issues"
+alias       = "lmf"
+run         = "markdownlint-cli2 --fix '**/*.md' '#node_modules' '#sdk/node_modules'"
+sources     = [
+  "*.md",
+  "docs/**/*.md",
+  "sdk/docs/**/*.md",
+  ".markdownlint.json",
+]
+
+# -----------------------------------------------------------------------------
+# Meta tasks — run all linters in parallel
+# -----------------------------------------------------------------------------
+
+[tasks.lint]
+description = "Run all linters in parallel (Biome + markdownlint)"
+alias       = "l"
+depends     = ["lint:biome", "lint:markdownlint"]
+
+[tasks."lint:fix"]
+description = "Auto-fix all lint issues in parallel (Biome + markdownlint)"
+alias       = "lf"
+depends     = ["lint:biome:fix", "lint:markdownlint:fix"]
+
+# =============================================================================
+# Build
+# =============================================================================
+# build:extension  — compiles the extension (index.ts + src/) to dist/ via tsc.
+#                    During local development, pi loads .ts directly; dist/ is
+#                    used for distribution/production deployments.
+#                    Skipped by mise when sources are unchanged.
+# build:sdk        — compiles the SDK to sdk/dist/ via tsc.
+#                    Skipped by mise when sources are unchanged.
+# build            — meta task: triggers both builds above. No source tracking
+#                    so `mise run build` is always a reliable full-build check.
+# =============================================================================
+
+[tasks."build:extension"]
+description = "Compile the extension to dist/ with tsc (tsconfig.json)"
+alias       = "be"
+run         = "tsc -p tsconfig.json"
+sources     = [
+  "src/**/*.ts",
+  "index.ts",
+  "tsconfig.json",
+]
+
+[tasks."build:sdk"]
+description = "Compile the SDK to sdk/dist/ with tsc"
+alias       = "bs"
+run         = "cd sdk && tsc -p tsconfig.json"
+sources     = [
+  "sdk/src/**/*.ts",
+  "sdk/index.ts",
+  "sdk/tsconfig.json",
+]
+
+[tasks.build]
+description = "Build everything — extension (→ dist/) + SDK (→ sdk/dist/). Always runs."
+alias       = "b"
+depends     = ["build:extension", "build:sdk"]
+
+# =============================================================================
+# Commit linting
+# =============================================================================
+# Validates the last commit message against the conventional commit rules
+# defined in .commitlintrc.js. Useful to run manually after amending a commit.
+# The commit-msg git hook (via lefthook) runs this automatically on every commit.
+# =============================================================================
+
+[tasks."lint:commitlint"]
+description = "Validate the last commit message against conventional commit rules"
+alias       = "lc"
+run         = "commitlint --from HEAD~1 --to HEAD --verbose"
+
+# =============================================================================
+# Git hooks
+# =============================================================================
+# Installs the git hooks defined in lefthook.yml into .git/hooks/.
+# Run this once after cloning the repository.
+#
+# Hooks installed:
+#   pre-push   — runs all linters (mise run lint)
+#   commit-msg — validates the commit message (commitlint)
+# =============================================================================
+
+[tasks."git:hooks"]
+description = "Install git hooks via lefthook (run once after cloning)"
+alias       = "ghk"
+run         = "lefthook install"
