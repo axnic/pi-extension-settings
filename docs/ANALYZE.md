@@ -24,7 +24,7 @@
   Type to search · Enter/Space to change · Esc to cancel
 ```
 
-**Precise description**
+### Precise description
 
 - Input bar doubles as a live search field: typing filters settings in real time.
 - Each row shows a setting name (left) and its current value (right), with `→` marking the active selection.
@@ -34,7 +34,7 @@
 - Value cycling: pressing `Enter` or `Space` rotates through available values (boolean flip, enum cycle, numeric increment).
 - No grouping or folder mechanism — all settings live in a flat list.
 
-**Appreciation (pros / cons / suggestions)**
+### Appreciation (pros / cons / suggestions)
 
 - Pros:
   - Native to `pi`, consistent with the shell-like aesthetic and familiar to existing users.
@@ -69,7 +69,7 @@
   Type to search · Enter/Space to change · Esc to cancel
 ```
 
-**Precise description**
+### Precise description
 
 - The input bar is replaced by a static `Extension Settings` title banner at the top of the panel.
 - Settings are grouped under their extension name (e.g., `pi-welcome`) displayed as a non-selectable header row.
@@ -79,7 +79,7 @@
 - Settings are persisted in a dedicated per-extension configuration file (not `settings.json`).
 - Multiple extensions appear as consecutive sections in the same flat list, separated by their header row.
 
-**Appreciation (pros / cons / suggestions)**
+### Appreciation (pros / cons / suggestions)
 
 - Pros:
   - Closely mirrors the native `pi` settings panel design, providing a consistent user experience.
@@ -123,7 +123,7 @@
  └───────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Precise description**
+### Precise description
 
 - Full overlay with a hard border (box-drawing characters) and a title bar: `Pi Tool Display Settings`, plus a right-aligned search input `[               ]`.
 - Two-column split layout: left column holds the settings list, right column is a rich detail pane.
@@ -133,7 +133,7 @@
 - `/` key opens an `advanced` mode (additional options or raw editing).
 - Configuration is stored in a dedicated JSON file; the path is surfaced inline in the detail pane.
 
-**Appreciation (pros / cons / suggestions)**
+### Appreciation (pros / cons / suggestions)
 
 - Pros:
   - Two-column layout gives ample space for rich, multi-line descriptions without cluttering the settings list.

@@ -63,9 +63,9 @@ export function parseHex(value: string): { r: number; g: number; b: number } | n
   const short = /^#([0-9a-fA-F]{3})$/.exec(v);
   if (short) {
     const [, hex] = short;
-    const r = parseInt(hex?.[0]! + hex?.[0]!, 16);
-    const g = parseInt(hex?.[1]! + hex?.[1]!, 16);
-    const b = parseInt(hex?.[2]! + hex?.[2]!, 16);
+    const r = parseInt(hex[0] + hex[0], 16);
+    const g = parseInt(hex[1] + hex[1], 16);
+    const b = parseInt(hex[2] + hex[2], 16);
     return { r, g, b };
   }
   const long = /^#([0-9a-fA-F]{6})$/.exec(v);

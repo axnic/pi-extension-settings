@@ -56,13 +56,13 @@
 
 import { EnumDefaultMismatchError, TooltipTooLongError } from "./errors.ts";
 import type {
-  Boolean,
+  Boolean as BooleanNode,
   BoolValue,
   Dict,
   Enum,
   List,
   ListItem,
-  Number,
+  Number as NumberNode,
   NumValue,
   Section,
   SettingNode,
@@ -261,7 +261,7 @@ function text(opts: Omit<Text, "_tag">): Text {
  *   validation: v.float(0, 2),
  * })
  */
-function number(opts: Omit<Number, "_tag">): Number {
+function number(opts: Omit<NumberNode, "_tag">): NumberNode {
   return { _tag: "number", ...opts };
 }
 
@@ -276,7 +276,7 @@ function number(opts: Omit<Number, "_tag">): Number {
  *   default: true,
  * })
  */
-function boolean(opts: Omit<Boolean, "_tag">): Boolean {
+function boolean(opts: Omit<BooleanNode, "_tag">): BooleanNode {
   return { _tag: "boolean", ...opts };
 }
 
