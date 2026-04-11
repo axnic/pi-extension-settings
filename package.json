@@ -26,15 +26,12 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "build": "tsc -p tsconfig.json",
-        "build:sdk": "npm --prefix sdk run build",
-        "build:all": "npm run build && npm run build:sdk",
-        "prepublishOnly": "npm run lint && npm run typecheck && npm run test && npm run build:all",
+        "build": "mise run build",
         "test": "vitest run",
         "test:watch": "vitest",
         "typecheck": "tsc --noEmit -p tsconfig.json",
-        "lint": "biome check src/ index.ts",
-        "lint:fix": "biome check --fix src/ index.ts"
+        "lint": "mise run lint",
+        "lint:fix": "mise run lint:fix"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.4.11",
@@ -42,6 +39,7 @@
         "@commitlint/types": "^20.5.0",
         "@types/node": "^20.0.0",
         "markdownlint-cli2": "^0.17.2",
+        "memfs": "^4.57.1",
         "typescript": "^5.0.0",
         "vitest": "^4.0.18"
     },

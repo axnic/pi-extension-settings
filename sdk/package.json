@@ -38,27 +38,16 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -b tsconfig.json",
-    "typecheck": "tsc -b --noEmit tsconfig.json",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "biome check src/ test/ || true",
-    "lint:fix": "biome check --fix src/ test/",
-    "clean": "rimraf dist",
+    "clean": "rm -rf dist",
     "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build"
   },
   "peerDependencies": {
     "@axnic/pi-extension-settings": "workspace:*",
     "@mariozechner/pi-coding-agent": "^0.66.1"
-  },
-  "devDependencies": {
-    "@mariozechner/pi-coding-agent": "0.66.1",
-    "typescript": "^5.4.0",
-    "tslib": "^2.6.0",
-    "@types/node": "^20.0.0",
-    "vitest": "^4.0.18",
-    "rimraf": "^5.0.0",
-    "@biomejs/biome": "^2.3.5"
   },
   "engines": {
     "node": ">=24"
