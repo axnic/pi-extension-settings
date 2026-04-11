@@ -1,0 +1,68 @@
+{
+  "name": "@axnic/pi-extension-settings-sdk",
+  "version": "0.1.0",
+  "description": "Type-safe SDK for interacting with the pi-extension-settings panel (for extension authors).",
+  "author": "axnic",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/axnic/pi-extension-settings.git",
+    "directory": "sdk"
+  },
+  "homepage": "https://github.com/axnic/pi-extension-settings#readme",
+  "bugs": {
+    "url": "https://github.com/axnic/pi-extension-settings/issues"
+  },
+  "keywords": [
+    "pi",
+    "pi-package",
+    "pi-extension",
+    "settings",
+    "sdk",
+    "extension",
+    "type-safe"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/",
+    "docs/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check src/ test/ || true",
+    "lint:fix": "biome check --fix src/ test/",
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "^0.66.1"
+  },
+  "devDependencies": {
+    "@mariozechner/pi-coding-agent": "0.66.1",
+    "typescript": "^5.4.0",
+    "tslib": "^2.6.0",
+    "@types/node": "^20.0.0",
+    "vitest": "^4.0.18",
+    "rimraf": "^5.0.0",
+    "@biomejs/biome": "^2.3.5"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
