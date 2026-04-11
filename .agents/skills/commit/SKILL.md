@@ -23,31 +23,31 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 
 ## Types
 
-| Type       | When to use                                              |
-|------------|----------------------------------------------------------|
-| `feat`     | A new feature or capability                              |
-| `fix`      | A bug fix                                                |
-| `docs`     | Documentation-only changes                               |
-| `style`    | Code style / formatting, no logic change                 |
-| `refactor` | Code restructuring, no feature or bug fix                |
-| `perf`     | Performance improvement                                  |
-| `test`     | Add or update tests                                      |
-| `build`    | Build system, toolchain, or external dependency changes  |
-| `ci`       | CI/CD configuration changes                              |
-| `chore`    | Maintenance that touches neither src nor tests           |
-| `revert`   | Reverts a previous commit                                |
+| Type       | When to use                                             |
+| ---------- | ------------------------------------------------------- |
+| `feat`     | A new feature or capability                             |
+| `fix`      | A bug fix                                               |
+| `docs`     | Documentation-only changes                              |
+| `style`    | Code style / formatting, no logic change                |
+| `refactor` | Code restructuring, no feature or bug fix               |
+| `perf`     | Performance improvement                                 |
+| `test`     | Add or update tests                                     |
+| `build`    | Build system, toolchain, or external dependency changes |
+| `ci`       | CI/CD configuration changes                             |
+| `chore`    | Maintenance that touches neither src nor tests          |
+| `revert`   | Reverts a previous commit                               |
 
 ## Scopes
 
-| Scope      | What it covers                                |
-|------------|-----------------------------------------------|
-| `sdk`      | SDK library (`sdk/`)                          |
-| `ui`       | TUI settings panel (`src/ui/`)                |
-| `core`     | Core extension logic (`src/core/`)            |
-| `settings` | Own-settings schema (`src/settings.ts`)       |
-| `docs`     | Documentation                                 |
-| `deps`     | Dependency updates                            |
-| `tooling`  | Dev tooling (mise, biome, lefthook, etc.)     |
+| Scope      | What it covers                            |
+| ---------- | ----------------------------------------- |
+| `sdk`      | SDK library (`sdk/`)                      |
+| `ui`       | TUI settings panel (`src/ui/`)            |
+| `core`     | Core extension logic (`src/core/`)        |
+| `settings` | Own-settings schema (`src/settings.ts`)   |
+| `docs`     | Documentation                             |
+| `deps`     | Dependency updates                        |
+| `tooling`  | Dev tooling (mise, biome, lefthook, etc.) |
 
 ## The body — WHY, not WHAT
 
@@ -58,7 +58,7 @@ The body is **required** and must explain:
 - **Trade-offs or limitations** the reviewer should be aware of
 
 The body must **never** describe what the diff already shows. The diff shows
-*what* changed; the body tells the story *behind* the change.
+_what_ changed; the body tells the story _behind_ the change.
 
 **Good body:**
 
@@ -103,23 +103,43 @@ from the body by a blank line.
 Use the trailer matching the AI tool that generated or materially shaped the
 commit:
 
-| Tool                          | Trailer                                                          |
-|-------------------------------|------------------------------------------------------------------|
-| GitHub Copilot (any model)    | `Co-authored-by: GPT-5-mini <copilot@github.com>` |
-| Claude (Anthropic, direct)    | `Co-authored-by: Claude Sonnet 4.6 <claude@anthropic.com>`                  |
-| GPT / ChatGPT (OpenAI, direct)| `Co-authored-by: Codex <chatgpt@openai.com>`                   |
-
-When using GitHub Copilot CLI (this tool), always include:
-
-```
-Co-authored-by: GPT-5-mini <copilot@github.com>
-```
+| Tool                           | Trailer (example)                                                      |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| GitHub Copilot (any model)     | `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` |
+| Claude (Anthropic, direct)     | `Co-authored-by: Claude Sonnet 4.6 <claude@anthropic.com>`             |
+| GPT / ChatGPT (OpenAI, direct) | `Co-authored-by: Codex <chatgpt@openai.com>`                           |
 
 If the user says they do not want the trailer: acknowledge their choice,
 explain that the project convention exists for transparency (the entire
 commit history carries it), and still propose the full message with the
 trailer included. The final decision is theirs, but the policy must be
 surfaced explicitly — omitting it silently is not acceptable.
+
+## Sign-off — required
+
+**Every commit must be signed off** using `git commit --signoff` (or `-s`).
+
+This adds a `Signed-off-by` trailer certifying that the contribution complies
+with the project's Developer Certificate of Origin (DCO).
+
+```
+Signed-off-by: Your Name <your@email.com>
+```
+
+The sign-off trailer goes in the footer alongside any `Co-authored-by` trailers.
+
+## Cryptographic signature — required
+
+**Every commit must also be cryptographically signed** (SSH or GPG) so that
+authorship can be verified independently of the DCO sign-off.
+
+- **GPG:** `git commit -S` (configure `user.signingkey` in `.gitconfig`).
+- **SSH:** set `gpg.format = ssh` and `user.signingkey` to your public key path,
+  then `git commit -S` works the same way.
+- To sign all commits automatically: `git config --global commit.gpgsign true`.
+
+Use `git log --show-signature` or `git verify-commit <sha>` to confirm a commit
+is correctly signed before pushing.
 
 ## Full example
 
@@ -139,4 +159,5 @@ considered but rejected as too heavyweight for what is essentially a
 one-liner convenience.
 
 Co-authored-by: Claude Sonnet 4.6 <claude@anthropic.com>
+Signed-off-by: Your Name <your@email.com>
 ```
