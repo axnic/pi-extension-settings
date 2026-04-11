@@ -1,0 +1,129 @@
+---
+# =============================================================================
+# Security — daily supply-chain and vulnerability scans
+# =============================================================================
+# Three independent checks run every day at 06:00 UTC:
+#
+#   audit     — npm audit on every workspace (known CVEs in dependencies)
+#   codeql    — GitHub's SAST engine for JavaScript/TypeScript
+#   scorecard — OpenSSF Scorecard (supply-chain hygiene score)
+#
+# Can also be triggered manually for on-demand scans.
+# All findings are surfaced in the repository's Security tab.
+# =============================================================================
+
+name: 🔒 Security
+
+on:
+  schedule:
+    # Daily at 06:00 UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}
+
+# Minimal top-level permissions — each job declares what it needs.
+permissions: {}
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # audit — npm audit on all workspaces
+  # ---------------------------------------------------------------------------
+  audit:
+    name: 📦 Dependency Audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: 🔧 Install tools via mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
+        with:
+          cache: true
+
+      - name: 💾 Cache npm dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+
+      - name: 📦 Install root dependencies
+        run: npm ci
+
+      - name: 📦 Install SDK dependencies
+        run: cd sdk && npm ci
+
+      # --audit-level=high: fail on high/critical severity.
+      # Tighten to "moderate" if stricter enforcement is desired.
+      - name: 🔍 Audit root package
+        run: npm audit --audit-level=high
+
+      - name: 🔍 Audit SDK package
+        run: cd sdk && npm audit --audit-level=high
+
+  # ---------------------------------------------------------------------------
+  # codeql — Static Application Security Testing (SAST)
+  # ---------------------------------------------------------------------------
+  codeql:
+    name: 🧬 CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: 🔧 Initialize CodeQL
+        uses: github/codeql-action/init@5c8a8a642e79153f5d047b10ec1cba1d1cc65699 # v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+
+      - name: 🏗️ Autobuild
+        uses: github/codeql-action/autobuild@5c8a8a642e79153f5d047b10ec1cba1d1cc65699 # v3
+
+      - name: 🔍 Run CodeQL analysis
+        uses: github/codeql-action/analyze@5c8a8a642e79153f5d047b10ec1cba1d1cc65699 # v3
+        with:
+          category: /language:javascript-typescript
+
+  # ---------------------------------------------------------------------------
+  # scorecard — OpenSSF supply-chain security score
+  # ---------------------------------------------------------------------------
+  scorecard:
+    name: 🏆 OpenSSF Scorecard
+    runs-on: ubuntu-latest
+    permissions:
+      # Required by scorecard to read repo metadata.
+      actions: read
+      contents: read
+      # Required to publish results to the Security tab.
+      security-events: write
+      # Required for scorecard to sign the attestation.
+      id-token: write
+
+    steps:
+      # Do not persist credentials — scorecard best practice.
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - name: 📊 Run OpenSSF Scorecard
+        uses: ossf/scorecard-action@62b2cac7ed8198b15735ed49ab1e5cf35480ba46 # v2.4.0
+        with:
+          results_file: scorecard.sarif
+          results_format: sarif
+          # publish_results enables the Scorecard badge and trending data.
+          publish_results: true
+
+      - name: 📤 Upload results to Security tab
+        uses: github/codeql-action/upload-sarif@5c8a8a642e79153f5d047b10ec1cba1d1cc65699 # v3
+        with:
+          sarif_file: scorecard.sarif
+          category: scorecard

@@ -1,0 +1,213 @@
+---
+# =============================================================================
+# CI — Pull-request & merge-queue quality gate
+# =============================================================================
+# Validates every PR (and merge-queue entry) before it lands on main:
+#
+#   lint        — Biome (TypeScript/JS, GitHub annotations) +
+#                 markdownlint-cli2 (Markdown, reviewdog PR comments)
+#   commitlint  — Conventional Commits on every commit in the PR
+#   actionlint  — Lint the GitHub Actions workflow files themselves
+#   typecheck   — tsc (SDK only — extension has no tsconfig.json yet)
+#   test        — Vitest (extension + SDK)
+#
+# All tools are installed via mise so exact versions match local development.
+# See mise.toml for pinned versions.
+# =============================================================================
+
+name: 🚦 CI
+
+on:
+  merge_group: {}
+  pull_request: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Minimal top-level permissions — each job declares what it needs.
+permissions: {}
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # lint — Biome + markdownlint-cli2
+  # ---------------------------------------------------------------------------
+  lint:
+    name: 🔍 Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      # Installs every tool listed in mise.toml (Node, Biome, markdownlint-cli2, …).
+      # The cache key changes only when mise.toml or the lock file changes.
+      - name: 🔧 Install tools via mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
+        with:
+          cache: true
+
+      # ── Biome ──────────────────────────────────────────────────────────────
+      # --reporter=github emits ::error:: annotation commands that GitHub renders
+      # as inline PR diff comments — same tool, same config as `mise run lint:biome`.
+      # continue-on-error so markdownlint still runs even when Biome finds issues.
+      - name: ⚡️ Lint TypeScript/JS with Biome
+        id: biome
+        continue-on-error: true
+        run: biome check --reporter=github src/ sdk/src/ index.ts
+
+      # ── markdownlint-cli2 + reviewdog ──────────────────────────────────────
+      # reviewdog converts markdownlint-cli2's output into PR review comments so
+      # Markdown issues appear inline in the diff just like Biome errors.
+      - name: 📦 Install reviewdog
+        uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1
+        with:
+          reviewdog_version: latest
+
+      - name: 📝 Lint Markdown with markdownlint-cli2
+        id: markdownlint
+        if: always()
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          markdownlint-cli2 '**/*.md' '#node_modules' '#sdk/node_modules' 2>&1 | \
+            reviewdog \
+              -f=markdownlint \
+              -name=markdownlint \
+              -reporter=github-pr-review \
+              -fail-on-error
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Final gate ─────────────────────────────────────────────────────────
+      # Both linters ran to completion (all annotations posted).  Now fail the
+      # job if either one found issues.
+      - name: 🚨 Fail if any linter reported issues
+        if: always()
+        run: |
+          if [[ "${{ steps.biome.outcome }}" == "failure" || \
+                "${{ steps.markdownlint.outcome }}" == "failure" ]]; then
+            echo "One or more linters failed — see annotations above."
+            exit 1
+          fi
+
+  # ---------------------------------------------------------------------------
+  # commitlint — every commit in the PR must follow Conventional Commits
+  # ---------------------------------------------------------------------------
+  commitlint:
+    name: ✉️ Commit Messages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      # Full history is needed to compare base..head SHA range.
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Install tools via mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
+        with:
+          cache: true
+
+      - name: ✅ Validate commit messages
+        run: |
+          commitlint \
+            --from ${{ github.event.pull_request.base.sha }} \
+            --to   ${{ github.event.pull_request.head.sha }} \
+            --verbose
+
+  # ---------------------------------------------------------------------------
+  # actionlint — validate the GitHub Actions workflow files themselves
+  # ---------------------------------------------------------------------------
+  actionlint:
+    name: 🔒 Lint GitHub Actions workflows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: 📄 Run actionlint
+        run: |
+          # Download and run actionlint — outputs GitHub Actions annotation commands.
+          curl -sSfL \
+            https://raw.githubusercontent.com/rhysd/actionlint/03d0035246f3e81f36aed592ffb4bebf33a03106/scripts/download-actionlint.bash \
+            | bash
+          ./actionlint -color
+
+  # ---------------------------------------------------------------------------
+  # typecheck — tsc (SDK only — extension has no tsconfig.json yet)
+  # ---------------------------------------------------------------------------
+  typecheck:
+    name: 🏷️ Type Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: 🔧 Install tools via mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
+        with:
+          cache: true
+
+      - name: 💾 Cache npm dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-sdk-${{ hashFiles('sdk/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-sdk-
+
+      - name: 📦 Install SDK dependencies
+        run: cd sdk && npm ci
+
+      - name: ✅ Type-check SDK
+        run: cd sdk && npm run typecheck
+
+  # ---------------------------------------------------------------------------
+  # test — Vitest (extension + SDK)
+  # ---------------------------------------------------------------------------
+  test:
+    name: 🧪 Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: 🔧 Install tools via mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
+        with:
+          cache: true
+
+      - name: 💾 Cache npm dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+
+      - name: 📦 Install root dependencies
+        run: npm ci
+
+      - name: 📦 Install SDK dependencies
+        run: cd sdk && npm ci
+
+      - name: 🧪 Run extension tests
+        run: npm run test
+
+      - name: 🧪 Run SDK tests
+        run: cd sdk && npm run test

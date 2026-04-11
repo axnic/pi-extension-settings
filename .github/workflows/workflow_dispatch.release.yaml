@@ -1,0 +1,132 @@
+---
+# =============================================================================
+# Release — create a versioned release from the GitHub UI
+# =============================================================================
+# Triggered manually via Actions → Release → Run workflow.
+#
+# What it does:
+#   1. Validates the semver input
+#   2. Bumps the version in package.json and sdk/package.json
+#   3. Runs typecheck + tests + SDK build
+#   4. Commits the version bump with a Conventional Commit message
+#   5. Creates and pushes a v<version> git tag
+#   6. Opens a GitHub Release (latest: true)
+#
+# Publishing to npm is handled by the separate `release.publish-sdk.yaml`
+# workflow, which triggers automatically when this release is published.
+#
+# Prerequisites:
+#   • GITHUB_TOKEN must be allowed to push directly to the default branch.
+#     If branch-protection rules require PR reviews, store a fine-grained PAT
+#     with "Contents: Read and write" as RELEASE_TOKEN and replace
+#     `secrets.GITHUB_TOKEN` with `secrets.RELEASE_TOKEN` in the checkout step.
+# =============================================================================
+
+name: 🚀 Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Semver without the leading 'v' (e.g. 1.2.3)"
+        required: true
+        type: string
+      notes:
+        description: "Release notes (leave blank to auto-generate from commits)"
+        required: false
+        type: string
+
+permissions: {}
+
+jobs:
+  release:
+    name: 🚀 Create release v${{ inputs.version }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          # Replace with secrets.RELEASE_TOKEN if branch protection is active.
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: 🔧 Install tools via mise
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
+        with:
+          cache: true
+
+      - name: 💾 Cache npm dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+
+      - name: 📦 Install dependencies
+        run: npm ci && cd sdk && npm ci
+
+      # ── Validate version format ────────────────────────────────────────────
+      - name: ✅ Validate semver input
+        run: |
+          if ! echo "${{ inputs.version }}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
+            echo "::error::'${{ inputs.version }}' is not a valid semver string."
+            exit 1
+          fi
+
+      # ── Bump versions ──────────────────────────────────────────────────────
+      # --no-git-tag-version: tag is created manually after tests pass.
+      - name: 🔖 Bump versions in package.json files
+        run: |
+          npm version ${{ inputs.version }} --no-git-tag-version
+          cd sdk && npm version ${{ inputs.version }} --no-git-tag-version
+
+      # ── Build & validate ───────────────────────────────────────────────────
+      - name: 🏷️ Type-check SDK
+        run: cd sdk && npm run typecheck
+
+      - name: 🧪 Run extension tests
+        run: npm run test
+
+      - name: 🧪 Run SDK tests
+        run: cd sdk && npm run test
+
+      - name: 🏗️ Build SDK
+        run: cd sdk && npm run build
+
+      # ── Commit, tag, push ──────────────────────────────────────────────────
+      - name: 🔧 Configure git identity
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: 📝 Commit version bump
+        run: |
+          git add package.json sdk/package.json
+          git commit -m "chore(tooling): Bump version to v${{ inputs.version }}"
+
+      - name: 🏷️ Create and push tag
+        run: |
+          git tag "v${{ inputs.version }}"
+          git push
+          git push origin "v${{ inputs.version }}"
+
+      # ── GitHub Release ─────────────────────────────────────────────────────
+      - name: 🚀 Create GitHub Release
+        run: |
+          NOTES="${{ inputs.notes }}"
+          if [[ -z "$NOTES" ]]; then
+            gh release create "v${{ inputs.version }}" \
+              --title "v${{ inputs.version }}" \
+              --generate-notes \
+              --latest
+          else
+            gh release create "v${{ inputs.version }}" \
+              --title "v${{ inputs.version }}" \
+              --notes "$NOTES" \
+              --latest
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
