@@ -33,7 +33,7 @@ export class SettingsPanel implements Component {
   private readonly registry: Registry;
   private readonly getTheme: () => Theme;
   private readonly settingsReader: SettingsReader;
-  private done: (() => void) | null = null;
+  private done: ((result?: unknown) => void) | null = null;
 
   constructor(
     registry: Registry,
@@ -51,7 +51,7 @@ export class SettingsPanel implements Component {
   }
 
   /** Set the done callback (called when panel should close). */
-  setDone(done: () => void): void {
+  setDone(done: (result?: unknown) => void): void {
     this.done = done;
   }
 

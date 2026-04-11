@@ -7,8 +7,8 @@
  *
  * @module
  */
-import type { TextValue, ValidationFn } from "../core/nodes.ts";
-import { parseHex, parseHsv, parseHtmlNamed, parseRgb } from "./utils/colorUtils.ts";
+import type { TextValue, ValidationFn } from "../core/nodes";
+import { parseHex, parseHsv, parseHtmlNamed, parseRgb } from "./utils/colorUtils";
 
 /**
  * Validates CSS hex colors: `#rgb` or `#rrggbb` (case-insensitive, trims whitespace).

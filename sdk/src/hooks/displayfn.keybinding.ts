@@ -13,7 +13,7 @@
  * @module
  */
 
-import type { DisplayFn, TextValue } from "../core/nodes.ts";
+import type { DisplayFn, TextValue } from "../core/nodes";
 
 /**
  * Create a display function that renders a keyboard binding with spaced,

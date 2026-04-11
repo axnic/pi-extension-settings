@@ -10,7 +10,7 @@
  *
  * @module
  */
-import type { NumValue, TextValue, ValidationFn } from "../core/nodes.ts";
+import type { NumValue, TextValue, ValidationFn } from "../core/nodes";
 
 /**
  * Validate that the value is an integer (no fractional part).
@@ -64,7 +64,7 @@ export function negative(): ValidationFn<NumValue> {
  * @example v.range({ min: 1 })           // n ≥ 1 (no upper bound)
  * @example v.range({ max: 255 })         // n ≤ 255 (no lower bound)
  */
-export function range({ min, max }: { min: number; max: number } = {}): ValidationFn<NumValue> {
+export function range({ min, max }: { min?: number; max?: number } = {}): ValidationFn<NumValue> {
   if (min !== undefined && !Number.isFinite(min) && max !== undefined && !Number.isFinite(max)) {
     return () => ({ valid: true }); // no bounds, always valid for any finite number (short-circuit to avoid unnecessary checks)
   }
@@ -75,8 +75,6 @@ export function range({ min, max }: { min: number; max: number } = {}): Validati
     return { valid: true };
   };
 }
-export function range({ min }: { min: number }): ValidationFn<NumValue>;
-export function range({ max }: { max: number }): ValidationFn<NumValue>;
 
 /**
  * Validate a percentage value.

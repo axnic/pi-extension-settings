@@ -28,7 +28,7 @@ import { createAiAssistant, schema } from "./extension.ts";
 
 // ─── Mock: storage ────────────────────────────────────────────────────────────
 
-vi.mock("../../../src/core/storage.ts", () => ({
+vi.mock("@axnic/pi-extension-settings/src/core/storage", () => ({
   getExtensionSetting: vi.fn(),
   setExtensionSetting: vi.fn(),
   getAllSettingsForExtension: vi.fn(),
@@ -38,7 +38,7 @@ import {
   getAllSettingsForExtension,
   getExtensionSetting,
   setExtensionSetting,
-} from "../../../src/core/storage.ts";
+} from "@axnic/pi-extension-settings/src/core/storage";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -314,13 +314,13 @@ describe("AiAssistant — createAiAssistant()", () => {
         makeSnapshot({ apiKey: "sk-secret-token" })
       );
       const req = assistant.buildRequest({ messages: userMessages });
-      expect(req.headers["Authorization"]).toBe("Bearer sk-secret-token");
+      expect(req.headers.Authorization).toBe("Bearer sk-secret-token");
     });
 
     it("omits Authorization header when apiKey is empty", () => {
       vi.mocked(getAllSettingsForExtension).mockReturnValue(makeSnapshot({ apiKey: "" }));
       const req = assistant.buildRequest({ messages: userMessages });
-      expect(req.headers["Authorization"]).toBeUndefined();
+      expect(req.headers.Authorization).toBeUndefined();
     });
 
     it("merges extraHeaders into the request headers", () => {

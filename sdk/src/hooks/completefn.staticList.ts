@@ -6,7 +6,7 @@
  *
  * @module
  */
-import type { CompleteFn } from "../core/nodes.ts";
+import type { CompleteFn } from "../core/nodes";
 
 /**
  * Create a completer that suggests from a fixed list of strings.

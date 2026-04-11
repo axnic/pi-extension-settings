@@ -11,7 +11,7 @@
  *
  * @module
  */
-import type { TransformFn } from "../core/nodes.ts";
+import type { TransformFn } from "../core/nodes";
 
 /** Remove leading and trailing whitespace. */
 export function trim(): TransformFn {

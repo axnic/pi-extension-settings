@@ -18,7 +18,7 @@
  *    `option+<char>` on terminals that don't speak the Kitty protocol.
  */
 
-import { matchesKey } from "@mariozechner/pi-tui";
+import { type KeyId, matchesKey } from "@mariozechner/pi-tui";
 
 /**
  * Test whether a raw input byte sequence matches the given keyboard binding.
@@ -33,25 +33,25 @@ import { matchesKey } from "@mariozechner/pi-tui";
 export function matchesBinding(data: string, binding: string): boolean {
   const normalized = binding.trim().toLowerCase();
   if (normalized.length === 0) return false;
-  if (matchesKey(data, normalized)) return true;
+  if (matchesKey(data, normalized as KeyId)) return true;
   if (normalized === "space" && data === " ") return true;
 
   // Modifier-prefix aliasing: alt ↔ option ↔ meta.
   if (normalized.startsWith("alt+")) {
     const rest = normalized.slice(4);
-    if (matchesKey(data, `meta+${rest}`) || matchesKey(data, `option+${rest}`)) {
+    if (matchesKey(data, `meta+${rest}` as KeyId) || matchesKey(data, `option+${rest}` as KeyId)) {
       return true;
     }
   }
   if (normalized.startsWith("option+")) {
     const rest = normalized.slice(7);
-    if (matchesKey(data, `alt+${rest}`) || matchesKey(data, `meta+${rest}`)) {
+    if (matchesKey(data, `alt+${rest}` as KeyId) || matchesKey(data, `meta+${rest}` as KeyId)) {
       return true;
     }
   }
   if (normalized.startsWith("meta+")) {
     const rest = normalized.slice(5);
-    if (matchesKey(data, `alt+${rest}`) || matchesKey(data, `option+${rest}`)) {
+    if (matchesKey(data, `alt+${rest}` as KeyId) || matchesKey(data, `option+${rest}` as KeyId)) {
       return true;
     }
   }
@@ -67,8 +67,8 @@ export function matchesBinding(data: string, binding: string): boolean {
   if (altMatch?.[2] && altMatch[2].length === 1) {
     const key = altMatch[2];
     return (
-      matchesKey(data, `meta+${key}`) ||
-      matchesKey(data, `option+${key}`) ||
+      matchesKey(data, `meta+${key}` as KeyId) ||
+      matchesKey(data, `option+${key}` as KeyId) ||
       data === `\x1b${key}` ||
       data === `\x1b${key.toUpperCase()}`
     );

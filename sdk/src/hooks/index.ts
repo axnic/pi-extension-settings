@@ -17,7 +17,7 @@
  *
  * @example
  * ```ts
- * import { v, t, c, d } from "./hooks/index.ts";
+ * import { v, t, c, d } from "./hooks/index";
  *
  * S.text({
  *   tooltip: "Config file",
@@ -34,8 +34,8 @@
 
 // ─── Completers ───────────────────────────────────────────────────────────────
 
-import { filePath as _cfilePath } from "./completefn.filePath.ts";
-import { staticList } from "./completefn.staticList.ts";
+import { filePath as _cfilePath } from "./completefn.filePath";
+import { staticList } from "./completefn.staticList";
 
 /**
  * Pre-built completer factories.
@@ -53,11 +53,11 @@ export const c = {
 
 // ─── Display functions ────────────────────────────────────────────────────────
 
-import { badge } from "./displayfn.badge.ts";
-import { color } from "./displayfn.color.ts";
-import { dictEntry } from "./displayfn.dict.ts";
-import { keybinding as _dKeybinding } from "./displayfn.keybinding.ts";
-import { path } from "./displayfn.path.ts";
+import { badge } from "./displayfn.badge";
+import { color } from "./displayfn.color";
+import { dictEntry } from "./displayfn.dict";
+import { keybinding as _dKeybinding } from "./displayfn.keybinding";
+import { path } from "./displayfn.path";
 
 /**
  * Pre-built display function factories.
@@ -87,9 +87,9 @@ export const d = {
 
 // ─── Transforms ───────────────────────────────────────────────────────────────
 
-import { hsbToHex, hsvToHex, htmlNamedToHex, rgbToHex } from "./transformfn.color.ts";
-import { compose, pipe } from "./transformfn.compose.ts";
-import { expandPath } from "./transformfn.path.ts";
+import { hsbToHex, hsvToHex, htmlNamedToHex, rgbToHex } from "./transformfn.color";
+import { compose, pipe } from "./transformfn.compose";
+import { expandPath } from "./transformfn.path";
 import {
   camelCase,
   capitalize,
@@ -99,8 +99,8 @@ import {
   titleCase,
   trim,
   uppercase,
-} from "./transformfn.trimCase.ts";
-import { normalizeUrl } from "./transformfn.url.ts";
+} from "./transformfn.trimCase";
+import { normalizeUrl } from "./transformfn.url";
 
 /**
  * Pre-built transform factories.
@@ -155,14 +155,14 @@ export const t = {
 
 // ─── Validators ───────────────────────────────────────────────────────────────
 
-import { notEmpty, oneOf, regex } from "./validationfn.basic.ts";
-import { hexColor, hsbColor, hsvColor, htmlNamedColor, rgbColor } from "./validationfn.color.ts";
-import { all, any } from "./validationfn.composition.ts";
-import { filePath as _vfilePath } from "./validationfn.filePath.ts";
-import { keybinding as _vKeybinding } from "./validationfn.keybinding.ts";
-import { integer, negative, percentage, positive, range } from "./validationfn.numeric.ts";
-import { uri, uriRFC } from "./validationfn.uri.ts";
-import { url } from "./validationfn.url.ts";
+import { notEmpty, oneOf, regex } from "./validationfn.basic";
+import { hexColor, hsbColor, hsvColor, htmlNamedColor, rgbColor } from "./validationfn.color";
+import { all, any } from "./validationfn.composition";
+import { filePath as _vfilePath } from "./validationfn.filePath";
+import { keybinding as _vKeybinding } from "./validationfn.keybinding";
+import { integer, negative, percentage, positive, range } from "./validationfn.numeric";
+import { uri, uriRFC } from "./validationfn.uri";
+import { url } from "./validationfn.url";
 
 /**
  * Pre-built validator factories.

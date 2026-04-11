@@ -3,7 +3,7 @@
  *
  * @module
  */
-import type { TextValue, ValidationFn } from "../core/nodes.ts";
+import type { TextValue, ValidationFn } from "../core/nodes";
 
 /**
  * Validate an HTTP or HTTPS URL using the built-in `URL` parser.

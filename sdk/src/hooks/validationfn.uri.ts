@@ -3,7 +3,7 @@
  *
  * @module
  */
-import type { TextValue, ValidationFn } from "../core/nodes.ts";
+import type { TextValue, ValidationFn } from "../core/nodes";
 
 /**
  * Validate a URI string against an RFC-3986-like grammar.

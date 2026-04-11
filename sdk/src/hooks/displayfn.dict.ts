@@ -19,7 +19,7 @@
  * @module
  */
 import type { Theme } from "@mariozechner/pi-coding-agent";
-import type { DictEntry, DisplayFn } from "../core/nodes.ts";
+import type { DictEntry, DisplayFn } from "../core/nodes";
 
 /** ANSI bold on/off sequences. */
 const BOLD_ON = "\x1b[1m";

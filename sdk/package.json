@@ -38,16 +38,17 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit",
+    "build": "tsc -b tsconfig.json",
+    "typecheck": "tsc -b --noEmit tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "biome check src/ test/ || true",
     "lint:fix": "biome check --fix src/ test/",
     "clean": "rimraf dist",
-    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
+    "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build"
   },
   "peerDependencies": {
+    "@axnic/pi-extension-settings": "workspace:*",
     "@mariozechner/pi-coding-agent": "^0.66.1"
   },
   "devDependencies": {

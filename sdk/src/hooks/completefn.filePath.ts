@@ -15,7 +15,7 @@
 import { readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import type { CompleteFn } from "../core/nodes.ts";
+import type { CompleteFn } from "../core/nodes";
 
 /**
  * Create a filesystem path completer.

@@ -15,9 +15,9 @@ export {
   SchemaError,
   SettingNotFoundError,
   TooltipTooLongError,
-} from "./errors.ts";
+} from "./errors";
 // ─── ExtensionSettings class ──────────────────────────────────────────────────
-export { ExtensionSettings } from "./extension-settings.ts";
+export { ExtensionSettings } from "./extension-settings";
 // ─── Value types ──────────────────────────────────────────────────────────────
 // ─── Hook function types ──────────────────────────────────────────────────────
 // ─── Base node ────────────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ export type {
   TransformFn,
   ValidationFn,
   ValidationResult,
-} from "./nodes.ts";
+} from "./nodes";
 // ─── Node helpers ─────────────────────────────────────────────────────────────
 export {
   defaultAsString,
@@ -52,7 +52,7 @@ export {
   enumValues,
   isLeafNode,
   isSectionNode,
-} from "./nodes.ts";
-export type { InferConfig } from "./schema.ts";
+} from "./nodes";
+export type { InferConfig } from "./schema";
 // ─── Schema builders and inference ───────────────────────────────────────────
-export { S } from "./schema.ts";
+export { S } from "./schema";

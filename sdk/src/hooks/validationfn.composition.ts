@@ -3,7 +3,7 @@
  *
  * @module
  */
-import type { TextValue, ValidationFn } from "../core/nodes.ts";
+import type { TextValue, ValidationFn } from "../core/nodes";
 
 /**
  * Create a validator that passes only when ALL provided validators pass.

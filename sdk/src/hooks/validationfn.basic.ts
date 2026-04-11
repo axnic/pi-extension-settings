@@ -3,7 +3,7 @@
  *
  * @module
  */
-import type { TextValue, ValidationFn } from "../core/nodes.ts";
+import type { TextValue, ValidationFn } from "../core/nodes";
 
 /**
  * Reject blank (empty or whitespace-only) values.

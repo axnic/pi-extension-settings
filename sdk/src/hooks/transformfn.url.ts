@@ -7,7 +7,7 @@
  *
  * @module
  */
-import type { TransformFn } from "../core/nodes.ts";
+import type { TransformFn } from "../core/nodes";
 
 /**
  * Normalise a URL: lowercase protocol + hostname, ensure trailing `/` on root.

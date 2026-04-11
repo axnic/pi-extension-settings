@@ -19,7 +19,7 @@
  *
  * @module
  */
-import type { TransformFn } from "../core/nodes.ts";
+import type { TransformFn } from "../core/nodes";
 
 /**
  * Compose transforms left-to-right (pipe).

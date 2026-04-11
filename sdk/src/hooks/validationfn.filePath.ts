@@ -4,7 +4,7 @@
  * @module
  */
 import { existsSync } from "node:fs";
-import type { TextValue, ValidationFn } from "../core/nodes.ts";
+import type { TextValue, ValidationFn } from "../core/nodes";
 
 /**
  * Validate a filesystem path.

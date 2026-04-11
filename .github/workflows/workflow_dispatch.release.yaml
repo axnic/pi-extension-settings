@@ -58,15 +58,15 @@ jobs:
         with:
           cache: true
 
-      - name: 💾 Cache npm dependencies
+      - name: 💾 Cache pnpm store
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-npm-
+          path: ~/.local/share/pnpm/store/v3
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
 
       - name: 📦 Install dependencies
-        run: npm ci && cd sdk && npm ci
+        run: pnpm install --frozen-lockfile
 
       # ── Validate version format ────────────────────────────────────────────
       - name: ✅ Validate semver input
@@ -80,21 +80,18 @@ jobs:
       # --no-git-tag-version: tag is created manually after tests pass.
       - name: 🔖 Bump versions in package.json files
         run: |
-          npm version ${{ inputs.version }} --no-git-tag-version
-          cd sdk && npm version ${{ inputs.version }} --no-git-tag-version
+          pnpm version ${{ inputs.version }} --no-git-tag-version
+          pnpm -C sdk version ${{ inputs.version }} --no-git-tag-version
 
       # ── Build & validate ───────────────────────────────────────────────────
       - name: 🏷️ Type-check SDK
-        run: cd sdk && npm run typecheck
+        run: tsc --noEmit -p tsconfig.json && mise run build:extension && tsc --noEmit -p sdk/tsconfig.json
 
       - name: 🧪 Run extension tests
-        run: npm run test
+        run: pnpm test
 
-      - name: 🧪 Run SDK tests
-        run: cd sdk && npm run test
-
-      - name: 🏗️ Build SDK
-        run: cd sdk && npm run build
+      - name: 🏗️ Build
+        run: mise run build
 
       # ── Commit, tag, push ──────────────────────────────────────────────────
       - name: 🔧 Configure git identity

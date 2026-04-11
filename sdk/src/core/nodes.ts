@@ -338,7 +338,7 @@ export interface Enum extends BaseSettingNode {
  *     `${theme.fg("dim", "→")} ${item.active ? "✓" : "✗"} ${item.url}`,
  * })
  */
-export interface List<T extends ListItem> extends BaseSettingNode {
+export interface List<T extends ListItem = ListItem> extends BaseSettingNode {
   _tag: "list";
   /** Label for the "add item" button. Falls back to the UI's built-in default. */
   addLabel?: string | "Add item";

@@ -4,7 +4,7 @@
  * @module
  */
 import { homedir } from "node:os";
-import type { TransformFn } from "../core/nodes.ts";
+import type { TransformFn } from "../core/nodes";
 
 /**
  * Expand a leading `~` or `~/` to the current user's home directory.

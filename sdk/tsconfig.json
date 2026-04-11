@@ -6,15 +6,19 @@
     "declaration": true,
     "declarationMap": true,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "strict": true,
     "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@axnic/pi-extension-settings/*": ["../dist/*"]
+    },
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "types": []
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "test", "**/*.spec.ts"]
+  "include": ["src", "index.ts"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts"]
 }

@@ -9,7 +9,7 @@ All dev tooling is managed via [mise](https://mise.run).
 ```sh
 # Setup (run once after clone)
 mise trust && mise install
-npm install
+pnpm install
 mise run git:hooks        # install lefthook git hooks
 ```
 
@@ -35,8 +35,8 @@ Linter configs: `biome.json` (TypeScript/JS), `.markdownlint.json` (Markdown), `
 ## Testing
 
 ```sh
-npm test                             # run full vitest suite (all spec files)
-npm run test:watch                   # watch mode
+pnpm test                            # run full vitest suite (all spec files)
+pnpm run test:watch                  # watch mode
 npx vitest run src/ui/model.spec.ts  # run a single test file
 npx vitest run --reporter=verbose    # verbose output
 ```

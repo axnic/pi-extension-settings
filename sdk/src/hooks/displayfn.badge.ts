@@ -8,7 +8,7 @@
  * @module
  */
 import type { Theme } from "@mariozechner/pi-coding-agent";
-import type { DisplayFn, TextValue } from "../core/nodes.ts";
+import type { DisplayFn, TextValue } from "../core/nodes";
 
 function isValidHex(value: string): boolean {
   return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value.trim());

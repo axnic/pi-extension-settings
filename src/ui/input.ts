@@ -31,7 +31,7 @@
  */
 
 import { matchesKey } from "@mariozechner/pi-tui";
-import type { LeafNode } from "../../sdk/index.js";
+import type { LeafNode, ValidationResult } from "../../sdk/index.js";
 import { defaultAsString, enumValues } from "../../sdk/index.js";
 import { getExtensionSetting, setExtensionSetting } from "../core/storage.js";
 import { type ControlBindings, DEFAULT_CONTROL_BINDINGS } from "../settings.js";
@@ -102,7 +102,7 @@ function collapseAllVisible(state: UIState, rows: ViewRow[]): Map<string, boolea
 
 // ─── Validation ───────────────────────────────────────────────────────────────
 
-function runValidation(node: LeafNode, value: string): { valid: boolean; reason?: string } | null {
+function runValidation(node: LeafNode, value: string): ValidationResult | null {
   if (node._tag !== "text" || !node.validation) {
     return { valid: true };
   }
@@ -128,7 +128,7 @@ async function triggerCompleter(
     completerTimer = null;
     try {
       const suggestions = await node.complete?.(value);
-      onSuggestions(suggestions);
+      onSuggestions(suggestions ?? []);
     } catch {
       onSuggestions([]);
     }

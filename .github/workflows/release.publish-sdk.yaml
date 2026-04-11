@@ -59,26 +59,26 @@ jobs:
         with:
           cache: true
 
-      - name: 💾 Cache npm dependencies
+      - name: 💾 Cache pnpm store
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-sdk-${{ hashFiles('sdk/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-npm-sdk-
+          path: ~/.local/share/pnpm/store/v3
+          key: ${{ runner.os }}-pnpm-sdk-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-sdk-
 
-      - name: 📦 Install SDK dependencies
-        run: cd sdk && npm ci
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
 
       # ── Pre-publish validation ─────────────────────────────────────────────
       # Mirrors the local prepublishOnly hook (typecheck → test → build).
       - name: 🏷️ Type-check SDK
-        run: cd sdk && npm run typecheck
+        run: tsc --noEmit -p tsconfig.json && mise run build:extension && tsc --noEmit -p sdk/tsconfig.json
 
       - name: 🧪 Run SDK tests
-        run: cd sdk && npm run test
+        run: pnpm -C sdk test
 
       - name: 🏗️ Build SDK
-        run: cd sdk && npm run build
+        run: mise run build
 
       # ── Authenticate with npm ──────────────────────────────────────────────
       - name: 🔑 Configure npm authentication
@@ -91,6 +91,6 @@ jobs:
       #               Requires the id-token: write permission declared above.
       # --access public: @axnic scope is public (mirrors sdk/package.json).
       - name: 🚀 Publish with provenance (SLSA L2)
-        run: cd sdk && npm publish --provenance --access public
+        run: pnpm -C sdk publish --provenance --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

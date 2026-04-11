@@ -21,15 +21,15 @@
  * @module
  */
 
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import {
   getAllSettingsForExtension,
   getExtensionSetting,
   setExtensionSetting,
-} from "../../../src/core/storage.ts";
-import { SettingNotFoundError } from "./errors.ts";
-import type { LeafNode, SettingNode } from "./nodes.ts";
-import type { InferConfig } from "./schema.ts";
+} from "@axnic/pi-extension-settings/src/core/storage";
+import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import { SettingNotFoundError } from "./errors";
+import type { LeafNode, SettingNode } from "./nodes";
+import type { InferConfig } from "./schema";
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 

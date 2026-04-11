@@ -5,7 +5,7 @@
  * It is populated during session_start via "pi-extension-settings:register" events.
  */
 
-import type { SettingNode } from "../sdk/src/core/nodes.ts";
+import type { SettingNode } from "../../sdk/src/core/nodes";
 
 /** Payload sent by consumer extensions when registering their settings. */
 export interface RegistrationPayload {

@@ -5,7 +5,7 @@
  * new state from old state + input events.
  */
 
-import type { LeafNode } from "../../sdk/index.js";
+import type { LeafNode, ValidationResult } from "../../sdk/index.js";
 
 // ─── Add form state ───────────────────────────────────────────────────────────
 
@@ -34,10 +34,7 @@ export interface EditState {
 
 // ─── Validation result ────────────────────────────────────────────────────────
 
-export interface ValidationResult {
-  valid: boolean;
-  reason?: string;
-}
+export type { ValidationResult };
 
 // ─── Main UI state ────────────────────────────────────────────────────────────
 

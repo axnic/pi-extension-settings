@@ -42,26 +42,20 @@ jobs:
         with:
           cache: true
 
-      - name: 💾 Cache npm dependencies
+      - name: 💾 Cache pnpm store
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-npm-
+          path: ~/.local/share/pnpm/store/v3
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
 
-      - name: 📦 Install root dependencies
-        run: npm ci
-
-      - name: 📦 Install SDK dependencies
-        run: cd sdk && npm ci
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
 
       # --audit-level=high: fail on high/critical severity.
       # Tighten to "moderate" if stricter enforcement is desired.
-      - name: 🔍 Audit root package
-        run: npm audit --audit-level=high
-
-      - name: 🔍 Audit SDK package
-        run: cd sdk && npm audit --audit-level=high
+      - name: 🔍 Audit workspace
+        run: pnpm audit --audit-level=high
 
   # ---------------------------------------------------------------------------
   # codeql — Static Application Security Testing (SAST)

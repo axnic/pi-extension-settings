@@ -54,7 +54,7 @@
  * @module
  */
 
-import { EnumDefaultMismatchError, TooltipTooLongError } from "./errors.ts";
+import { EnumDefaultMismatchError, TooltipTooLongError } from "./errors";
 import type {
   Boolean as BooleanNode,
   BoolValue,
@@ -69,7 +69,7 @@ import type {
   Struct,
   Text,
   TextValue,
-} from "./nodes.ts";
+} from "./nodes";
 
 // ─── Type inference ───────────────────────────────────────────────────────────
 
@@ -328,7 +328,7 @@ function enumSetting(opts: Omit<Enum, "_tag">): Enum {
  * })
  */
 function list(opts: Omit<List, "_tag"> & { default?: ListItem[] }): List {
-  return { default: [], ...opts, _tag: "list" };
+  return { _tag: "list", ...opts, default: opts.default ?? [] };
 }
 
 /**
@@ -344,7 +344,7 @@ function list(opts: Omit<List, "_tag"> & { default?: ListItem[] }): List {
  * })
  */
 function dict(opts: Omit<Dict, "_tag"> & { default?: Record<string, TextValue> }): Dict {
-  return { default: {}, ...opts, _tag: "dict" };
+  return { _tag: "dict", ...opts, default: opts.default ?? {} };
 }
 
 /**
@@ -366,7 +366,9 @@ function dict(opts: Omit<Dict, "_tag"> & { default?: Record<string, TextValue> }
  *   },
  * })
  */
-function section(opts: Omit<Section, "_tag">): Section {
+function section<C extends Record<string, SettingNode>>(
+  opts: Omit<Section, "_tag" | "children"> & { children: C }
+): Omit<Section, "children"> & { children: C } {
   return { _tag: "section", ...opts };
 }
 

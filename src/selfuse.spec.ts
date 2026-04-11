@@ -23,7 +23,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ─── Mock the storage layer (no real disk I/O) ────────────────────────────────
 
-vi.mock("./core/storage.ts", () => {
+vi.mock("@axnic/pi-extension-settings/src/core/storage", () => {
   const store = new Map<string, Map<string, string>>();
   return {
     getExtensionSetting: vi.fn((extension: string, key: string, fallback?: string) => {
@@ -48,10 +48,10 @@ vi.mock("./core/storage.ts", () => {
   };
 });
 
+// Pull in the mocked module to access the helper that resets the store.
+import * as storage from "@axnic/pi-extension-settings/src/core/storage";
 import { ExtensionSettings } from "../sdk/src/core/extension-settings.ts";
 import { createRegistry } from "./core/registry.ts";
-// Pull in the mocked module to access the helper that resets the store.
-import * as storage from "./core/storage.ts";
 import {
   createSettingsReader,
   DEFAULT_CONTROL_BINDINGS,

@@ -8,7 +8,7 @@
  */
 import { homedir } from "node:os";
 import type { Theme } from "@mariozechner/pi-coding-agent";
-import type { DisplayFn, TextValue } from "../core/nodes.ts";
+import type { DisplayFn, TextValue } from "../core/nodes";
 
 /**
  * Display a filesystem path with the home directory collapsed to `~`.

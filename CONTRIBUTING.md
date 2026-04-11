@@ -25,8 +25,8 @@ cd pi-extension-settings
 mise trust
 mise install
 
-# Install npm dependencies
-npm install
+# Install pnpm dependencies (workspace: root + sdk)
+pnpm install
 ```
 
 ## Tooling (mise)
@@ -101,7 +101,7 @@ extension surface:
 ## Run the tests
 
 ```sh
-npm test
+pnpm test
 ```
 
 This runs the [vitest](https://vitest.dev) suite. The layout is:
@@ -126,7 +126,7 @@ functional reducer (`src/ui/model.ts`) that is also cheap to test directly.
 
 1. Branch from `main`.
 2. Keep commits focused and self-contained.
-3. Run `mise run lint` and `npm test` before pushing.
+3. Run `mise run lint` and `pnpm test` before pushing.
 4. Open a pull request with a short description of the change and any manual
    testing steps.
 

@@ -8,7 +8,7 @@
  * @module
  */
 
-export { ExtensionSettings } from "./src/core/extension-settings.ts";
+export { ExtensionSettings } from "./src/core/extension-settings";
 export type {
   Boolean,
   BoolValue,
@@ -29,7 +29,7 @@ export type {
   TransformFn,
   ValidationFn,
   ValidationResult,
-} from "./src/core/nodes.ts";
+} from "./src/core/nodes";
 
 export {
   defaultAsString,
@@ -37,7 +37,7 @@ export {
   enumValues,
   isLeafNode,
   isSectionNode,
-} from "./src/core/nodes.ts";
-export type { InferConfig } from "./src/core/schema.ts";
-export { S } from "./src/core/schema.ts";
-export { c, d, t, v } from "./src/hooks/index.ts";
+} from "./src/core/nodes";
+export type { InferConfig } from "./src/core/schema";
+export { S } from "./src/core/schema";
+export { c, d, t, v } from "./src/hooks/index";

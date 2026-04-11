@@ -24,8 +24,8 @@
  * @module
  */
 import type { Theme } from "@mariozechner/pi-coding-agent";
-import type { DisplayFn, TextValue } from "../core/nodes.ts";
-import { ansiFg, anyToHex, parseHex } from "./utils/colorUtils.ts";
+import type { DisplayFn, TextValue } from "../core/nodes";
+import { ansiFg, anyToHex, parseHex } from "./utils/colorUtils";
 
 /**
  * Create a display function that renders any supported color format with a

@@ -14,7 +14,7 @@ import { createWeatherWidget, schema } from "./extension.ts";
 
 // ─── Mock: storage ────────────────────────────────────────────────────────────
 
-vi.mock("../../../src/core/storage.ts", () => ({
+vi.mock("@axnic/pi-extension-settings/src/core/storage", () => ({
   getExtensionSetting: vi.fn(),
   setExtensionSetting: vi.fn(),
   getAllSettingsForExtension: vi.fn(),
@@ -24,7 +24,7 @@ import {
   getAllSettingsForExtension,
   getExtensionSetting,
   setExtensionSetting,
-} from "../../../src/core/storage.ts";
+} from "@axnic/pi-extension-settings/src/core/storage";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
