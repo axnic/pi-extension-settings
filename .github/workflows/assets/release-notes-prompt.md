@@ -6,7 +6,7 @@ notes following the exact format and rules below.
 
 ## Output format
 
-```
+```markdown
 ## What's new in v{VERSION}
 
 {A concise paragraph (2–4 sentences) summarising the most important user-facing
@@ -29,8 +29,8 @@ Thanks to all the contributors to this release:
 
 ---
 
-*These release notes were generated with the assistance of
-[GitHub Copilot](https://github.com/features/copilot).*
+_These release notes were generated with the assistance of
+[GitHub Copilot](https://github.com/features/copilot)._
 ```
 
 ## Prefix guide
@@ -73,7 +73,7 @@ sha: a1b2c3d
 subject: feat(sdk): Add S.struct() builder for nested object schemas
 body: Enables typed nested objects within a settings schema without flattening keys.
 author: Alice Martin (@alice)
-pr: #38 (https://github.com/axnic/pi-extension-settings/pull/38)
+pr: #38 (<https://github.com/axnic/pi-extension-settings/pull/38>)
 
 ---
 
@@ -81,7 +81,7 @@ sha: d4e5f6a
 subject: fix(sdk): URL validator now accepts localhost without a TLD
 body:
 author: Bob Chen (@bob-chen)
-pr: #45 (https://github.com/axnic/pi-extension-settings/pull/45)
+pr: #45 (<https://github.com/axnic/pi-extension-settings/pull/45>)
 
 ---
 
@@ -89,7 +89,8 @@ sha: f7a8b9c
 subject: chore(deps): Bump TypeScript to 5.5
 body:
 author: Alice Martin (@alice)
-pr: #41 (https://github.com/axnic/pi-extension-settings/pull/41)
+pr: #41 (<https://github.com/axnic/pi-extension-settings/pull/41>)
+```
 
 #### Output
 
@@ -127,7 +128,7 @@ sha: b2c3d4e
 subject: feat(ui): Add keyboard navigation to the settings panel
 body: Arrow keys and Enter now navigate and confirm settings entries in the TUI.
 author: Charlie Dupont (@charlie-d)
-pr: #52 (https://github.com/axnic/pi-extension-settings/pull/52)
+pr: #52 (<https://github.com/axnic/pi-extension-settings/pull/52>)
 
 ---
 
@@ -135,7 +136,8 @@ sha: e5f6a7b
 subject: fix(core): Registry no longer overwrites entries on hot-reload
 body:
 author: Alice Martin (@alice)
-pr: #50 (https://github.com/axnic/pi-extension-settings/pull/50)
+pr: #50 (<https://github.com/axnic/pi-extension-settings/pull/50>)
+```
 
 #### Output
 

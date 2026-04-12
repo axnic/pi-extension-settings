@@ -87,7 +87,12 @@ export const d = {
 
 // ─── Transforms ───────────────────────────────────────────────────────────────
 
-import { hsbToHex, hsvToHex, htmlNamedToHex, rgbToHex } from "./transformfn.color";
+import {
+  hsbToHex,
+  hsvToHex,
+  htmlNamedToHex,
+  rgbToHex,
+} from "./transformfn.color";
 import { compose, pipe } from "./transformfn.compose";
 import { expandPath } from "./transformfn.path";
 import {
@@ -156,11 +161,23 @@ export const t = {
 // ─── Validators ───────────────────────────────────────────────────────────────
 
 import { notEmpty, oneOf, regex } from "./validationfn.basic";
-import { hexColor, hsbColor, hsvColor, htmlNamedColor, rgbColor } from "./validationfn.color";
+import {
+  hexColor,
+  hsbColor,
+  hsvColor,
+  htmlNamedColor,
+  rgbColor,
+} from "./validationfn.color";
 import { all, any } from "./validationfn.composition";
 import { filePath as _vfilePath } from "./validationfn.filePath";
 import { keybinding as _vKeybinding } from "./validationfn.keybinding";
-import { integer, negative, percentage, positive, range } from "./validationfn.numeric";
+import {
+  integer,
+  negative,
+  percentage,
+  positive,
+  range,
+} from "./validationfn.numeric";
 import { uri, uriRFC } from "./validationfn.uri";
 import { url } from "./validationfn.url";
 

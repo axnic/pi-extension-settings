@@ -3,9 +3,12 @@ import { notEmpty, oneOf, regex } from "./validationfn.basic";
 
 describe("notEmpty()", () => {
   it("rejects empty string", () => expect(notEmpty()("").valid).toBe(false));
-  it("rejects whitespace-only", () => expect(notEmpty()("   ").valid).toBe(false));
-  it("accepts non-empty string", () => expect(notEmpty()("hello").valid).toBe(true));
-  it("reason contains helpful text", () => expect(notEmpty()("").reason).toMatch(/empty/i));
+  it("rejects whitespace-only", () =>
+    expect(notEmpty()("   ").valid).toBe(false));
+  it("accepts non-empty string", () =>
+    expect(notEmpty()("hello").valid).toBe(true));
+  it("reason contains helpful text", () =>
+    expect(notEmpty()("").reason).toMatch(/empty/i));
 });
 
 describe("regex()", () => {

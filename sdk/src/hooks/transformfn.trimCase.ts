@@ -45,7 +45,11 @@ export function capitalize(): TransformFn {
  * @example t.titleCase()("hello world") // "Hello World"
  */
 export function titleCase(): TransformFn {
-  return (v) => v.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+  return (v) =>
+    v.replace(
+      /\w\S*/g,
+      (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(),
+    );
 }
 
 /**
@@ -60,7 +64,8 @@ export function camelCase(): TransformFn {
       .filter(Boolean);
     if (words.length === 0) return "";
     const [first, ...rest] = words;
-    const cap = (w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    const cap = (w: string) =>
+      w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
     return [first?.toLowerCase(), ...rest.map(cap)].join("");
   };
 }

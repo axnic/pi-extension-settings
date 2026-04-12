@@ -61,7 +61,9 @@ export type DictEntry = { key: string; value: TextValue };
  * An array is used by composition validators (e.g. `v.any()`) to list
  * each individual sub-validator failure on its own line in the UI.
  */
-export type ValidationResult = { valid: true } | { valid: false; reason: string | string[] };
+export type ValidationResult =
+  | { valid: true }
+  | { valid: false; reason: string | string[] };
 
 /**
  * Validates a value. Returns `{ valid: true }` on success or
@@ -76,9 +78,9 @@ export type ValidationResult = { valid: true } | { valid: false; reason: string 
  * A single `ValidationFn` is accepted per node. Compose multiple rules with
  * `v.all(...)` (all must pass) or `v.any(...)` (at least one must pass).
  */
-export type ValidationFn<T extends TextValue | NumValue | ListItem | DictEntry> = (
-  value: T
-) => ValidationResult;
+export type ValidationFn<
+  T extends TextValue | NumValue | ListItem | DictEntry,
+> = (value: T) => ValidationResult;
 
 /**
  * Transforms a `TextValue` before it is written to storage.
@@ -111,10 +113,8 @@ export type CompleteFn = (partial: TextValue) => Promise<TextValue[]>;
  theme) =>
  *   theme.fg("accent", value.toUpperCase());
  */
-export type DisplayFn<T extends TextValue | NumValue | BoolValue | DictEntry> = (
-  value: T,
-  theme: Theme
-) => string;
+export type DisplayFn<T extends TextValue | NumValue | BoolValue | DictEntry> =
+  (value: T, theme: Theme) => string;
 
 /**
  * Converts the full list of items to an array of display strings (one per item).
@@ -133,7 +133,10 @@ export type DisplayFn<T extends TextValue | NumValue | BoolValue | DictEntry> = 
  *     );
  *   };
  */
-export type ListDisplayFn<T extends ListItem> = (items: T[], theme: Theme) => string[];
+export type ListDisplayFn<T extends ListItem> = (
+  items: T[],
+  theme: Theme,
+) => string[];
 
 // ─── Base node ────────────────────────────────────────────────────────────────
 
@@ -410,7 +413,14 @@ export interface Section extends BaseSettingNode {
 // ─── Union types ──────────────────────────────────────────────────────────────
 
 /** Union of all top-level setting node types. */
-export type SettingNode = Text | Number | Boolean | Enum | List | Dict | Section;
+export type SettingNode =
+  | Text
+  | Number
+  | Boolean
+  | Enum
+  | List
+  | Dict
+  | Section;
 
 /** Leaf nodes — setting nodes that hold a value directly (not containers). */
 export type LeafNode = Text | Number | Boolean | Enum | List | Dict;
@@ -437,7 +447,9 @@ export function enumValues(node: Enum): TextValue[] {
  * Falls back to the raw value string if no matching entry is found.
  */
 export function enumLabel(node: Enum, value: TextValue): string {
-  const entry = node.values.find((v) => (typeof v === "string" ? v : v.value) === value);
+  const entry = node.values.find(
+    (v) => (typeof v === "string" ? v : v.value) === value,
+  );
   if (!entry) return value;
   return typeof entry === "string" ? entry : entry.label;
 }

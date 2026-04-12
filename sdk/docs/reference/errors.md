@@ -4,7 +4,7 @@ The SDK throws typed errors so you can catch and handle them precisely. All SDK 
 
 ## Error hierarchy
 
-```
+```text
 Error
 └── PiSettingsError
     ├── SchemaError

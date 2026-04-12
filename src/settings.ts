@@ -56,7 +56,8 @@ export interface ControlBindings {
  */
 export const schema = S.settings({
   behavior: S.section({
-    tooltip: "Behavior — controls how the settings panel opens and behaves (search vs navigation).",
+    tooltip:
+      "Behavior — controls how the settings panel opens and behaves (search vs navigation).",
     children: {
       "start-in-search-mode": S.boolean({
         tooltip:
@@ -77,14 +78,16 @@ export const schema = S.settings({
         display: d.keybinding(),
       }),
       "collapse-expand": S.text({
-        tooltip: "Toggle collapse/expand for the focused header to hide or show its settings.",
+        tooltip:
+          "Toggle collapse/expand for the focused header to hide or show its settings.",
         default: DEFAULT_CONTROL_BINDINGS.collapseExpand,
         validation: v.keybinding(),
         transform: t.pipe(t.trim(), t.lowercase()),
         display: d.keybinding(),
       }),
       "collapse-all": S.text({
-        tooltip: "Collapse all visible extension and folder headers to reduce clutter.",
+        tooltip:
+          "Collapse all visible extension and folder headers to reduce clutter.",
         default: DEFAULT_CONTROL_BINDINGS.collapseAll,
         validation: v.keybinding(),
         transform: t.pipe(t.trim(), t.lowercase()),
@@ -98,14 +101,16 @@ export const schema = S.settings({
         display: d.keybinding(),
       }),
       "reorder-item-down": S.text({
-        tooltip: "Move the focused list item one position down within its list.",
+        tooltip:
+          "Move the focused list item one position down within its list.",
         default: DEFAULT_CONTROL_BINDINGS.reorderItemDown,
         validation: v.keybinding(),
         transform: t.pipe(t.trim(), t.lowercase()),
         display: d.keybinding(),
       }),
       "delete-item": S.text({
-        tooltip: "Delete the focused list item. Use with care; deletions may be irreversible.",
+        tooltip:
+          "Delete the focused list item. Use with care; deletions may be irreversible.",
         default: DEFAULT_CONTROL_BINDINGS.deleteItem,
         validation: v.keybinding(),
         transform: t.pipe(t.trim(), t.lowercase()),
@@ -147,7 +152,9 @@ export interface SettingsReader {
  * underlying typed accessor on every access, so it always reflects the
  * latest stored value.
  */
-export function createSettingsReader(settings: ExtensionSettings<SettingsSchema>): SettingsReader {
+export function createSettingsReader(
+  settings: ExtensionSettings<SettingsSchema>,
+): SettingsReader {
   return {
     get startInSearchMode(): boolean {
       return settings.get("behavior.start-in-search-mode");
@@ -156,27 +163,27 @@ export function createSettingsReader(settings: ExtensionSettings<SettingsSchema>
       return {
         resetToDefault: settleBinding(
           settings.get("controls.reset-to-default"),
-          DEFAULT_CONTROL_BINDINGS.resetToDefault
+          DEFAULT_CONTROL_BINDINGS.resetToDefault,
         ),
         collapseExpand: settleBinding(
           settings.get("controls.collapse-expand"),
-          DEFAULT_CONTROL_BINDINGS.collapseExpand
+          DEFAULT_CONTROL_BINDINGS.collapseExpand,
         ),
         collapseAll: settleBinding(
           settings.get("controls.collapse-all"),
-          DEFAULT_CONTROL_BINDINGS.collapseAll
+          DEFAULT_CONTROL_BINDINGS.collapseAll,
         ),
         reorderItemUp: settleBinding(
           settings.get("controls.reorder-item-up"),
-          DEFAULT_CONTROL_BINDINGS.reorderItemUp
+          DEFAULT_CONTROL_BINDINGS.reorderItemUp,
         ),
         reorderItemDown: settleBinding(
           settings.get("controls.reorder-item-down"),
-          DEFAULT_CONTROL_BINDINGS.reorderItemDown
+          DEFAULT_CONTROL_BINDINGS.reorderItemDown,
         ),
         deleteItem: settleBinding(
           settings.get("controls.delete-item"),
-          DEFAULT_CONTROL_BINDINGS.deleteItem
+          DEFAULT_CONTROL_BINDINGS.deleteItem,
         ),
       };
     },

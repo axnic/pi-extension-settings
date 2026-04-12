@@ -12,7 +12,8 @@ import type { TextValue, ValidationFn } from "../core/nodes";
  */
 export function notEmpty(): ValidationFn<TextValue> {
   return (value) => {
-    if (value.trim().length === 0) return { valid: false, reason: "value cannot be empty" };
+    if (value.trim().length === 0)
+      return { valid: false, reason: "value cannot be empty" };
     return { valid: true };
   };
 }
@@ -25,8 +26,12 @@ export function notEmpty(): ValidationFn<TextValue> {
  *
  * @example v.regex(/^\d{4}$/, "must be a 4-digit year")("2024") // { valid: true }
  */
-export function regex(pattern: RegExp, reason: string): ValidationFn<TextValue> {
-  return (value) => (pattern.test(value) ? { valid: true } : { valid: false, reason });
+export function regex(
+  pattern: RegExp,
+  reason: string,
+): ValidationFn<TextValue> {
+  return (value) =>
+    pattern.test(value) ? { valid: true } : { valid: false, reason };
 }
 
 /**

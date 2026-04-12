@@ -13,7 +13,7 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 
 ## Commit format
 
-```
+```text
 <type>(<scope>): <Subject starting with uppercase>
 
 <body — one or more paragraphs explaining WHY>
@@ -62,7 +62,7 @@ _what_ changed; the body tells the story _behind_ the change.
 
 **Good body:**
 
-```
+```text
 The settings panel crashed on startup when no extension had registered a
 schema yet. The root cause was that the registry iterated over an undefined
 map on first access instead of returning an empty iterator.
@@ -74,7 +74,7 @@ avoids a separate initialisation step that callers would have to trigger.
 
 **Bad body (describes the diff, not the reason):**
 
-```
+```text
 Added a null check in registry.ts. Changed the return type to include
 an empty map. Updated the tests to cover the new case.
 ```
@@ -122,7 +122,7 @@ surfaced explicitly — omitting it silently is not acceptable.
 This adds a `Signed-off-by` trailer certifying that the contribution complies
 with the project's Developer Certificate of Origin (DCO).
 
-```
+```text
 Signed-off-by: Your Name <your@email.com>
 ```
 
@@ -143,7 +143,7 @@ is correctly signed before pushing.
 
 ## Full example
 
-```
+```text
 feat(sdk): Add pipe composition helper for transform hooks
 
 The SDK exposed individual transform hooks (t.trim, t.normalizeUrl, …)

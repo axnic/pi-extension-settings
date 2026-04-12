@@ -75,7 +75,7 @@ Restart pi. The extension registers the `/extensions:settings` slash command on 
 
 Open the panel with:
 
-```
+```text
 /extensions:settings
 ```
 
@@ -83,7 +83,7 @@ The panel aggregates settings from every registered extension into a single tree
 
 ### Layout and navigation
 
-```
+```text
 ─────────────────────────────────────────────────────────────────────────────
 >
 
@@ -121,7 +121,7 @@ The panel aggregates settings from every registered extension into a single tree
 
 Editors validate on every keystroke. A failing validation blocks the save and shows the reason inline:
 
-```
+```text
 →  api-url  https://not a url█
             ✖ must be a valid URL
 ```
@@ -178,7 +178,7 @@ export default function myExtension(pi: ExtensionAPI) {
 
   // Fully typed reads — type inferred from the schema.
   const url = settings.get("api-url"); // string
-  const on  = settings.get("enabled"); // boolean
+  const on = settings.get("enabled"); // boolean
 
   // Fully typed write — transform runs before save.
   settings.set("theme", "light");
@@ -204,30 +204,30 @@ The settings panel UI is generated from your schema automatically — no UI code
 
 The SDK documentation covers everything else in depth:
 
-| Topic | Page |
-|---|---|
-| Full Getting Started walkthrough | [sdk/docs/getting-started.md](./sdk/docs/getting-started.md) |
-| All node types (`S.*`) | [sdk/docs/concepts/schema-builder.md](./sdk/docs/concepts/schema-builder.md) |
-| Lifecycle, `get` / `set` / `onChange` / `getAll` | [sdk/docs/concepts/extension-settings.md](./sdk/docs/concepts/extension-settings.md) |
-| All 43 hooks (`v.*`, `t.*`, `c.*`, `d.*`) | [sdk/docs/hooks/README.md](./sdk/docs/hooks/README.md) |
-| Progressive examples (weather widget → AI assistant) | [sdk/docs/examples/README.md](./sdk/docs/examples/README.md) |
-| Full API reference | [sdk/docs/reference/api.md](./sdk/docs/reference/api.md) |
+| Topic                                                | Page                                                                                 |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Full Getting Started walkthrough                     | [sdk/docs/getting-started.md](./sdk/docs/getting-started.md)                         |
+| All node types (`S.*`)                               | [sdk/docs/concepts/schema-builder.md](./sdk/docs/concepts/schema-builder.md)         |
+| Lifecycle, `get` / `set` / `onChange` / `getAll`     | [sdk/docs/concepts/extension-settings.md](./sdk/docs/concepts/extension-settings.md) |
+| All 43 hooks (`v.*`, `t.*`, `c.*`, `d.*`)            | [sdk/docs/hooks/README.md](./sdk/docs/hooks/README.md)                               |
+| Progressive examples (weather widget → AI assistant) | [sdk/docs/examples/README.md](./sdk/docs/examples/README.md)                         |
+| Full API reference                                   | [sdk/docs/reference/api.md](./sdk/docs/reference/api.md)                             |
 
 ## Documentation
 
-| Resource | Audience | What's inside |
-|---|---|---|
-| [SDK guide](./sdk/docs/README.md) | Extension authors | Getting started, concepts, hooks, and the full API reference |
+| Resource                                      | Audience          | What's inside                                                              |
+| --------------------------------------------- | ----------------- | -------------------------------------------------------------------------- |
+| [SDK guide](./sdk/docs/README.md)             | Extension authors | Getting started, concepts, hooks, and the full API reference               |
 | [SDK examples](./sdk/docs/examples/README.md) | Extension authors | Three progressive examples: weather widget → code formatter → AI assistant |
-| [API reference](./sdk/docs/reference/api.md) | Extension authors | Every exported symbol with its signature |
-| [Hooks reference](./sdk/docs/hooks/README.md) | Extension authors | All 43 validators, transforms, completers, and display functions |
-| [Design spec](./docs/DESIGN.md) | Contributors | Panel architecture, mockups, and behavior specs |
-| [Schema analysis](./docs/ANALYZE.md) | Contributors | Runtime schema introspection API |
-| [SDK internals](./docs/SDK.md) | Contributors | Event protocol, registry, storage layer |
+| [API reference](./sdk/docs/reference/api.md)  | Extension authors | Every exported symbol with its signature                                   |
+| [Hooks reference](./sdk/docs/hooks/README.md) | Extension authors | All 43 validators, transforms, completers, and display functions           |
+| [Design spec](./docs/DESIGN.md)               | Contributors      | Panel architecture, mockups, and behavior specs                            |
+| [Schema analysis](./docs/ANALYZE.md)          | Contributors      | Runtime schema introspection API                                           |
+| [SDK internals](./docs/SDK.md)                | Contributors      | Event protocol, registry, storage layer                                    |
 
 ## Project layout
 
-```
+```text
 pi-extension-settings/
 ├── index.ts                   Extension entry point (command + event wiring)
 ├── sdk/

@@ -51,7 +51,7 @@ describe("input scope collapse behavior", () => {
       state,
       rows,
       () => {},
-      () => {}
+      () => {},
     );
     state = entered.state;
     expect(state.scope).toEqual(["pi-one"]);
@@ -61,7 +61,7 @@ describe("input scope collapse behavior", () => {
       state,
       rows,
       () => {},
-      () => {}
+      () => {},
     ).state;
     expect(state.scope).toEqual([]);
     expect(isExtCollapsed(state, "pi-one")).toBe(false);
@@ -80,7 +80,7 @@ describe("input scope collapse behavior", () => {
       state,
       [extRow(extension)],
       () => {},
-      () => {}
+      () => {},
     ).state;
     state = {
       ...state,
@@ -92,27 +92,31 @@ describe("input scope collapse behavior", () => {
       state,
       [groupRow(extension, section1)],
       () => {},
-      () => {}
+      () => {},
     ).state;
     expect(state.scope).toEqual([extension, section1]);
-    expect(state.collapsed.get(groupCollapseKey(extension, section1))).toBe(false);
+    expect(state.collapsed.get(groupCollapseKey(extension, section1))).toBe(
+      false,
+    );
 
     state = handleInput(
       "\r",
       state,
       [groupRow(extension, section2)],
       () => {},
-      () => {}
+      () => {},
     ).state;
     expect(state.scope).toEqual([extension, section2]);
-    expect(state.collapsed.get(groupCollapseKey(extension, section2))).toBe(false);
+    expect(state.collapsed.get(groupCollapseKey(extension, section2))).toBe(
+      false,
+    );
 
     state = handleInput(
       "\x1b",
       state,
       [groupRow(extension, section2)],
       () => {},
-      () => {}
+      () => {},
     ).state;
     expect(state.scope).toEqual([extension, section1]);
     expect(isGroupCollapsed(state, extension, section2)).toBe(false);
@@ -122,7 +126,7 @@ describe("input scope collapse behavior", () => {
       state,
       [groupRow(extension, section1)],
       () => {},
-      () => {}
+      () => {},
     ).state;
     expect(state.scope).toEqual([extension]);
     expect(isGroupCollapsed(state, extension, section1)).toBe(false);
@@ -132,7 +136,7 @@ describe("input scope collapse behavior", () => {
       state,
       [extRow(extension)],
       () => {},
-      () => {}
+      () => {},
     ).state;
     expect(state.scope).toEqual([]);
     expect(isExtCollapsed(state, extension)).toBe(false);
@@ -149,7 +153,7 @@ describe("input scope collapse behavior", () => {
       state,
       rows,
       () => {},
-      () => {}
+      () => {},
     ).state;
     expect(state.focusedIndex).toBe(1);
     state = handleInput(
@@ -157,7 +161,7 @@ describe("input scope collapse behavior", () => {
       state,
       rows,
       () => {},
-      () => {}
+      () => {},
     ).state;
     expect(state.focusedIndex).toBe(1);
 
@@ -167,7 +171,7 @@ describe("input scope collapse behavior", () => {
       state,
       rows,
       () => {},
-      () => {}
+      () => {},
     ).state;
     expect(state.scope).toEqual([]);
 
@@ -177,7 +181,7 @@ describe("input scope collapse behavior", () => {
       state,
       rows,
       () => {},
-      () => {}
+      () => {},
     ).state;
     expect(state.searchActive).toBe(false);
 
@@ -187,7 +191,7 @@ describe("input scope collapse behavior", () => {
       state,
       rows,
       () => {},
-      () => {}
+      () => {},
     ).state;
     expect(state.focusedIndex).toBe(0);
 
@@ -197,7 +201,7 @@ describe("input scope collapse behavior", () => {
       state,
       rows,
       () => {},
-      () => {}
+      () => {},
     ).state;
     expect(state.searchActive).toBe(true);
   });

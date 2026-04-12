@@ -3,7 +3,9 @@ import { normalizeUrl } from "./transformfn.url";
 
 describe("normalizeUrl()", () => {
   it("lowercases protocol and hostname", () => {
-    expect(normalizeUrl()("HTTPS://Example.COM/path")).toBe("https://example.com/path");
+    expect(normalizeUrl()("HTTPS://Example.COM/path")).toBe(
+      "https://example.com/path",
+    );
   });
   it("ensures trailing slash on root URL", () => {
     expect(normalizeUrl()("https://example.com")).toBe("https://example.com/");

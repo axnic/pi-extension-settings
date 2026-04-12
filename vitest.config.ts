@@ -2,6 +2,9 @@ import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  test: {
+    exclude: ["**/.trunk/**", "**/node_modules/**"],
+  },
   resolve: {
     alias: {
       // Map the workspace package name to the repo root so that

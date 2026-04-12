@@ -147,12 +147,18 @@ export function extCollapseKey(extensionName: string): string {
 }
 
 /** Get the collapse-state key for a group. */
-export function groupCollapseKey(extensionName: string, groupKey: string): string {
+export function groupCollapseKey(
+  extensionName: string,
+  groupKey: string,
+): string {
   return `group:${extensionName}:${groupKey}`;
 }
 
 /** Get the list-expand key for a list setting. */
-export function listExpandKey(extensionName: string, settingKey: string): string {
+export function listExpandKey(
+  extensionName: string,
+  settingKey: string,
+): string {
   return `${extensionName}:${settingKey}`;
 }
 
@@ -162,17 +168,30 @@ export function isExtCollapsed(state: UIState, extensionName: string): boolean {
 }
 
 /** Check if a group is collapsed. */
-export function isGroupCollapsed(state: UIState, extensionName: string, groupKey: string): boolean {
-  return state.collapsed.get(groupCollapseKey(extensionName, groupKey)) ?? false;
+export function isGroupCollapsed(
+  state: UIState,
+  extensionName: string,
+  groupKey: string,
+): boolean {
+  return (
+    state.collapsed.get(groupCollapseKey(extensionName, groupKey)) ?? false
+  );
 }
 
 /** Check if a list setting is expanded. */
-export function isListExpanded(state: UIState, extensionName: string, settingKey: string): boolean {
+export function isListExpanded(
+  state: UIState,
+  extensionName: string,
+  settingKey: string,
+): boolean {
   return state.expandedLists.has(listExpandKey(extensionName, settingKey));
 }
 
 /** Toggle collapse state for a key. Returns a new collapsed Map. */
-export function toggleCollapse(state: UIState, key: string): Map<string, boolean> {
+export function toggleCollapse(
+  state: UIState,
+  key: string,
+): Map<string, boolean> {
   const next = new Map(state.collapsed);
   next.set(key, !(state.collapsed.get(key) ?? false));
   return next;
@@ -182,7 +201,7 @@ export function toggleCollapse(state: UIState, key: string): Map<string, boolean
 export function toggleListExpand(
   state: UIState,
   extensionName: string,
-  settingKey: string
+  settingKey: string,
 ): Set<string> {
   const key = listExpandKey(extensionName, settingKey);
   const next = new Set(state.expandedLists);
@@ -192,7 +211,11 @@ export function toggleListExpand(
 }
 
 /** Insert a character at the current cursor position, advance cursor. */
-export function insertChar(value: string, cursor: number, char: string): [string, number] {
+export function insertChar(
+  value: string,
+  cursor: number,
+  char: string,
+): [string, number] {
   const next = value.slice(0, cursor) + char + value.slice(cursor);
   return [next, cursor + char.length];
 }

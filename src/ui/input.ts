@@ -53,7 +53,11 @@ import {
 
 // ─── Save callback ────────────────────────────────────────────────────────────
 
-export type SaveCallback = (extension: string, key: string, value: string) => void;
+export type SaveCallback = (
+  extension: string,
+  key: string,
+  value: string,
+) => void;
 
 // ─── Enum cycling ─────────────────────────────────────────────────────────────
 
@@ -71,7 +75,11 @@ function resetSettingToDefault(row: SettingRow, onSave: SaveCallback): void {
   onSave(row.extensionName, row.settingKey, defaultValue);
 }
 
-function enterScopedSection(state: UIState, nextScope: string[], collapseKey: string): UIState {
+function enterScopedSection(
+  state: UIState,
+  nextScope: string[],
+  collapseKey: string,
+): UIState {
   const collapsed = new Map(state.collapsed);
   const previous = state.collapsed.get(collapseKey);
   collapsed.set(collapseKey, false);
@@ -80,7 +88,10 @@ function enterScopedSection(state: UIState, nextScope: string[], collapseKey: st
     ...state,
     scope: nextScope,
     scopeHistory: [...state.scopeHistory, state.scope],
-    scopeCollapseStack: [...state.scopeCollapseStack, { key: collapseKey, previous }],
+    scopeCollapseStack: [
+      ...state.scopeCollapseStack,
+      { key: collapseKey, previous },
+    ],
     collapsed,
     inputValue: "",
     inputCursor: 0,
@@ -88,7 +99,10 @@ function enterScopedSection(state: UIState, nextScope: string[], collapseKey: st
   };
 }
 
-function collapseAllVisible(state: UIState, rows: ViewRow[]): Map<string, boolean> {
+function collapseAllVisible(
+  state: UIState,
+  rows: ViewRow[],
+): Map<string, boolean> {
   const collapsed = new Map(state.collapsed);
   for (const row of rows) {
     if (row.type === "extension-header") {
@@ -116,7 +130,7 @@ let completerTimer: ReturnType<typeof setTimeout> | null = null;
 async function triggerCompleter(
   node: LeafNode,
   value: string,
-  onSuggestions: (suggestions: string[]) => void
+  onSuggestions: (suggestions: string[]) => void,
 ): Promise<void> {
   if (node._tag !== "text" || !node.complete) return;
 
@@ -141,12 +155,11 @@ function deleteListItem(
   extension: string,
   settingKey: string,
   itemIndex: number,
-  onSave: SaveCallback
+  onSave: SaveCallback,
 ): void {
-  const items = parseListValue(getExtensionSetting(extension, settingKey, "[]")) as Record<
-    string,
-    string
-  >[];
+  const items = parseListValue(
+    getExtensionSetting(extension, settingKey, "[]"),
+  ) as Record<string, string>[];
   if (itemIndex < 0 || itemIndex >= items.length) return;
   items.splice(itemIndex, 1);
   const serialized = JSON.stringify(items);
@@ -159,12 +172,11 @@ function moveListItem(
   settingKey: string,
   itemIndex: number,
   direction: "up" | "down",
-  onSave: SaveCallback
+  onSave: SaveCallback,
 ): void {
-  const items = parseListValue(getExtensionSetting(extension, settingKey, "[]")) as Record<
-    string,
-    string
-  >[];
+  const items = parseListValue(
+    getExtensionSetting(extension, settingKey, "[]"),
+  ) as Record<string, string>[];
   const targetIdx = direction === "up" ? itemIndex - 1 : itemIndex + 1;
   if (targetIdx < 0 || targetIdx >= items.length) return;
   if (itemIndex < 0 || itemIndex >= items.length) return;
@@ -205,7 +217,7 @@ export function handleInput(
   rows: ViewRow[],
   onSave: SaveCallback,
   onSuggestionsUpdate: (suggestions: string[]) => void,
-  controls: ControlBindings = DEFAULT_CONTROL_BINDINGS
+  controls: ControlBindings = DEFAULT_CONTROL_BINDINGS,
 ): { state: UIState; close: boolean; dirty: boolean } {
   // ── Add form mode ────────────────────────────────────────────────────────
   if (state.addFormState) {
@@ -226,7 +238,7 @@ export function handleInput(
 function handleAddFormInput(
   data: string,
   state: UIState,
-  onSave: SaveCallback
+  onSave: SaveCallback,
 ): { state: UIState; close: boolean; dirty: boolean } {
   const form = state.addFormState!;
   const currentFieldKey = form.fieldKeys[form.focusedFieldIndex] ?? "";
@@ -243,7 +255,7 @@ function handleAddFormInput(
     const delta = matchesKey(data, "shift+tab") ? -1 : 1;
     const nextIndex = Math.max(
       0,
-      Math.min(form.fieldKeys.length - 1, form.focusedFieldIndex + delta)
+      Math.min(form.fieldKeys.length - 1, form.focusedFieldIndex + delta),
     );
     return {
       state: {
@@ -260,7 +272,7 @@ function handleAddFormInput(
     if (isLastField) {
       // Confirm: save the new item
       const items = parseListValue(
-        getExtensionSetting(form.extension, form.settingKey, "[]")
+        getExtensionSetting(form.extension, form.settingKey, "[]"),
       ) as Record<string, string>[];
       items.push({ ...form.values });
       const serialized = JSON.stringify(items);
@@ -323,7 +335,7 @@ function handleEditInput(
   state: UIState,
   _rows: ViewRow[],
   onSave: SaveCallback,
-  onSuggestionsUpdate: (suggestions: string[]) => void
+  onSuggestionsUpdate: (suggestions: string[]) => void,
 ): { state: UIState; close: boolean; dirty: boolean } {
   const edit = state.editState!;
 
@@ -386,7 +398,10 @@ function handleEditInput(
       };
     }
     if (matchesKey(data, "down")) {
-      const idx = Math.min(state.suggestions.length - 1, state.focusedSuggestion + 1);
+      const idx = Math.min(
+        state.suggestions.length - 1,
+        state.focusedSuggestion + 1,
+      );
       return {
         state: { ...state, focusedSuggestion: idx },
         close: false,
@@ -540,7 +555,7 @@ function handleNavigationInput(
   state: UIState,
   rows: ViewRow[],
   onSave: SaveCallback,
-  controls: ControlBindings
+  controls: ControlBindings,
 ): { state: UIState; close: boolean; dirty: boolean } {
   const focusableIdxs = focusableIndices(rows);
   const currentFocusablePos = focusableIdxs.indexOf(state.focusedIndex);
@@ -583,7 +598,10 @@ function handleNavigationInput(
       return {
         state: {
           ...state,
-          inputCursor: moveCursorRight(state.inputCursor, state.inputValue.length),
+          inputCursor: moveCursorRight(
+            state.inputCursor,
+            state.inputValue.length,
+          ),
         },
         close: false,
         dirty: false,
@@ -606,7 +624,10 @@ function handleNavigationInput(
 
     // Backspace in search bar
     if (matchesKey(data, "backspace")) {
-      const [newValue, newCursor] = deleteBack(state.inputValue, state.inputCursor);
+      const [newValue, newCursor] = deleteBack(
+        state.inputValue,
+        state.inputCursor,
+      );
       return {
         state: {
           ...state,
@@ -631,7 +652,11 @@ function handleNavigationInput(
     // Printable character — type in search bar
     const char = decodePrintable(data);
     if (char) {
-      const [newValue, newCursor] = insertChar(state.inputValue, state.inputCursor, char);
+      const [newValue, newCursor] = insertChar(
+        state.inputValue,
+        state.inputCursor,
+        char,
+      );
       return {
         state: {
           ...state,
@@ -662,8 +687,12 @@ function handleNavigationInput(
 
   // ↑ Move focus up
   if (matchesKey(data, "up")) {
-    if (focusableIdxs.length === 0) return { state, close: false, dirty: false };
-    const prevPos = currentFocusablePos <= 0 ? focusableIdxs.length - 1 : currentFocusablePos - 1;
+    if (focusableIdxs.length === 0)
+      return { state, close: false, dirty: false };
+    const prevPos =
+      currentFocusablePos <= 0
+        ? focusableIdxs.length - 1
+        : currentFocusablePos - 1;
     const newFocusedIndex = focusableIdxs[prevPos] ?? 0;
     return {
       state: { ...state, focusedIndex: newFocusedIndex },
@@ -674,8 +703,12 @@ function handleNavigationInput(
 
   // ↓ Move focus down
   if (matchesKey(data, "down")) {
-    if (focusableIdxs.length === 0) return { state, close: false, dirty: false };
-    const nextPos = currentFocusablePos >= focusableIdxs.length - 1 ? 0 : currentFocusablePos + 1;
+    if (focusableIdxs.length === 0)
+      return { state, close: false, dirty: false };
+    const nextPos =
+      currentFocusablePos >= focusableIdxs.length - 1
+        ? 0
+        : currentFocusablePos + 1;
     const newFocusedIndex = focusableIdxs[nextPos] ?? 0;
     return {
       state: { ...state, focusedIndex: newFocusedIndex },
@@ -684,7 +717,10 @@ function handleNavigationInput(
     };
   }
 
-  if (focusedRow?.type === "setting" && matchesBinding(data, controls.resetToDefault)) {
+  if (
+    focusedRow?.type === "setting" &&
+    matchesBinding(data, controls.resetToDefault)
+  ) {
     resetSettingToDefault(focusedRow, onSave);
     return {
       state,
@@ -706,13 +742,16 @@ function handleNavigationInput(
   }
 
   // Configured keys — reorder list items
-  if (focusedRow?.type === "list-item" && matchesBinding(data, controls.reorderItemUp)) {
+  if (
+    focusedRow?.type === "list-item" &&
+    matchesBinding(data, controls.reorderItemUp)
+  ) {
     moveListItem(
       focusedRow.extensionName,
       focusedRow.settingKey,
       focusedRow.itemIndex,
       "up",
-      onSave
+      onSave,
     );
     // Move focus up by one to follow the item
     const prevPos = currentFocusablePos <= 0 ? 0 : currentFocusablePos - 1;
@@ -723,13 +762,16 @@ function handleNavigationInput(
       dirty: true,
     };
   }
-  if (focusedRow?.type === "list-item" && matchesBinding(data, controls.reorderItemDown)) {
+  if (
+    focusedRow?.type === "list-item" &&
+    matchesBinding(data, controls.reorderItemDown)
+  ) {
     moveListItem(
       focusedRow.extensionName,
       focusedRow.settingKey,
       focusedRow.itemIndex,
       "down",
-      onSave
+      onSave,
     );
     const nextPos =
       currentFocusablePos >= focusableIdxs.length - 1
@@ -744,8 +786,16 @@ function handleNavigationInput(
   }
 
   // Configured key — delete list item
-  if (matchesBinding(data, controls.deleteItem) && focusedRow?.type === "list-item") {
-    deleteListItem(focusedRow.extensionName, focusedRow.settingKey, focusedRow.itemIndex, onSave);
+  if (
+    matchesBinding(data, controls.deleteItem) &&
+    focusedRow?.type === "list-item"
+  ) {
+    deleteListItem(
+      focusedRow.extensionName,
+      focusedRow.settingKey,
+      focusedRow.itemIndex,
+      onSave,
+    );
     // Move focus to previous focusable row
     const prevPos = currentFocusablePos <= 0 ? 0 : currentFocusablePos - 1;
     const newFocusedIndex = focusableIdxs[prevPos] ?? 0;
@@ -774,11 +824,13 @@ function handleNavigationInput(
         state.scopeHistory.length > 0
           ? state.scopeHistory[state.scopeHistory.length - 1]!
           : state.scope.slice(0, -1);
-      const newScopeHistory = state.scopeHistory.length > 0 ? state.scopeHistory.slice(0, -1) : [];
+      const newScopeHistory =
+        state.scopeHistory.length > 0 ? state.scopeHistory.slice(0, -1) : [];
       let collapsed = state.collapsed;
       let scopeCollapseStack = state.scopeCollapseStack;
       if (state.scopeCollapseStack.length > 0) {
-        const restore = state.scopeCollapseStack[state.scopeCollapseStack.length - 1]!;
+        const restore =
+          state.scopeCollapseStack[state.scopeCollapseStack.length - 1]!;
         collapsed = new Map(state.collapsed);
         if (restore.previous === undefined) {
           collapsed.delete(restore.key);
@@ -813,7 +865,7 @@ function handleSpaceKey(
   state: UIState,
   focusedRow: ViewRow | undefined,
   _rows: ViewRow[],
-  onSave: SaveCallback
+  onSave: SaveCallback,
 ): { state: UIState; close: boolean; dirty: boolean } {
   if (!focusedRow) return { state, close: false, dirty: false };
 
@@ -856,7 +908,7 @@ function handleEnterKey(
   state: UIState,
   focusedRow: ViewRow | undefined,
   _rows: ViewRow[],
-  onSave: SaveCallback
+  onSave: SaveCallback,
 ): { state: UIState; close: boolean; dirty: boolean } {
   if (!focusedRow) return { state, close: false, dirty: false };
 
@@ -868,7 +920,7 @@ function handleEnterKey(
       state: enterScopedSection(
         state,
         [focusedRow.extensionName],
-        extCollapseKey(focusedRow.extensionName)
+        extCollapseKey(focusedRow.extensionName),
       ),
       close: false,
       dirty: true,
@@ -890,7 +942,7 @@ function handleEnterKey(
       state: enterScopedSection(
         state,
         newScope,
-        groupCollapseKey(focusedRow.extensionName, focusedRow.groupKey)
+        groupCollapseKey(focusedRow.extensionName, focusedRow.groupKey),
       ),
       close: false,
       dirty: true,

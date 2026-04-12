@@ -74,9 +74,11 @@ import type {
 // ─── Type inference ───────────────────────────────────────────────────────────
 
 /** TypeScript helper: convert a union to an intersection. */
-type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (
-  k: infer I
-) => void
+type UnionToIntersection<U> = (
+  U extends unknown
+    ? (k: U) => void
+    : never
+) extends (k: infer I) => void
   ? I
   : never;
 
@@ -137,13 +139,14 @@ type FlattenSection<G, Prefix extends string> = G extends {
  * type Config = InferConfig<typeof schema>;
  * // { "gradient-from": string; "appearance.theme": string; "keys": ListItem[] }
  */
-export type InferConfig<T extends Record<string, SettingNode>> = UnionToIntersection<
-  {
-    [K in string & keyof T]: T[K] extends { _tag: "section" }
-      ? FlattenSection<T[K], K>
-      : Record<K, InferLeaf<T[K]>>;
-  }[string & keyof T]
->;
+export type InferConfig<T extends Record<string, SettingNode>> =
+  UnionToIntersection<
+    {
+      [K in string & keyof T]: T[K] extends { _tag: "section" }
+        ? FlattenSection<T[K], K>
+        : Record<K, InferLeaf<T[K]>>;
+    }[string & keyof T]
+  >;
 
 // ─── Runtime validation ───────────────────────────────────────────────────────
 
@@ -157,7 +160,10 @@ export type InferConfig<T extends Record<string, SettingNode>> = UnionToIntersec
  * @throws {TooltipTooLongError}        if any node's tooltip exceeds 128 characters.
  * @throws {EnumDefaultMismatchError}   if an Enum's default is not in its values.
  */
-function validateSchema(schema: Record<string, SettingNode>, prefix = ""): void {
+function validateSchema(
+  schema: Record<string, SettingNode>,
+  prefix = "",
+): void {
   for (const [key, node] of Object.entries(schema)) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
 
@@ -168,7 +174,9 @@ function validateSchema(schema: Record<string, SettingNode>, prefix = ""): void 
 
     // ── Enum default consistency ───────────────────────────────────────────
     if (node._tag === "enum") {
-      const allowed = node.values.map((v) => (typeof v === "string" ? v : v.value));
+      const allowed = node.values.map((v) =>
+        typeof v === "string" ? v : v.value,
+      );
       if (!allowed.includes(node.default)) {
         throw new EnumDefaultMismatchError(fullKey, node.default, allowed);
       }
@@ -189,9 +197,15 @@ function validateSchema(schema: Record<string, SettingNode>, prefix = ""): void 
         }
 
         if (propNode._tag === "enum") {
-          const allowed = propNode.values.map((v) => (typeof v === "string" ? v : v.value));
+          const allowed = propNode.values.map((v) =>
+            typeof v === "string" ? v : v.value,
+          );
           if (!allowed.includes(propNode.default)) {
-            throw new EnumDefaultMismatchError(propFullKey, propNode.default, allowed);
+            throw new EnumDefaultMismatchError(
+              propFullKey,
+              propNode.default,
+              allowed,
+            );
           }
         }
       }
@@ -343,7 +357,9 @@ function list(opts: Omit<List, "_tag"> & { default?: ListItem[] }): List {
  *   description: "Injected into the process environment at startup.",
  * })
  */
-function dict(opts: Omit<Dict, "_tag"> & { default?: Record<string, TextValue> }): Dict {
+function dict(
+  opts: Omit<Dict, "_tag"> & { default?: Record<string, TextValue> },
+): Dict {
   return { _tag: "dict", ...opts, default: opts.default ?? {} };
 }
 
@@ -367,7 +383,7 @@ function dict(opts: Omit<Dict, "_tag"> & { default?: Record<string, TextValue> }
  * })
  */
 function section<C extends Record<string, SettingNode>>(
-  opts: Omit<Section, "_tag" | "children"> & { children: C }
+  opts: Omit<Section, "_tag" | "children"> & { children: C },
 ): Omit<Section, "children"> & { children: C } {
   return { _tag: "section", ...opts };
 }

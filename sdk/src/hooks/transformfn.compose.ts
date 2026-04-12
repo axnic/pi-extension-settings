@@ -50,5 +50,6 @@ export function pipe(...transforms: TransformFn[]): TransformFn {
  */
 export function compose(...transforms: TransformFn[]): TransformFn {
   if (transforms.length === 0) return (value) => value;
-  return (value: string) => transforms.reduceRight((curr, fn) => fn(curr), value);
+  return (value: string) =>
+    transforms.reduceRight((curr, fn) => fn(curr), value);
 }

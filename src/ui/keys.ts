@@ -39,19 +39,28 @@ export function matchesBinding(data: string, binding: string): boolean {
   // Modifier-prefix aliasing: alt ↔ option ↔ meta.
   if (normalized.startsWith("alt+")) {
     const rest = normalized.slice(4);
-    if (matchesKey(data, `meta+${rest}` as KeyId) || matchesKey(data, `option+${rest}` as KeyId)) {
+    if (
+      matchesKey(data, `meta+${rest}` as KeyId) ||
+      matchesKey(data, `option+${rest}` as KeyId)
+    ) {
       return true;
     }
   }
   if (normalized.startsWith("option+")) {
     const rest = normalized.slice(7);
-    if (matchesKey(data, `alt+${rest}` as KeyId) || matchesKey(data, `meta+${rest}` as KeyId)) {
+    if (
+      matchesKey(data, `alt+${rest}` as KeyId) ||
+      matchesKey(data, `meta+${rest}` as KeyId)
+    ) {
       return true;
     }
   }
   if (normalized.startsWith("meta+")) {
     const rest = normalized.slice(5);
-    if (matchesKey(data, `alt+${rest}` as KeyId) || matchesKey(data, `option+${rest}` as KeyId)) {
+    if (
+      matchesKey(data, `alt+${rest}` as KeyId) ||
+      matchesKey(data, `option+${rest}` as KeyId)
+    ) {
       return true;
     }
   }

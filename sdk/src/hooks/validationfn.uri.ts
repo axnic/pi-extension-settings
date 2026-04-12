@@ -17,11 +17,13 @@ import type { TextValue, ValidationFn } from "../core/nodes";
 export function uri(allowedProtocols?: string[]): ValidationFn<TextValue> {
   const uriRegex =
     /^([A-Za-z][A-Za-z0-9+.-]*):(?:(?:\/\/[^\s?#][^\s]*)|(?:[A-Za-z0-9\-._~!$&'()*+,;=:@/?#]|%[0-9A-Fa-f]{2})*)$/;
-  const normAllowed = allowedProtocols?.map((p) => String(p).toLowerCase()) ?? null;
+  const normAllowed =
+    allowedProtocols?.map((p) => String(p).toLowerCase()) ?? null;
 
   return (value: string) => {
     const v = value.trim();
-    if (v.length === 0) return { valid: false, reason: "value cannot be empty" };
+    if (v.length === 0)
+      return { valid: false, reason: "value cannot be empty" };
 
     // Check percent-encoding before the main regex — the authority path
     // regex (`//[^\s]*`) allows any non-whitespace, so bad sequences like

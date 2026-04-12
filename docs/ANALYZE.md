@@ -4,7 +4,7 @@
 
 ## pi (settings menu)
 
-```
+```text
 >
 
 → Auto-compact            true
@@ -53,7 +53,7 @@
 
 ## github.com/juanibiapina/pi-extension-settings
 
-```
+```text
 
  Extension Settings
 
@@ -100,7 +100,7 @@
 
 ## github.com/MasuRii/pi-tool-display
 
-```
+```text
  ┌───────────────────────────────────────────────────────────────────────────────────────┐
  │Pi Tool Display Settings                                             [               ]│
  │────────────────────────────────┬──────────────────────────────────────────────────────│

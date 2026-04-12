@@ -37,7 +37,10 @@ import type { InferConfig } from "./schema";
  * Navigate a schema by a dotted key path, descending through Section nodes.
  * Returns the leaf node at the given path, or `undefined` if not found.
  */
-function findNode(schema: Record<string, SettingNode>, key: string): LeafNode | undefined {
+function findNode(
+  schema: Record<string, SettingNode>,
+  key: string,
+): LeafNode | undefined {
   const parts = key.split(".");
   let current: Record<string, SettingNode> = schema;
 
@@ -60,7 +63,10 @@ function findNode(schema: Record<string, SettingNode>, key: string): LeafNode | 
  * // For { foo: text, bar: section({ baz: text }) }
  * collectKeys(schema) // => ["foo", "bar.baz"]
  */
-function collectKeys(schema: Record<string, SettingNode>, prefix = ""): string[] {
+function collectKeys(
+  schema: Record<string, SettingNode>,
+  prefix = "",
+): string[] {
   const keys: string[] = [];
   for (const [key, node] of Object.entries(schema)) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
@@ -126,7 +132,10 @@ function getDefaultValue(node: LeafNode): unknown {
 export class ExtensionSettings<S extends Record<string, SettingNode>> {
   private readonly extension: string;
   private readonly schema: S;
-  private readonly listeners = new Map<string, Array<(value: unknown) => void>>();
+  private readonly listeners = new Map<
+    string,
+    Array<(value: unknown) => void>
+  >();
 
   constructor(pi: ExtensionAPI, extension: string, schema: S) {
     this.extension = extension;
@@ -163,7 +172,10 @@ export class ExtensionSettings<S extends Record<string, SettingNode>> {
    * @param key - The setting key, using dot notation for nested keys.
    * @param fallback - Optional fallback value if the setting is not found or has no stored value.
    */
-  get<K extends keyof InferConfig<S>>(key: K, fallback?: InferConfig<S>[K]): InferConfig<S>[K] {
+  get<K extends keyof InferConfig<S>>(
+    key: K,
+    fallback?: InferConfig<S>[K],
+  ): InferConfig<S>[K] {
     const k = key as string;
     const node = findNode(this.schema, k);
     if (!node) {
@@ -212,7 +224,10 @@ export class ExtensionSettings<S extends Record<string, SettingNode>> {
    * `set()` is called programmatically. Listeners are session-scoped and do
    * not need explicit cleanup.
    */
-  onChange<K extends keyof InferConfig<S>>(key: K, cb: (value: InferConfig<S>[K]) => void): void {
+  onChange<K extends keyof InferConfig<S>>(
+    key: K,
+    cb: (value: InferConfig<S>[K]) => void,
+  ): void {
     const k = key as string;
     const existing = this.listeners.get(k) ?? [];
     existing.push(cb as (value: unknown) => void);
@@ -231,7 +246,8 @@ export class ExtensionSettings<S extends Record<string, SettingNode>> {
       const node = findNode(this.schema, k);
       if (!node) continue;
       const raw = stored[k];
-      result[k] = raw !== undefined ? parseValue(node, raw) : getDefaultValue(node);
+      result[k] =
+        raw !== undefined ? parseValue(node, raw) : getDefaultValue(node);
     }
 
     return result as InferConfig<S>;

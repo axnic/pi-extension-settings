@@ -21,17 +21,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("../core/storage.ts", () => {
   const store = new Map<string, Map<string, string>>();
   return {
-    getExtensionSetting: vi.fn((extension: string, key: string, fallback?: string) => {
-      return store.get(extension)?.get(key) ?? fallback;
-    }),
-    setExtensionSetting: vi.fn((extension: string, key: string, value: string) => {
-      let ext = store.get(extension);
-      if (!ext) {
-        ext = new Map();
-        store.set(extension, ext);
-      }
-      ext.set(key, value);
-    }),
+    getExtensionSetting: vi.fn(
+      (extension: string, key: string, fallback?: string) => {
+        return store.get(extension)?.get(key) ?? fallback;
+      },
+    ),
+    setExtensionSetting: vi.fn(
+      (extension: string, key: string, value: string) => {
+        let ext = store.get(extension);
+        if (!ext) {
+          ext = new Map();
+          store.set(extension, ext);
+        }
+        ext.set(key, value);
+      },
+    ),
     getAllSettingsForExtension: vi.fn(),
     __seed: (extension: string, key: string, value: string) => {
       let ext = store.get(extension);
@@ -170,7 +174,7 @@ describe("buildRows — theme-free row model", () => {
       JSON.stringify([
         { host: "alpha", port: "22" },
         { host: "beta", port: "2222" },
-      ])
+      ]),
     );
 
     const registry = makeRegistry();

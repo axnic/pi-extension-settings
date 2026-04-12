@@ -19,7 +19,8 @@ export function filePath(exists = false): ValidationFn<TextValue> {
   return (value) => {
     const v = value.trim();
     if (!v) return { valid: false, reason: "path cannot be empty" };
-    if (exists && !existsSync(v)) return { valid: false, reason: "path does not exist" };
+    if (exists && !existsSync(v))
+      return { valid: false, reason: "path does not exist" };
     return { valid: true, reason: exists ? "path exists" : "valid path" };
   };
 }

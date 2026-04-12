@@ -144,7 +144,11 @@ function stylePrefix(prefix: string, isFocused: boolean, theme: Theme): string {
 }
 
 /** Render an extension header row. */
-function renderExtensionHeader(row: ExtensionHeaderRow, isFocused: boolean, theme: Theme): string {
+function renderExtensionHeader(
+  row: ExtensionHeaderRow,
+  isFocused: boolean,
+  theme: Theme,
+): string {
   const cursor = stylePrefix(row.prefix, isFocused, theme);
   const marker = theme.fg("accent", row.isCollapsed ? "[+]" : "[-]");
   const name = theme.bold(theme.fg("accent", row.extensionName));
@@ -157,7 +161,11 @@ function renderExtensionHeader(row: ExtensionHeaderRow, isFocused: boolean, them
 }
 
 /** Render a group header row. */
-function renderGroupHeader(row: GroupRow, isFocused: boolean, theme: Theme): string {
+function renderGroupHeader(
+  row: GroupRow,
+  isFocused: boolean,
+  theme: Theme,
+): string {
   const cursor = stylePrefix(row.prefix, isFocused, theme);
   const marker = theme.fg("accent", row.isCollapsed ? "[+]" : "[-]");
   const name = theme.bold(theme.fg("accent", row.label));
@@ -178,7 +186,12 @@ function renderGroupHeader(row: GroupRow, isFocused: boolean, theme: Theme): str
  * configured"`) when no list-level `display` hook is registered — the cache
  * built by {@link buildListDisplayCache} handles the alternative path.
  */
-function renderValue(row: SettingRow, isEditing: boolean, editValue: string, theme: Theme): string {
+function renderValue(
+  row: SettingRow,
+  isEditing: boolean,
+  editValue: string,
+  theme: Theme,
+): string {
   const node = row.node;
 
   // In edit mode: show the current edit value (raw, unstyled).
@@ -211,7 +224,11 @@ function renderValue(row: SettingRow, isEditing: boolean, editValue: string, the
 }
 
 /** Render enum value: current + all options with brackets around active. */
-function renderEnumValue(node: Enum, currentValue: string, theme: Theme): string {
+function renderEnumValue(
+  node: Enum,
+  currentValue: string,
+  theme: Theme,
+): string {
   const allValues = enumValues(node);
   const parts: string[] = [];
 
@@ -219,7 +236,9 @@ function renderEnumValue(node: Enum, currentValue: string, theme: Theme): string
     const label = enumLabel(node, v);
     if (v === currentValue) {
       // Active option: [value] bold
-      parts.push(theme.fg("accent", "[") + theme.bold(label) + theme.fg("accent", "]"));
+      parts.push(
+        theme.fg("accent", "[") + theme.bold(label) + theme.fg("accent", "]"),
+      );
     } else {
       parts.push(theme.fg("dim", label));
     }
@@ -236,13 +255,14 @@ function renderSettingRow(
   editValue: string,
   labelWidth: number,
   width: number,
-  theme: Theme
+  theme: Theme,
 ): string {
   const cursor = stylePrefix(row.prefix, isFocused, theme);
   const prefixWidth = visibleWidth(cursor);
 
   // Label (padded to label column width)
-  const labelPadded = row.label + " ".repeat(Math.max(0, labelWidth - visibleWidth(row.label)));
+  const labelPadded =
+    row.label + " ".repeat(Math.max(0, labelWidth - visibleWidth(row.label)));
   const label = labelPadded;
 
   // Modified marker
@@ -252,7 +272,8 @@ function renderSettingRow(
   const value = renderValue(row, isEditing, editValue, theme);
 
   // Calculate available width for value
-  const usedWidth = prefixWidth + visibleWidth(label) + visibleWidth(LABEL_VALUE_SEP);
+  const usedWidth =
+    prefixWidth + visibleWidth(label) + visibleWidth(LABEL_VALUE_SEP);
   const modifiedWidth = row.isModified ? 2 : 0;
   const valueMaxWidth = Math.max(0, width - usedWidth - modifiedWidth - 2);
 
@@ -267,7 +288,7 @@ function renderListItemRow(
   isFocused: boolean,
   theme: Theme,
   width: number,
-  displayLine?: string
+  displayLine?: string,
 ): string {
   const cursor = isFocused ? theme.fg("accent", "→") : " ";
   const indent = row.prefix.length > 0 ? row.prefix.slice(1) : "";
@@ -291,14 +312,22 @@ function renderListItemRow(
 }
 
 /** Render a list separator row (─────). */
-function renderSeparatorRow(prefix: string, theme: Theme, width: number): string {
+function renderSeparatorRow(
+  prefix: string,
+  theme: Theme,
+  width: number,
+): string {
   const sepWidth = Math.max(0, Math.min(width - 6, 40));
   const indent = prefix.length > 0 ? prefix.slice(1) : "";
   return ` ${indent}${theme.fg("dim", "─".repeat(sepWidth))}`;
 }
 
 /** Render a list add row (+ Add ...). */
-function renderListAddRow(row: ListAddRow, isFocused: boolean, theme: Theme): string {
+function renderListAddRow(
+  row: ListAddRow,
+  isFocused: boolean,
+  theme: Theme,
+): string {
   const cursor = isFocused ? theme.fg("accent", "→") : " ";
   const indent = row.prefix.length > 0 ? row.prefix.slice(1) : "";
   return cursor + indent + theme.fg("dim", `+ ${row.addLabel}`);
@@ -341,7 +370,12 @@ function wrapText(text: string, maxWidth: number, indent: string): string[] {
  *   - line 2+: validation result (may wrap across multiple lines)
  *   - last line: suggestions hint (when autocomplete is open)
  */
-function renderTooltip(rows: ViewRow[], state: UIState, theme: Theme, width: number): string[] {
+function renderTooltip(
+  rows: ViewRow[],
+  state: UIState,
+  theme: Theme,
+  width: number,
+): string[] {
   const focusedRow = rows[state.focusedIndex];
 
   if (!focusedRow) return ["", "", ""];
@@ -383,7 +417,9 @@ function renderTooltip(rows: ViewRow[], state: UIState, theme: Theme, width: num
 
     if (!valid && Array.isArray(reason) && reason.length > 1) {
       // Multiple failures from v.any(): header + one line per reason
-      validationLines.push(theme.fg(color, "✗ none of the validations passed:"));
+      validationLines.push(
+        theme.fg(color, "✗ none of the validations passed:"),
+      );
       for (const r of reason) {
         // "  · " = 4 visible columns → indent wrapped continuation by 4 spaces
         const wrapped = wrapText(`  · ${r}`, width, "    ");
@@ -408,10 +444,13 @@ function renderTooltip(rows: ViewRow[], state: UIState, theme: Theme, width: num
         hints.push("validated");
       }
       if (node.complete) hints.push("<tab> for suggestions");
-      validationLines = hints.length > 0 ? [dim(hints.join(" · "))] : [dim("<enter> to edit")];
+      validationLines =
+        hints.length > 0 ? [dim(hints.join(" · "))] : [dim("<enter> to edit")];
     }
   } else if (state.addFormState) {
-    validationLines = [dim("<tab> next field · <enter> confirm · <esc> cancel")];
+    validationLines = [
+      dim("<tab> next field · <enter> confirm · <esc> cancel"),
+    ];
   }
 
   // Last line: scope info OR autocomplete hint
@@ -430,7 +469,7 @@ function renderHintBar(
   state: UIState,
   rows: ViewRow[],
   theme: Theme,
-  controls: ControlBindings
+  controls: ControlBindings,
 ): string {
   const dim = (t: string) => theme.fg("dim", t);
 
@@ -441,21 +480,24 @@ function renderHintBar(
   if (state.editState) {
     if (state.suggestions.length > 0) {
       return dim(
-        `<enter> to confirm · <esc> to cancel / <esc> cancel suggestions · <${controls.resetToDefault}> reset default`
+        `<enter> to confirm · <esc> to cancel / <esc> cancel suggestions · <${controls.resetToDefault}> reset default`,
       );
     }
     const focusedRow = rows[state.focusedIndex];
     if (focusedRow?.type === "setting" && focusedRow.node._tag === "enum") {
       return dim(
-        `<enter>/<space> to cycle · <esc> to cancel · <${controls.resetToDefault}> reset default`
+        `<enter>/<space> to cycle · <esc> to cancel · <${controls.resetToDefault}> reset default`,
       );
     }
-    return dim(`<enter> to confirm · <esc> to cancel · <${controls.resetToDefault}> reset default`);
+    return dim(
+      `<enter> to confirm · <esc> to cancel · <${controls.resetToDefault}> reset default`,
+    );
   }
 
   // Check if focused row is inside a list
   const focusedRow = rows[state.focusedIndex];
-  const exitHint = state.scope.length > 0 ? "<esc> to exit scope" : "<esc> to cancel";
+  const exitHint =
+    state.scope.length > 0 ? "<esc> to exit scope" : "<esc> to cancel";
 
   if (state.searchActive) {
     return dim(`Type to search · <esc> leave search`);
@@ -463,13 +505,13 @@ function renderHintBar(
 
   if (focusedRow?.type === "list-item" || focusedRow?.type === "list-add") {
     return dim(
-      `↑↓ navigate · <${controls.reorderItemUp}>/<${controls.reorderItemDown}> reorder · <${controls.deleteItem}> delete · <enter> on [+] · </> search · ${exitHint} · <${controls.collapseAll}> collapse all`
+      `↑↓ navigate · <${controls.reorderItemUp}>/<${controls.reorderItemDown}> reorder · <${controls.deleteItem}> delete · <enter> on [+] · </> search · ${exitHint} · <${controls.collapseAll}> collapse all`,
     );
   }
 
   if (focusedRow?.type === "extension-header" || focusedRow?.type === "group") {
     return dim(
-      `<${controls.collapseExpand}> collapse/expand · <enter> to enter section · </> search · ${exitHint} · <${controls.collapseAll}> collapse all`
+      `<${controls.collapseExpand}> collapse/expand · <enter> to enter section · </> search · ${exitHint} · <${controls.collapseAll}> collapse all`,
     );
   }
 
@@ -488,12 +530,18 @@ function renderHintBar(
     }
   }
 
-  return dim(`</> search · ${exitHint} · <${controls.collapseAll}> collapse all`);
+  return dim(
+    `</> search · ${exitHint} · <${controls.collapseAll}> collapse all`,
+  );
 }
 
 // ─── Pagination counter ───────────────────────────────────────────────────────
 
-function renderPagination(rows: ViewRow[], state: UIState, theme: Theme): string {
+function renderPagination(
+  rows: ViewRow[],
+  state: UIState,
+  theme: Theme,
+): string {
   const visibleSettings = countVisibleSettings(rows);
   const totalSections = countSections(rows);
   const dim = (t: string) => theme.fg("dim", t);
@@ -502,7 +550,9 @@ function renderPagination(rows: ViewRow[], state: UIState, theme: Theme): string
     return dim(`(${state.focusedIndex + 1}/${visibleSettings})`);
   }
 
-  return dim(`(${visibleSettings} of ${totalSections} section${totalSections === 1 ? "" : "s"})`);
+  return dim(
+    `(${visibleSettings} of ${totalSections} section${totalSections === 1 ? "" : "s"})`,
+  );
 }
 
 // ─── List display cache ───────────────────────────────────────────────────────
@@ -511,10 +561,17 @@ function renderPagination(rows: ViewRow[], state: UIState, theme: Theme): string
  * Pre-compute display strings for all expanded list settings that have a
  * `display` function. Keyed by `"extensionName:settingKey"`.
  */
-function buildListDisplayCache(rows: ViewRow[], theme: Theme): Map<string, string[]> {
+function buildListDisplayCache(
+  rows: ViewRow[],
+  theme: Theme,
+): Map<string, string[]> {
   const cache = new Map<string, string[]>();
   for (const row of rows) {
-    if (row.type === "setting" && row.node._tag === "list" && row.node.display) {
+    if (
+      row.type === "setting" &&
+      row.node._tag === "list" &&
+      row.node.display
+    ) {
       const key = `${row.extensionName}:${row.settingKey}`;
       const items = parseListValue(row.rawValue);
       try {
@@ -544,7 +601,7 @@ export function renderPanel(
   _registry: Registry,
   theme: Theme,
   width: number,
-  controls: ControlBindings
+  controls: ControlBindings,
 ): string[] {
   const lines: string[] = [];
 
@@ -561,7 +618,7 @@ export function renderPanel(
   const maxVisible = Math.min(MAX_VISIBLE_ROWS, totalRows);
   const scrollOffset = Math.max(
     0,
-    Math.min(state.scrollOffset, Math.max(0, totalRows - maxVisible))
+    Math.min(state.scrollOffset, Math.max(0, totalRows - maxVisible)),
   );
 
   const visibleRows = rows.slice(scrollOffset, scrollOffset + maxVisible);
@@ -577,12 +634,15 @@ export function renderPanel(
 
   for (const row of visibleRows) {
     const showPointer =
-      !state.searchActive || state.editState !== null || state.addFormState !== null;
+      !state.searchActive ||
+      state.editState !== null ||
+      state.addFormState !== null;
     const isFocused = showPointer && row.id === focusedRow?.id;
     const isEditing =
       state.editState !== null &&
       row.type === "setting" &&
-      `setting:${state.editState.extension}:${state.editState.settingKey}` === row.id;
+      `setting:${state.editState.extension}:${state.editState.settingKey}` ===
+        row.id;
 
     let line: string;
 
@@ -601,7 +661,7 @@ export function renderPanel(
           state.editState?.rawValue ?? "",
           labelWidth,
           width,
-          theme
+          theme,
         );
         break;
       case "list-item": {
@@ -635,14 +695,21 @@ export function renderPanel(
     }
 
     // Inject add form below the list-add row
-    if (row.type === "list-add" && addForm && row.settingKey === addForm.settingKey) {
+    if (
+      row.type === "list-add" &&
+      addForm &&
+      row.settingKey === addForm.settingKey
+    ) {
       lines.push(renderSeparatorRow(row.prefix, theme, width));
       for (const fieldKey of addForm.fieldKeys) {
         const value = addForm.values[fieldKey] ?? "";
-        const isFocusedField = addForm.fieldKeys[addForm.focusedFieldIndex] === fieldKey;
-        const valueDisplay = isFocusedField ? `[${value || " ".repeat(14)}]` : value;
+        const isFocusedField =
+          addForm.fieldKeys[addForm.focusedFieldIndex] === fieldKey;
+        const valueDisplay = isFocusedField
+          ? `[${value || " ".repeat(14)}]`
+          : value;
         lines.push(
-          `     ${theme.fg("dim", `${fieldKey}:`)}  ${isFocusedField ? theme.bold(valueDisplay) : theme.fg("dim", valueDisplay)}`
+          `     ${theme.fg("dim", `${fieldKey}:`)}  ${isFocusedField ? theme.bold(valueDisplay) : theme.fg("dim", valueDisplay)}`,
         );
       }
       lines.push(renderSeparatorRow(row.prefix, theme, width));

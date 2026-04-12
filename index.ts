@@ -14,7 +14,10 @@
  * See: DESIGN.md §Implementation Notes for the full flow diagram.
  */
 
-import type { ExtensionAPI, SessionStartEvent } from "@mariozechner/pi-coding-agent";
+import type {
+  ExtensionAPI,
+  SessionStartEvent,
+} from "@mariozechner/pi-coding-agent";
 import { ExtensionSettings } from "./sdk/index.js";
 import type { RegistrationPayload } from "./src/core/registry.js";
 import { createRegistry } from "./src/core/registry.js";
@@ -32,7 +35,11 @@ export default function piExtensionSettings(pi: ExtensionAPI) {
   // directly. The constructor wires the standard ":ready" → ":register" flow,
   // so the panel registers itself like any other consumer extension — see the
   // session_start handler below.
-  const selfSettings = new ExtensionSettings(pi, SETTINGS_EXTENSION_NAME, settingsSchema);
+  const selfSettings = new ExtensionSettings(
+    pi,
+    SETTINGS_EXTENSION_NAME,
+    settingsSchema,
+  );
   const settingsReader = createSettingsReader(selfSettings);
 
   // ── Registration listener ──────────────────────────────────────────────
@@ -65,7 +72,12 @@ export default function piExtensionSettings(pi: ExtensionAPI) {
       }
 
       await ctx.ui.custom((tui, theme, _kb, done) => {
-        const panel = new SettingsPanel(registry, pi, () => theme, settingsReader);
+        const panel = new SettingsPanel(
+          registry,
+          pi,
+          () => theme,
+          settingsReader,
+        );
         panel.setDone(done);
 
         return {

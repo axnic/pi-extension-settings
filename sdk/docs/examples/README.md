@@ -14,7 +14,7 @@ Three annotated examples demonstrate progressively more advanced SDK features. S
 
 The full source code and specs live in the SDK's `examples/` directory:
 
-```
+```text
 sdk/examples/
 ├── 01-weather-widget/
 │   ├── extension.ts       # Source

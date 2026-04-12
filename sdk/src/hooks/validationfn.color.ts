@@ -8,7 +8,12 @@
  * @module
  */
 import type { TextValue, ValidationFn } from "../core/nodes";
-import { parseHex, parseHsv, parseHtmlNamed, parseRgb } from "./utils/colorUtils";
+import {
+  parseHex,
+  parseHsv,
+  parseHtmlNamed,
+  parseRgb,
+} from "./utils/colorUtils";
 
 /**
  * Validates CSS hex colors: `#rgb` or `#rrggbb` (case-insensitive, trims whitespace).
@@ -40,7 +45,8 @@ export function rgbColor(): ValidationFn<TextValue> {
       ? { valid: true, reason: "valid rgb color" }
       : {
           valid: false,
-          reason: "must be rgb(r, g, b) or rgba(r, g, b, a) — channels 0–255 or 0%–100%",
+          reason:
+            "must be rgb(r, g, b) or rgba(r, g, b, a) — channels 0–255 or 0%–100%",
         };
   };
 }
@@ -61,7 +67,8 @@ export function hsvColor(): ValidationFn<TextValue> {
       ? { valid: true, reason: "valid hsv/hsb color" }
       : {
           valid: false,
-          reason: "must be hsv(h, s, v) or hsb(h, s, b) — h: 0–360, s/v: 0–100 or 0%–100%",
+          reason:
+            "must be hsv(h, s, v) or hsb(h, s, b) — h: 0–360, s/v: 0–100 or 0%–100%",
         };
   };
 }
@@ -83,7 +90,8 @@ export function htmlNamedColor(): ValidationFn<TextValue> {
       ? { valid: true, reason: "valid CSS named color" }
       : {
           valid: false,
-          reason: "not a recognised CSS named color (e.g. coral, rebeccapurple)",
+          reason:
+            "not a recognised CSS named color (e.g. coral, rebeccapurple)",
         };
   };
 }

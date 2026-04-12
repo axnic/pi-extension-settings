@@ -10,7 +10,7 @@ A settings integration for a code formatting extension. This example introduces 
 
 ## Schema overview
 
-```
+```text
 schema
 ├── parser          (Enum)      — formatter engine
 ├── enabled         (Boolean)   — master on/off toggle

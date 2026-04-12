@@ -39,7 +39,7 @@ export class SettingsPanel implements Component {
     registry: Registry,
     pi: ExtensionAPI,
     getTheme: () => Theme,
-    settingsReader: SettingsReader
+    settingsReader: SettingsReader,
   ) {
     this.registry = registry;
     this.pi = pi;
@@ -71,7 +71,7 @@ export class SettingsPanel implements Component {
       this.registry,
       this.getTheme(),
       width,
-      this.settingsReader.controls
+      this.settingsReader.controls,
     );
   }
 
@@ -87,7 +87,10 @@ export class SettingsPanel implements Component {
       !this.state.editState &&
       !this.state.addFormState
     ) {
-      const listNode = this.findListNode(focusedRow.extensionName, focusedRow.settingKey);
+      const listNode = this.findListNode(
+        focusedRow.extensionName,
+        focusedRow.settingKey,
+      );
       if (listNode) {
         const fieldKeys = Object.keys(listNode.items.properties);
         const addFormState: AddFormState = {
@@ -118,7 +121,7 @@ export class SettingsPanel implements Component {
       (suggestions) => {
         this.state = { ...this.state, suggestions, focusedSuggestion: -1 };
       },
-      this.settingsReader.controls
+      this.settingsReader.controls,
     );
 
     this.state = state;
@@ -135,7 +138,10 @@ export class SettingsPanel implements Component {
   }
 
   /** Find the `List` node for a given extension + dotted setting key. */
-  private findListNode(extensionName: string, settingKey: string): List<ListItem> | null {
+  private findListNode(
+    extensionName: string,
+    settingKey: string,
+  ): List<ListItem> | null {
     const nodes = this.registry.get(extensionName);
     if (!nodes) return null;
 
@@ -166,7 +172,10 @@ export class SettingsPanel implements Component {
     } else if (state.focusedIndex >= scrollOffset + maxVisible) {
       scrollOffset = state.focusedIndex - maxVisible + 1;
     }
-    scrollOffset = Math.max(0, Math.min(scrollOffset, Math.max(0, totalRows - maxVisible)));
+    scrollOffset = Math.max(
+      0,
+      Math.min(scrollOffset, Math.max(0, totalRows - maxVisible)),
+    );
 
     if (scrollOffset !== state.scrollOffset) {
       return { ...state, scrollOffset };

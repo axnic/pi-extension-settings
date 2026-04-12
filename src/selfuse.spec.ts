@@ -26,19 +26,23 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@axnic/pi-extension-settings/src/core/storage", () => {
   const store = new Map<string, Map<string, string>>();
   return {
-    getExtensionSetting: vi.fn((extension: string, key: string, fallback?: string) => {
-      const ext = store.get(extension);
-      if (!ext?.has(key)) return fallback;
-      return ext.get(key);
-    }),
-    setExtensionSetting: vi.fn((extension: string, key: string, value: string) => {
-      let ext = store.get(extension);
-      if (!ext) {
-        ext = new Map();
-        store.set(extension, ext);
-      }
-      ext.set(key, value);
-    }),
+    getExtensionSetting: vi.fn(
+      (extension: string, key: string, fallback?: string) => {
+        const ext = store.get(extension);
+        if (!ext?.has(key)) return fallback;
+        return ext.get(key);
+      },
+    ),
+    setExtensionSetting: vi.fn(
+      (extension: string, key: string, value: string) => {
+        let ext = store.get(extension);
+        if (!ext) {
+          ext = new Map();
+          store.set(extension, ext);
+        }
+        ext.set(key, value);
+      },
+    ),
     getAllSettingsForExtension: vi.fn((extension: string) => {
       const ext = store.get(extension);
       if (!ext) return {};

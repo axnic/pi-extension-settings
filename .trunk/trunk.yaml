@@ -46,6 +46,15 @@ lint:
           "**/*.json",
         ]
 actions:
+  definitions:
+    - id: commitlint
+      display_name: Commitlint
+      description: Enforce git commit message standards using the project's commitlint version
+      runtime: node
+      packages_file: package.json
+      run: node_modules/.bin/commitlint --edit ${1}
+      triggers:
+        - git_hooks: [commit-msg]
   enabled:
     - commitlint
     - trunk-announce

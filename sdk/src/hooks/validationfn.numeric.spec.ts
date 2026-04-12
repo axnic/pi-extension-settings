@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { integer, negative, percentage, positive, range } from "./validationfn.numeric";
+import {
+  integer,
+  negative,
+  percentage,
+  positive,
+  range,
+} from "./validationfn.numeric";
 
 describe("integer()", () => {
   it("accepts integers", () => {

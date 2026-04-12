@@ -56,7 +56,8 @@ describe("settings control bindings", () => {
     });
     expect(resetNode.validation?.("ctrl+alt")).toEqual({
       valid: false,
-      reason: '"alt" is a modifier — add a non-modifier key after it, e.g. "alt+k"',
+      reason:
+        '"alt" is a modifier — add a non-modifier key after it, e.g. "alt+k"',
     });
   });
 

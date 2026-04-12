@@ -18,7 +18,7 @@ name: 🔒 Security
 on:
   schedule:
     # Daily at 06:00 UTC
-    - cron: "0 6 * * *"
+    - cron: 0 6 * * *
   workflow_dispatch: {}
 
 # Minimal top-level permissions — each job declares what it needs.

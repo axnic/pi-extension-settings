@@ -95,7 +95,10 @@ function saveFile(data: StorageFile): void {
     let existing: Record<string, unknown> = {};
     if (existsSync(path)) {
       try {
-        existing = JSON.parse(readFileSync(path, "utf-8")) as Record<string, unknown>;
+        existing = JSON.parse(readFileSync(path, "utf-8")) as Record<
+          string,
+          unknown
+        >;
       } catch {
         // ignore parse errors — overwrite with clean state
       }
@@ -116,7 +119,7 @@ function saveFile(data: StorageFile): void {
 export function getExtensionSetting(
   extension: string,
   key: string,
-  defaultValue?: string
+  defaultValue?: string,
 ): string | undefined {
   const data = loadFile();
   const extSettings = data[extension];
@@ -131,7 +134,11 @@ export function getExtensionSetting(
  * The string value is converted to its natural JSON type before writing.
  * Writes to disk immediately.
  */
-export function setExtensionSetting(extension: string, key: string, value: string): void {
+export function setExtensionSetting(
+  extension: string,
+  key: string,
+  value: string,
+): void {
   const data = loadFile();
   if (!data[extension]) data[extension] = {};
   data[extension]![key] = toJsonValue(value);
@@ -142,10 +149,14 @@ export function setExtensionSetting(extension: string, key: string, value: strin
  * Get all stored settings for an extension as a key→string map.
  * Returns an empty object if no settings have been saved for this extension.
  */
-export function getAllSettingsForExtension(extension: string): Record<string, string> {
+export function getAllSettingsForExtension(
+  extension: string,
+): Record<string, string> {
   const data = loadFile();
   const raw = data[extension] ?? {};
-  return Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, fromJsonValue(v)]));
+  return Object.fromEntries(
+    Object.entries(raw).map(([k, v]) => [k, fromJsonValue(v)]),
+  );
 }
 
 /**
@@ -155,11 +166,11 @@ export function getAllSettingsForExtension(extension: string): Record<string, st
  */
 export function setAllSettingsForExtension(
   extension: string,
-  settings: Record<string, string>
+  settings: Record<string, string>,
 ): void {
   const data = loadFile();
   data[extension] = Object.fromEntries(
-    Object.entries(settings).map(([k, v]) => [k, toJsonValue(v)])
+    Object.entries(settings).map(([k, v]) => [k, toJsonValue(v)]),
   );
   saveFile(data);
 }

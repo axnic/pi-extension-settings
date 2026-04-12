@@ -23,6 +23,8 @@ describe("url()", () => {
     expect(url()("not a url").valid).toBe(false);
   });
   it("accepts complex valid URLs", () => {
-    expect(url()("https://example.com:8080/path?x=1&y=2#frag").valid).toBe(true);
+    expect(url()("https://example.com:8080/path?x=1&y=2#frag").valid).toBe(
+      true,
+    );
   });
 });

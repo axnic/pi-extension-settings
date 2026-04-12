@@ -22,7 +22,8 @@ import type { NumValue, TextValue, ValidationFn } from "../core/nodes";
  */
 export function integer(): ValidationFn<NumValue> {
   return (value) => {
-    if (!Number.isInteger(value)) return { valid: false, reason: "must be an integer" };
+    if (!Number.isInteger(value))
+      return { valid: false, reason: "must be an integer" };
     return { valid: true };
   };
 }
@@ -64,14 +65,27 @@ export function negative(): ValidationFn<NumValue> {
  * @example v.range({ min: 1 })           // n ≥ 1 (no upper bound)
  * @example v.range({ max: 255 })         // n ≤ 255 (no lower bound)
  */
-export function range({ min, max }: { min?: number; max?: number } = {}): ValidationFn<NumValue> {
-  if (min !== undefined && !Number.isFinite(min) && max !== undefined && !Number.isFinite(max)) {
+export function range({
+  min,
+  max,
+}: {
+  min?: number;
+  max?: number;
+} = {}): ValidationFn<NumValue> {
+  if (
+    min !== undefined &&
+    !Number.isFinite(min) &&
+    max !== undefined &&
+    !Number.isFinite(max)
+  ) {
     return () => ({ valid: true }); // no bounds, always valid for any finite number (short-circuit to avoid unnecessary checks)
   }
 
   return (value) => {
-    if (min !== undefined && value < min) return { valid: false, reason: `must be ≥ ${min}` };
-    if (max !== undefined && value > max) return { valid: false, reason: `must be ≤ ${max}` };
+    if (min !== undefined && value < min)
+      return { valid: false, reason: `must be ≥ ${min}` };
+    if (max !== undefined && value > max)
+      return { valid: false, reason: `must be ≤ ${max}` };
     return { valid: true };
   };
 }
@@ -89,15 +103,19 @@ export function range({ min, max }: { min?: number; max?: number } = {}): Valida
 export function percentage(): ValidationFn<TextValue | NumValue> {
   return (value) => {
     if (typeof value === "number") {
-      if (!Number.isFinite(value)) return { valid: false, reason: "must be a number" };
-      if (value < 0 || value > 1) return { valid: false, reason: "must be between 0 and 1" };
+      if (!Number.isFinite(value))
+        return { valid: false, reason: "must be a number" };
+      if (value < 0 || value > 1)
+        return { valid: false, reason: "must be between 0 and 1" };
       return { valid: true };
     }
     let v = value.trim();
     if (v.endsWith("%")) v = v.slice(0, -1).trim();
     const parsed = Number(v);
-    if (!Number.isFinite(parsed)) return { valid: false, reason: "must be a number" };
-    if (parsed < 0 || parsed > 100) return { valid: false, reason: "must be between 0 and 100" };
+    if (!Number.isFinite(parsed))
+      return { valid: false, reason: "must be a number" };
+    if (parsed < 0 || parsed > 100)
+      return { valid: false, reason: "must be between 0 and 100" };
     return { valid: true };
   };
 }

@@ -30,7 +30,9 @@ describe("filePath()", () => {
     const completer = filePath();
     const res = await completer("/test/");
 
-    expect(res.sort()).toEqual(["/test/a.txt", "/test/b.txt", "/test/subdir/"].sort());
+    expect(res.sort()).toEqual(
+      ["/test/a.txt", "/test/b.txt", "/test/subdir/"].sort(),
+    );
   });
 
   it("filters by prefix when partial does not end with /", async () => {
@@ -44,7 +46,9 @@ describe("filePath()", () => {
     const completer = filePath();
     const res = await completer("/test/fi");
 
-    expect(res.sort()).toEqual(["/test/file1.txt", "/test/file2.txt", "/test/file_dir/"].sort());
+    expect(res.sort()).toEqual(
+      ["/test/file1.txt", "/test/file2.txt", "/test/file_dir/"].sort(),
+    );
   });
 
   it("re-substitutes ~ when partial starts with ~", async () => {

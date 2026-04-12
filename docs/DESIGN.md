@@ -10,7 +10,7 @@ This document describes the design and implementation of the `/extensions:settin
 
 Tree characters (`├` `└` `│`) are always dim. `→` sits at the leftmost column. One space before the tree character at each level.
 
-```
+```text
 >
 
 [-] pi-welcome
@@ -39,7 +39,7 @@ Tree characters (`├` `└` `│`) are always dim. `→` sits at the leftmost c
 
 ### 2 — Sub-sub-folder
 
-```
+```text
 >
 
 [-] pi-ai-profiles
@@ -62,7 +62,7 @@ Tree characters (`├` `└` `│`) are always dim. `→` sits at the leftmost c
 
 Dim `(`, `)` around the section name. `→` enters scope; `Esc` exits one level.
 
-```
+```text
 > (pi-statusbar) height
 
 [-] pi-statusbar
@@ -83,7 +83,7 @@ Dim `(`, `)` around the section name. `→` enters scope; `Esc` exits one level.
 
 Breadcrumb grows one level at a time. `(`, `)`, `>` always dim.
 
-```
+```text
 > (pi-statusbar > Layout) height
 
 [-] pi-statusbar
@@ -104,7 +104,7 @@ Breadcrumb grows one level at a time. `(`, `)`, `>` always dim.
 
 `Enter` or `Space` cycles. All options shown inline; active option in `[brackets]` bold, others dim. No `←`/`→` used.
 
-```
+```text
 > (pi-statusbar)
 
 [-] pi-statusbar
@@ -130,7 +130,7 @@ Breadcrumb grows one level at a time. `(`, `)`, `>` always dim.
 
 The input bar shows the raw value being edited. The `display` function renders `■` in real time on the row as a valid hex is typed.
 
-```
+```text
 > (pi-statusbar > Colors) #3b00ff
 
 [-] pi-statusbar
@@ -151,7 +151,7 @@ The input bar shows the raw value being edited. The `display` function renders `
 
 `✓` dim in tooltip line 2 when current input passes all validators.
 
-```
+```text
 > (pi-proxy) https://api.mycompany.com
 
 [-] pi-proxy
@@ -170,7 +170,7 @@ The input bar shows the raw value being edited. The `display` function renders `
 
 `✗` + reason in tooltip line 2. `Enter` is blocked while invalid.
 
-```
+```text
 > (pi-proxy) not a url
 
 [-] pi-proxy
@@ -189,7 +189,7 @@ The input bar shows the raw value being edited. The `display` function renders `
 
 Suggestions appear inline below the focused row (debounced 250ms). `↑`/`↓` navigate; `Tab` accepts; `Esc` dismisses without leaving edit.
 
-```
+```text
 > (pi-welcome) /Users/nico/
 
 [-] pi-welcome
@@ -211,7 +211,7 @@ Suggestions appear inline below the focused row (debounced 250ms). `↑`/`↓` n
 
 No tree characters inside list values — plain indented lines only.
 
-```
+```text
 > (pi-welcome)
 
 [-] pi-welcome
@@ -237,7 +237,7 @@ No tree characters inside list values — plain indented lines only.
 
 `Tab`/`Shift-Tab` moves between fields. `Enter` on the last field confirms.
 
-```
+```text
 > (pi-welcome)
 
 [-] pi-welcome
@@ -263,7 +263,7 @@ No tree characters inside list values — plain indented lines only.
 
 A `dict` is a list of key → value pairs. A tuple is a `list` with exactly two unnamed fields displayed side by side. No tree characters inside either.
 
-```
+```text
 > (pi-shortcuts)
 
 [-] pi-shortcuts
@@ -602,7 +602,7 @@ The `ExtensionSettings` class is the single entry point for consumer extensions.
 
 ### Async registration — ready / register flow
 
-```
+```text
 Load phase (sequential, order = packages array)
 ────────────────────────────────────────────────────────────────────────────
 A (pi-extension-settings) loads:

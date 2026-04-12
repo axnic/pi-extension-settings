@@ -12,7 +12,13 @@
  * @module
  */
 import type { TransformFn } from "../core/nodes";
-import { hsvToRgb, parseHsv, parseHtmlNamed, parseRgb, rgbToHexString } from "./utils/colorUtils";
+import {
+  hsvToRgb,
+  parseHsv,
+  parseHtmlNamed,
+  parseRgb,
+  rgbToHexString,
+} from "./utils/colorUtils";
 
 /**
  * Convert `rgb(r, g, b)` or `rgba(r, g, b, a)` to `#rrggbb`.

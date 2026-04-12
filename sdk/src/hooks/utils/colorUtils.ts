@@ -58,7 +58,9 @@ export function rgbToHexString(r: number, g: number, b: number): string {
  * parseHex("#f93")    // { r: 255, g: 153, b: 51 }
  * parseHex("red")     // null
  */
-export function parseHex(value: string): { r: number; g: number; b: number } | null {
+export function parseHex(
+  value: string,
+): { r: number; g: number; b: number } | null {
   const v = value.trim();
   const short = /^#([0-9a-fA-F]{3})$/.exec(v);
   if (short) {
@@ -96,12 +98,16 @@ export function parseHex(value: string): { r: number; g: number; b: number } | n
  * parseRgb("rgba(100%, 57%, 6%, 1)") // { r: 255, g: 145, b: 15 }
  * parseRgb("#ff930f")                // null
  */
-export function parseRgb(value: string): { r: number; g: number; b: number } | null {
+export function parseRgb(
+  value: string,
+): { r: number; g: number; b: number } | null {
   const v = value.trim();
   // Allow both rgb(…) and rgba(…). Capture the three color channels.
   // The optional 4th argument (alpha) is accepted but ignored.
   const match =
-    /^rgba?\(\s*([\d.]+%?)\s*,\s*([\d.]+%?)\s*,\s*([\d.]+%?)(?:\s*,\s*[\d.]+)?\s*\)$/i.exec(v);
+    /^rgba?\(\s*([\d.]+%?)\s*,\s*([\d.]+%?)\s*,\s*([\d.]+%?)(?:\s*,\s*[\d.]+)?\s*\)$/i.exec(
+      v,
+    );
   if (!match) return null;
 
   const parseChannel = (raw: string): number | null => {
@@ -141,9 +147,12 @@ export function parseRgb(value: string): { r: number; g: number; b: number } | n
  * parseHsv("hsb(0, 100, 100)")    // { h: 0, s: 1, v: 1 }
  * parseHsv("rgb(255,0,0)")        // null
  */
-export function parseHsv(value: string): { h: number; s: number; v: number } | null {
+export function parseHsv(
+  value: string,
+): { h: number; s: number; v: number } | null {
   const v = value.trim();
-  const match = /^hs[vb]\(\s*([\d.]+)\s*,\s*([\d.]+%?)\s*,\s*([\d.]+%?)\s*\)$/i.exec(v);
+  const match =
+    /^hs[vb]\(\s*([\d.]+)\s*,\s*([\d.]+%?)\s*,\s*([\d.]+%?)\s*\)$/i.exec(v);
   if (!match) return null;
 
   const h = parseFloat(match[1]!);
@@ -174,7 +183,11 @@ export function parseHsv(value: string): { h: number; s: number; v: number } | n
  * hsvToRgb(120, 1, 1)   // { r: 0,   g: 255, b: 0 }   — pure green
  * hsvToRgb(240, 0.5, 1) // { r: 128, g: 128, b: 255 } — light blue
  */
-export function hsvToRgb(h: number, s: number, v: number): { r: number; g: number; b: number } {
+export function hsvToRgb(
+  h: number,
+  s: number,
+  v: number,
+): { r: number; g: number; b: number } {
   const c = v * s;
   const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
   const m = v - c;
@@ -385,7 +398,9 @@ export const CSS_NAMED_COLORS: Readonly<Record<string, string>> = {
  * parseHtmlNamed("RED")    // { r: 255, g: 0,   b: 0 }
  * parseHtmlNamed("banana") // null
  */
-export function parseHtmlNamed(value: string): { r: number; g: number; b: number } | null {
+export function parseHtmlNamed(
+  value: string,
+): { r: number; g: number; b: number } | null {
   const hex = CSS_NAMED_COLORS[value.trim().toLowerCase()];
   if (!hex) return null;
   return parseHex(hex);

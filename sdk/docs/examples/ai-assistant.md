@@ -10,7 +10,7 @@ A comprehensive settings integration for an LLM-backed assistant. This example d
 
 ## Schema overview
 
-```
+```text
 schema
 ├── endpoint          (Text)     — API URL, validated + normalized + badged
 ├── apiKey            (Text)     — authentication token

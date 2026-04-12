@@ -39,8 +39,9 @@ name: 🚀 Release
 on:
   workflow_dispatch:
     inputs:
+      # trunk-ignore(checkov/CKV_GHA_7): inputs are intentional — bump is a constrained choice, notes is an optional text override
       bump:
-        description: "Version bump type"
+        description: Version bump type
         required: true
         type: choice
         options:
@@ -51,7 +52,7 @@ on:
           - rc-minor
           - rc-major
       notes:
-        description: "Release notes override (leave blank to auto-generate via Copilot)"
+        description: Release notes override (leave blank to auto-generate via Copilot)
         required: false
         type: string
 

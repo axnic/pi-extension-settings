@@ -104,7 +104,7 @@ export class TooltipTooLongError extends SchemaError {
   constructor(nodeKey: string, actual: number) {
     super(
       `tooltip must be ≤ ${TooltipTooLongError.MAX_LENGTH} characters (got ${actual})`,
-      nodeKey
+      nodeKey,
     );
     this.name = "TooltipTooLongError";
     this.actual = actual;
@@ -140,7 +140,7 @@ export class EnumDefaultMismatchError extends SchemaError {
   constructor(nodeKey: string, defaultValue: string, allowedValues: string[]) {
     super(
       `default value "${defaultValue}" is not among the declared enum values: [${allowedValues.map((v) => `"${v}"`).join(", ")}]`,
-      nodeKey
+      nodeKey,
     );
     this.name = "EnumDefaultMismatchError";
     this.defaultValue = defaultValue;
@@ -182,7 +182,7 @@ export class SettingNotFoundError extends PiSettingsError {
   constructor(extension: string, key: string) {
     super(
       `Setting "${key}" not found in schema for extension "${extension}". ` +
-        `Check for typos or update the schema if the key was recently renamed.`
+        `Check for typos or update the schema if the key was recently renamed.`,
     );
     this.name = "SettingNotFoundError";
     this.key = key;

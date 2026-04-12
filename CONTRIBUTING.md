@@ -82,7 +82,7 @@ the extension lifecycle events. Any running session must be restarted.
 
 Inside pi, run:
 
-```
+```text
 /extensions:settings
 ```
 

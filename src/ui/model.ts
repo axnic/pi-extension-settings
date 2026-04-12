@@ -23,7 +23,12 @@ import { defaultAsString } from "../../sdk/index.js";
 import type { Registry } from "../core/registry.js";
 import { countSettings } from "../core/registry.js";
 import { getExtensionSetting } from "../core/storage.js";
-import { isExtCollapsed, isGroupCollapsed, isListExpanded, type UIState } from "./state.js";
+import {
+  isExtCollapsed,
+  isGroupCollapsed,
+  isListExpanded,
+  type UIState,
+} from "./state.js";
 
 // ─── Row types ────────────────────────────────────────────────────────────────
 
@@ -150,7 +155,9 @@ export function parseListValue(raw: string | undefined): ListItem[] {
  * Parse a dict-shaped raw storage value into a string→string map, returning
  * an empty object on any parse failure.
  */
-export function parseDictValue(raw: string | undefined): Record<string, string> {
+export function parseDictValue(
+  raw: string | undefined,
+): Record<string, string> {
   if (!raw) return {};
   try {
     const parsed = JSON.parse(raw) as unknown;
@@ -184,7 +191,9 @@ function buildPrefix(ancestorIsLast: boolean[], isLast: boolean): string {
     return isLast ? "  └ " : "  ├ ";
   }
   // Ancestor continuations (each 4 chars wide).
-  const continuations = ancestorIsLast.map((last) => (last ? "    " : "  │ ")).join("");
+  const continuations = ancestorIsLast
+    .map((last) => (last ? "    " : "  │ "))
+    .join("");
   // Own tree char.
   const own = isLast ? " └ " : " ├ ";
   return continuations + own;
@@ -196,7 +205,11 @@ function buildPrefix(ancestorIsLast: boolean[], isLast: boolean): string {
  * Get the raw stored string for a setting key, falling back to the schema's
  * default-as-string when the value is unset.
  */
-function getRawValue(extensionName: string, key: string, node: LeafNode): string {
+function getRawValue(
+  extensionName: string,
+  key: string,
+  node: LeafNode,
+): string {
   const stored = getExtensionSetting(extensionName, key);
   if (stored !== undefined) return stored;
   return defaultAsString(node);
@@ -252,7 +265,7 @@ function buildChildRows(
   ancestorIsLast: boolean[],
   state: UIState,
   searchQuery: string,
-  scope: string[]
+  scope: string[],
 ): ViewRow[] {
   const entries = Object.entries(nodes);
   const rows: ViewRow[] = [];
@@ -271,7 +284,9 @@ function buildChildRows(
 
       // Scope check: keep only the scoped group branch (ancestors + descendants).
       if (scopedGroupKey) {
-        const isAncestor = scopedGroupKey === groupKey || scopedGroupKey.startsWith(`${groupKey}.`);
+        const isAncestor =
+          scopedGroupKey === groupKey ||
+          scopedGroupKey.startsWith(`${groupKey}.`);
         const isDescendant = groupKey.startsWith(`${scopedGroupKey}.`);
         if (!isAncestor && !isDescendant) continue;
       }
@@ -310,7 +325,7 @@ function buildChildRows(
           childAncestorIsLast,
           state,
           searchQuery,
-          scope
+          scope,
         );
         rows.push(...childRows);
       }
@@ -327,7 +342,10 @@ function buildChildRows(
       }
 
       // Search filter.
-      if (searchQuery !== "" && !leafNode.tooltip.toLowerCase().includes(searchQuery)) {
+      if (
+        searchQuery !== "" &&
+        !leafNode.tooltip.toLowerCase().includes(searchQuery)
+      ) {
         continue;
       }
 
@@ -355,7 +373,7 @@ function buildChildRows(
           fullKey,
           leafNode,
           rawValue,
-          childAncestorIsLast
+          childAncestorIsLast,
         );
         rows.push(...subRows);
       }
@@ -366,7 +384,10 @@ function buildChildRows(
 }
 
 /** Check whether any leaf in a node tree matches the (already-lowercased) search query. */
-function anyChildMatchesSearch(nodes: Record<string, SettingNode>, query: string): boolean {
+function anyChildMatchesSearch(
+  nodes: Record<string, SettingNode>,
+  query: string,
+): boolean {
   for (const node of Object.values(nodes)) {
     if (node._tag === "section") {
       if (anyChildMatchesSearch(node.children, query)) return true;
@@ -383,11 +404,14 @@ function buildListSubRows(
   settingKey: string,
   node: LeafNode,
   rawValue: string,
-  ancestorIsLast: boolean[]
+  ancestorIsLast: boolean[],
 ): ViewRow[] {
   const rows: ViewRow[] = [];
   const depth = ancestorIsLast.length + 1; // items are indented below the list row
-  const indentPrefix = buildPrefix(ancestorIsLast, false).replace(/[├└│]/g, " ");
+  const indentPrefix = buildPrefix(ancestorIsLast, false).replace(
+    /[├└│]/g,
+    " ",
+  );
 
   if (node._tag === "list") {
     const items = parseListValue(rawValue) as Record<string, string>[];
@@ -486,7 +510,9 @@ export function buildRows(registry: Registry, state: UIState): ViewRow[] {
   const scope = state.scope;
   const searchQuery = state.inputValue.toLowerCase().trim();
 
-  const sortedExtensions = Array.from(registry.entries()).sort(([a], [b]) => a.localeCompare(b));
+  const sortedExtensions = Array.from(registry.entries()).sort(([a], [b]) =>
+    a.localeCompare(b),
+  );
 
   for (const [extensionName, nodes] of sortedExtensions) {
     // Scope filter: if scoped, skip other extensions.
@@ -522,7 +548,7 @@ export function buildRows(registry: Registry, state: UIState): ViewRow[] {
         [], // no ancestors at depth 1
         state,
         searchQuery,
-        scope
+        scope,
       );
       rows.push(...childRows);
     }

@@ -11,7 +11,9 @@ import type { TextValue, ValidationFn } from "../core/nodes";
  *
  * @example v.all(v.notEmpty(), v.hexColor())("#fff") // { valid: true }
  */
-export function all(...validators: ValidationFn<TextValue>[]): ValidationFn<TextValue> {
+export function all(
+  ...validators: ValidationFn<TextValue>[]
+): ValidationFn<TextValue> {
   return (value) => {
     for (const v of validators) {
       const result = v(value);
@@ -30,7 +32,9 @@ export function all(...validators: ValidationFn<TextValue>[]): ValidationFn<Text
  * @example v.any(v.hexColor(), v.htmlNamedColor())("???")
  *   // { valid: false, reason: ["must be #rgb or #rrggbb …", "not a recognised CSS named color …"] }
  */
-export function any(...validators: ValidationFn<TextValue>[]): ValidationFn<TextValue> {
+export function any(
+  ...validators: ValidationFn<TextValue>[]
+): ValidationFn<TextValue> {
   return (value) => {
     const reasons: string[] = [];
     for (const v of validators) {

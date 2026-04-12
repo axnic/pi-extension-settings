@@ -50,7 +50,8 @@ export function filePath(): CompleteFn {
             /* treat as file */
           }
           let displayPath = join(dir, entry) + (isDir ? "/" : "");
-          if (partial.startsWith("~")) displayPath = displayPath.replace(homedir(), "~");
+          if (partial.startsWith("~"))
+            displayPath = displayPath.replace(homedir(), "~");
           return displayPath;
         })
         .filter((entry) => partial === "" || entry.startsWith(partial))

@@ -1,2 +1,12 @@
 # Prettier friendly markdownlint config (all formatting rules disabled)
 extends: markdownlint/style/prettier
+
+# MD033: inline HTML is used intentionally in documentation (badges, navigation anchors)
+MD033: false
+
+# MD024: allow duplicate heading names in sibling sections (e.g. "Parameters", "Returns")
+MD024:
+  siblings_only: true
+
+# MD041: not all markdown files start with a top-level heading (e.g. prompt templates)
+MD041: false

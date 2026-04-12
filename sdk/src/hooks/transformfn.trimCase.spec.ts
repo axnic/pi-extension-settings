@@ -15,16 +15,20 @@ describe("trim()", () => {
     expect(trim()("  hello  ")).toBe("hello");
     expect(trim()("\t\nhello\r\n")).toBe("hello");
   });
-  it("leaves already-trimmed strings untouched", () => expect(trim()("hello")).toBe("hello"));
-  it("returns empty string for whitespace-only", () => expect(trim()("   ")).toBe(""));
+  it("leaves already-trimmed strings untouched", () =>
+    expect(trim()("hello")).toBe("hello"));
+  it("returns empty string for whitespace-only", () =>
+    expect(trim()("   ")).toBe(""));
 });
 
 describe("lowercase()", () => {
-  it("lowercases all characters", () => expect(lowercase()("HELLO World")).toBe("hello world"));
+  it("lowercases all characters", () =>
+    expect(lowercase()("HELLO World")).toBe("hello world"));
 });
 
 describe("uppercase()", () => {
-  it("uppercases all characters", () => expect(uppercase()("hello World")).toBe("HELLO WORLD"));
+  it("uppercases all characters", () =>
+    expect(uppercase()("hello World")).toBe("HELLO WORLD"));
 });
 
 describe("capitalize()", () => {

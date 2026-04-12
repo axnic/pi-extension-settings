@@ -52,7 +52,7 @@ Tests live beside the source they test (colocated). SDK hook tests cover pure fu
 
 Commit format follows **Conventional Commits with a mandatory scope**:
 
-```
+```text
 type(scope): Subject
 ```
 
@@ -100,7 +100,7 @@ A standalone library — zero dependency on the panel internals — imported by 
 
 ### Event Protocol (Extension ↔ SDK)
 
-```
+```text
 session_start (startup|reload)
   → extension clears registry
   → extension emits "pi-extension-settings:ready"

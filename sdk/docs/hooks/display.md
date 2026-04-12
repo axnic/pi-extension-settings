@@ -43,7 +43,7 @@ For unrecognized values, renders a dim placeholder swatch so the field does not 
 
 **Example output:**
 
-```
+```text
 █ #ff6b6b        ← colored square + hex value
 █ rgb(255,0,128) ← colored square + original value
 █ coral          ← colored square + named color
@@ -76,7 +76,7 @@ display: d.badge("#4ecdc4"); // teal badge
 
 **Example output:**
 
-```
+```text
 [ production ]   ← rendered in red
 [ development ]  ← rendered in teal
 ```
@@ -108,7 +108,7 @@ display: d.path();
 
 **Example output:**
 
-```
+```text
 /Users/alice/.config/app.json  → ~/.config/app.json
 /Users/alice/projects/         → ~/projects/
 /etc/hosts                     → /etc/hosts  (unchanged)
@@ -138,7 +138,7 @@ display: d.dictEntry();
 
 **Example output:**
 
-```
+```text
 NODE_ENV → production
 API_KEY  → sk-...
 ```
@@ -162,7 +162,7 @@ display: d.keybinding();
 
 **Example output:**
 
-```
+```text
 ctrl + k
 shift + up
 ctrl + shift + f5
