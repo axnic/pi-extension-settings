@@ -136,17 +136,20 @@ jobs:
 
       # ── Collect commit log ─────────────────────────────────────────────────
       # Captured before the version-bump commit so it only contains meaningful
-      # changes. Written to git-log.txt and passed verbatim to Copilot.
-      - name: 📋 Collect commit log for release notes
+      # changes. Fields are separated by ASCII unit-separator (0x1F) and
+      # records by record-separator (0x1E) to survive arbitrary commit text.
+      # The github-script step resolves PR numbers and authors from this data.
+      - name: 📋 Collect structured commit log for release notes
         run: |
           PREV="${{ steps.version.outputs.prev_tag }}"
           RANGE="${PREV}..HEAD"
           [[ "$PREV" == "v0.0.0" ]] && RANGE="HEAD"
 
-          git log --no-merges --format="### %s%n%n%b%n---" "$RANGE" > git-log.txt
+          git log --no-merges \
+            --format="%H%x1f%s%x1f%b%x1f%an%x1f%ae%x1e" \
+            "$RANGE" > git-commits.txt
 
-          echo "--- Collected commit log (${RANGE}) ---"
-          cat git-log.txt
+          echo "--- Collected $(git log --no-merges --oneline "$RANGE" | wc -l | tr -d ' ') commit(s) (${RANGE}) ---"
 
       # ── Bump versions ──────────────────────────────────────────────────────
       # --no-git-tag-version: tag is created manually after tests pass.
@@ -182,6 +185,7 @@ jobs:
           git push
           git push origin "v${{ steps.version.outputs.version }}"
 
+
       # ── Generate release notes via Copilot ────────────────────────────────
       - name: 🤖 Generate release notes via GitHub Copilot
         id: release-notes
@@ -197,83 +201,74 @@ jobs:
               return;
             }
 
-            const gitLog = fs.readFileSync('git-log.txt', 'utf8').trim();
+            // ── Load prompt template from repository asset ──────────────────
+            const SYSTEM = fs.readFileSync(
+              '.github/workflows/assets/release-notes-prompt.md',
+              'utf8',
+            );
 
-            // System prompt with two few-shot examples to enforce the output format.
-            const SYSTEM = `\
-            You are a technical writer producing release notes for an open-source Node.js \
-            developer-tools library called "pi-extension-settings". \
-            Transform the provided git commit log into polished Markdown release notes, \
-            following the format shown in the examples below.
+            // ── Parse structured commit data ────────────────────────────────
+            // Records separated by 0x1E, fields by 0x1F (written by git log).
+            const raw = fs.readFileSync('git-commits.txt', 'utf8');
+            const commits = raw
+              .split('\x1e')
+              .filter(r => r.trim())
+              .map(r => {
+                const [sha = '', subject = '', body = '', authorName = '', authorEmail = ''] =
+                  r.split('\x1f');
+                return {
+                  sha:         sha.trim(),
+                  subject:     subject.trim(),
+                  body:        body.trim(),
+                  authorName:  authorName.trim(),
+                  authorEmail: authorEmail.trim(),
+                };
+              })
+              .filter(c => c.sha.length === 40);
 
-            Output format (strict — no deviations):
-            ## What's new in v{VERSION}
+            if (commits.length === 0) {
+              core.warning('No commits found in range — writing minimal release notes.');
+              fs.writeFileSync('release-notes.md', `## What's new in v${VERSION}\n\nNo changes recorded.\n`);
+              return;
+            }
 
-            {One concise paragraph of highlights — user-facing impact only.}
+            // ── Resolve associated PRs in parallel (best-effort) ───────────
+            const prResults = await Promise.all(
+              commits.map(async c => {
+                try {
+                  const { data } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                    owner: context.repo.owner,
+                    repo:  context.repo.repo,
+                    commit_sha: c.sha,
+                  });
+                  const merged = data.find(p => p.merged_at);
+                  return merged
+                    ? { number: merged.number, url: merged.html_url, login: merged.user?.login }
+                    : null;
+                } catch {
+                  return null;
+                }
+              }),
+            );
 
-            ### ✨ Features
-            - **{scope}**: {change}
+            // ── Build structured context for the LLM ───────────────────────
+            const commitLines = commits.map((c, i) => {
+              const pr = prResults[i];
+              const authorDisplay = pr?.login
+                ? `${c.authorName} (@${pr.login})`
+                : c.authorName;
+              return [
+                `sha: ${c.sha.slice(0, 7)}`,
+                `subject: ${c.subject}`,
+                c.body ? `body: ${c.body}` : null,
+                `author: ${authorDisplay}`,
+                pr ? `pr: #${pr.number} (${pr.url})` : 'pr: (none)',
+                '---',
+              ].filter(Boolean).join('\n');
+            });
+            const commitContext = commitLines.join('\n');
 
-            ### 🐛 Fixes
-            - **{scope}**: {change}
-
-            ### 🔧 Tooling
-            - {change}
-
-            Rules:
-            - Only include sections that have at least one entry.
-            - Do not invent or embellish anything not present in the commit log.
-            - Use backtick code spans for identifiers, method names, and CLI flags.
-            - Output only the Markdown, no preamble or explanation.
-
-            --- EXAMPLE 1 INPUT ---
-            ### feat(sdk): Add S.struct() builder for nested object schemas
-
-            Enables typed nested objects within a settings schema without flattening keys.
-
-            ---
-            ### fix(sdk): URL validator now accepts localhost without a TLD
-
-            ---
-            ### chore(deps): Bump TypeScript to 5.5
-
-            ---
-            --- EXAMPLE 1 OUTPUT ---
-            ## What's new in v1.3.0
-
-            This release adds support for nested object schemas in the SDK and improves
-            URL validation to work correctly in local development environments.
-
-            ### ✨ Features
-            - **sdk**: New \`S.struct()\` builder for typed nested object schemas
-
-            ### 🐛 Fixes
-            - **sdk**: URL validator now accepts \`localhost\` and bare IP addresses
-
-            ### 🔧 Tooling
-            - Bump TypeScript to 5.5
-            --- END EXAMPLE 1 ---
-
-            --- EXAMPLE 2 INPUT ---
-            ### feat(ui): Add keyboard navigation to the settings panel
-
-            ---
-            ### fix(core): Registry no longer overwrites entries on hot-reload
-
-            ---
-            --- EXAMPLE 2 OUTPUT ---
-            ## What's new in v1.3.0-rc.1
-
-            First release candidate for v1.3.0. Introduces keyboard navigation in the
-            panel and fixes a registry race condition on extension hot-reload.
-
-            ### ✨ Features
-            - **ui**: Keyboard navigation (↑ ↓ Enter) in the settings panel
-
-            ### 🐛 Fixes
-            - **core**: Registry no longer overwrites entries on hot-reload
-            --- END EXAMPLE 2 ---`;
-
+            // ── Call GitHub Copilot (GitHub Models) ─────────────────────────
             try {
               const res = await fetch('https://models.github.ai/inference/chat/completions', {
                 method: 'POST',
@@ -287,17 +282,17 @@ jobs:
                     { role: 'system', content: SYSTEM },
                     {
                       role: 'user',
-                      content: `Generate release notes for version v${VERSION}.\n\n${gitLog}`,
+                      content: `Generate release notes for version v${VERSION}.\n\n${commitContext}`,
                     },
                   ],
-                  max_tokens: 1000,
+                  max_tokens: 1200,
                 }),
               });
 
               if (res.ok) {
                 const data = await res.json();
                 fs.writeFileSync('release-notes.md', data.choices[0].message.content);
-                core.info('Release notes generated via GitHub Copilot (gpt-5-mini).');
+                core.info(`Release notes generated via GitHub Copilot (gpt-5-mini) from ${commits.length} commit(s).`);
                 return;
               }
               core.warning(`GitHub Models API returned ${res.status}: ${await res.text()} — falling back.`);
@@ -305,8 +300,15 @@ jobs:
               core.warning(`GitHub Models API call failed (${err.message}) — falling back.`);
             }
 
-            // Fallback: raw commit log as Markdown
-            fs.writeFileSync('release-notes.md', `## What's new in v${VERSION}\n\n${gitLog}`);
+            // ── Fallback: minimal formatted list ────────────────────────────
+            const fallbackLines = commits.map((c, i) => {
+              const pr = prResults[i];
+              return `- ${c.subject}${pr ? ` ([#${pr.number}](${pr.url}))` : ''}`;
+            });
+            fs.writeFileSync(
+              'release-notes.md',
+              `## What's new in v${VERSION}\n\n${fallbackLines.join('\n')}\n`,
+            );
 
       # ── Create GitHub Release ──────────────────────────────────────────────
       - name: 🚀 Create GitHub Release
