@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://www.schemastore.org/github-action.json
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 ---
 # =============================================================================
 # Release — create a versioned release from the GitHub UI
@@ -6,15 +6,26 @@
 # Triggered manually via Actions → Release → Run workflow.
 #
 # What it does:
-#   1. Validates the semver input
+#   1. Computes the next version automatically from the last git tag
 #   2. Bumps the version in package.json and sdk/package.json
-#   3. Runs typecheck + tests + SDK build
+#   3. Runs typecheck + tests + build
 #   4. Commits the version bump with a Conventional Commit message
 #   5. Creates and pushes a v<version> git tag
-#   6. Opens a GitHub Release (latest: true)
+#   6. Generates polished release notes via GitHub Copilot (GitHub Models)
+#   7. Opens a GitHub Release (--prerelease for RC, --latest for stable)
 #
-# Publishing to npm is handled by the separate `release.publish-sdk.yaml`
-# workflow, which triggers automatically when this release is published.
+# Bump types:
+#   patch / minor / major   → stable release computed from the last stable tag
+#   rc-patch / rc-minor / rc-major → release candidate; increments the RC
+#                             counter if one already exists for the target
+#
+# Release note scope:
+#   RC     → commits since the last tag (RC or stable)
+#   stable → commits since the last stable (non-RC) tag, so RC commits
+#            are included in the final release summary
+#
+# Publishing to npm is handled by release.publish.yaml, triggered
+# automatically when this release is published.
 #
 # Prerequisites:
 #   • GITHUB_TOKEN must be allowed to push directly to the default branch.
@@ -28,12 +39,19 @@ name: 🚀 Release
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: "Semver without the leading 'v' (e.g. 1.2.3)"
+      bump:
+        description: "Version bump type"
         required: true
-        type: string
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - rc-patch
+          - rc-minor
+          - rc-major
       notes:
-        description: "Release notes (leave blank to auto-generate from commits)"
+        description: "Release notes override (leave blank to auto-generate via Copilot)"
         required: false
         type: string
 
@@ -41,7 +59,7 @@ permissions: {}
 
 jobs:
   release:
-    name: 🚀 Create release v${{ inputs.version }}
+    name: 🚀 Create release (${{ inputs.bump }})
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -69,20 +87,73 @@ jobs:
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # ── Validate version format ────────────────────────────────────────────
-      - name: ✅ Validate semver input
+      # ── Compute next version ───────────────────────────────────────────────
+      - name: 🔖 Compute next version and changelog range
+        id: version
         run: |
-          if ! echo "${{ inputs.version }}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
-            echo "::error::'${{ inputs.version }}' is not a valid semver string."
-            exit 1
-          fi
+          BUMP="${{ inputs.bump }}"
+
+          # All semver-style tags, newest first
+          ALL_TAGS=$(git tag -l 'v[0-9]*' --sort=-version:refname)
+
+          # Last stable tag (no -rc. suffix); last tag of any kind
+          LAST_STABLE=$(printf '%s\n' "$ALL_TAGS" | grep -v -- '-rc\.' | head -1)
+          LAST_TAG=$(printf '%s\n' "$ALL_TAGS" | head -1)
+
+          [[ -z "$LAST_STABLE" ]] && LAST_STABLE="v0.0.0"
+          [[ -z "$LAST_TAG" ]]    && LAST_TAG="v0.0.0"
+
+          VER="${LAST_STABLE#v}"
+          MAJOR="${VER%%.*}"; REST="${VER#*.}"; MINOR="${REST%%.*}"; PATCH="${REST#*.}"
+
+          # Returns the next RC version for a given target (e.g. "1.3.0").
+          # Increments the existing RC counter if an RC for that target exists,
+          # otherwise starts at rc.1.
+          compute_rc() {
+            local target="$1"
+            local existing
+            existing=$(printf '%s\n' "$ALL_TAGS" | grep "^v${target}-rc\." | head -1)
+            if [[ -n "$existing" ]]; then
+              local n; n=$(printf '%s' "$existing" | grep -oE '[0-9]+$')
+              printf '%s-rc.%d' "$target" "$((n + 1))"
+            else
+              printf '%s-rc.1' "$target"
+            fi
+          }
+
+          case "$BUMP" in
+            patch)    NEW_VER="${MAJOR}.${MINOR}.$((PATCH + 1))"                ; PREV_TAG="$LAST_STABLE" ;;
+            minor)    NEW_VER="${MAJOR}.$((MINOR + 1)).0"                       ; PREV_TAG="$LAST_STABLE" ;;
+            major)    NEW_VER="$((MAJOR + 1)).0.0"                              ; PREV_TAG="$LAST_STABLE" ;;
+            rc-patch) NEW_VER=$(compute_rc "${MAJOR}.${MINOR}.$((PATCH + 1))") ; PREV_TAG="$LAST_TAG" ;;
+            rc-minor) NEW_VER=$(compute_rc "${MAJOR}.$((MINOR + 1)).0")         ; PREV_TAG="$LAST_TAG" ;;
+            rc-major) NEW_VER=$(compute_rc "$((MAJOR + 1)).0.0")                ; PREV_TAG="$LAST_TAG" ;;
+          esac
+
+          { echo "version=${NEW_VER}"; echo "prev_tag=${PREV_TAG}"; } >> "$GITHUB_OUTPUT"
+          echo "ℹ️  New version  : v${NEW_VER}"
+          echo "ℹ️  Changelog from : ${PREV_TAG}"
+
+      # ── Collect commit log ─────────────────────────────────────────────────
+      # Captured before the version-bump commit so it only contains meaningful
+      # changes. Written to git-log.txt and passed verbatim to Copilot.
+      - name: 📋 Collect commit log for release notes
+        run: |
+          PREV="${{ steps.version.outputs.prev_tag }}"
+          RANGE="${PREV}..HEAD"
+          [[ "$PREV" == "v0.0.0" ]] && RANGE="HEAD"
+
+          git log --no-merges --format="### %s%n%n%b%n---" "$RANGE" > git-log.txt
+
+          echo "--- Collected commit log (${RANGE}) ---"
+          cat git-log.txt
 
       # ── Bump versions ──────────────────────────────────────────────────────
       # --no-git-tag-version: tag is created manually after tests pass.
       - name: 🔖 Bump versions in package.json files
         run: |
-          pnpm version ${{ inputs.version }} --no-git-tag-version
-          pnpm -C sdk version ${{ inputs.version }} --no-git-tag-version
+          pnpm version ${{ steps.version.outputs.version }} --no-git-tag-version
+          pnpm -C sdk version ${{ steps.version.outputs.version }} --no-git-tag-version
 
       # ── Build & validate ───────────────────────────────────────────────────
       - name: 🏷️ Type-check SDK
@@ -103,21 +174,22 @@ jobs:
       - name: 📝 Commit version bump
         run: |
           git add package.json sdk/package.json
-          git commit -m "chore(tooling): Bump version to v${{ inputs.version }}"
+          git commit -m "chore(tooling): Bump version to v${{ steps.version.outputs.version }}"
 
       - name: 🏷️ Create and push tag
         run: |
-          git tag "v${{ inputs.version }}"
+          git tag "v${{ steps.version.outputs.version }}"
           git push
-          git push origin "v${{ inputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
 
-      # ── GitHub Release ─────────────────────────────────────────────────────
+      # ── Generate release notes via Copilot ────────────────────────────────
       - name: 🤖 Generate release notes via GitHub Copilot
         id: release-notes
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
+            const VERSION = '${{ steps.version.outputs.version }}';
 
             const inputNotes = `${{ inputs.notes }}`.trim();
             if (inputNotes) {
@@ -125,15 +197,83 @@ jobs:
               return;
             }
 
-            // Get base notes from GitHub's commit/PR algorithm
-            const { data: generated } = await github.rest.repos.generateReleaseNotes({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: 'v${{ inputs.version }}',
-              target_commitish: context.sha,
-            });
+            const gitLog = fs.readFileSync('git-log.txt', 'utf8').trim();
 
-            // Enhance with GitHub Copilot via GitHub Models API
+            // System prompt with two few-shot examples to enforce the output format.
+            const SYSTEM = `\
+            You are a technical writer producing release notes for an open-source Node.js \
+            developer-tools library called "pi-extension-settings". \
+            Transform the provided git commit log into polished Markdown release notes, \
+            following the format shown in the examples below.
+
+            Output format (strict — no deviations):
+            ## What's new in v{VERSION}
+
+            {One concise paragraph of highlights — user-facing impact only.}
+
+            ### ✨ Features
+            - **{scope}**: {change}
+
+            ### 🐛 Fixes
+            - **{scope}**: {change}
+
+            ### 🔧 Tooling
+            - {change}
+
+            Rules:
+            - Only include sections that have at least one entry.
+            - Do not invent or embellish anything not present in the commit log.
+            - Use backtick code spans for identifiers, method names, and CLI flags.
+            - Output only the Markdown, no preamble or explanation.
+
+            --- EXAMPLE 1 INPUT ---
+            ### feat(sdk): Add S.struct() builder for nested object schemas
+
+            Enables typed nested objects within a settings schema without flattening keys.
+
+            ---
+            ### fix(sdk): URL validator now accepts localhost without a TLD
+
+            ---
+            ### chore(deps): Bump TypeScript to 5.5
+
+            ---
+            --- EXAMPLE 1 OUTPUT ---
+            ## What's new in v1.3.0
+
+            This release adds support for nested object schemas in the SDK and improves
+            URL validation to work correctly in local development environments.
+
+            ### ✨ Features
+            - **sdk**: New \`S.struct()\` builder for typed nested object schemas
+
+            ### 🐛 Fixes
+            - **sdk**: URL validator now accepts \`localhost\` and bare IP addresses
+
+            ### 🔧 Tooling
+            - Bump TypeScript to 5.5
+            --- END EXAMPLE 1 ---
+
+            --- EXAMPLE 2 INPUT ---
+            ### feat(ui): Add keyboard navigation to the settings panel
+
+            ---
+            ### fix(core): Registry no longer overwrites entries on hot-reload
+
+            ---
+            --- EXAMPLE 2 OUTPUT ---
+            ## What's new in v1.3.0-rc.1
+
+            First release candidate for v1.3.0. Introduces keyboard navigation in the
+            panel and fixes a registry race condition on extension hot-reload.
+
+            ### ✨ Features
+            - **ui**: Keyboard navigation (↑ ↓ Enter) in the settings panel
+
+            ### 🐛 Fixes
+            - **core**: Registry no longer overwrites entries on hot-reload
+            --- END EXAMPLE 2 ---`;
+
             try {
               const res = await fetch('https://models.github.ai/inference/chat/completions', {
                 method: 'POST',
@@ -142,45 +282,46 @@ jobs:
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  model: 'openai/gpt-4.1-mini',
+                  model: 'openai/gpt-5-mini',
                   messages: [
-                    {
-                      role: 'system',
-                      content: [
-                        'You are a technical writer producing release notes for an open-source Node.js developer-tools library.',
-                        'Rewrite the provided auto-generated GitHub release notes into a polished Markdown release summary.',
-                        'Structure: one short paragraph of highlights, then a bullet list of changes grouped by type (Features, Fixes, Tooling).',
-                        'Be concise and user-focused. Do not invent features; only summarise what the input describes.',
-                        'Output only the Markdown text, no preamble.',
-                      ].join(' '),
-                    },
+                    { role: 'system', content: SYSTEM },
                     {
                       role: 'user',
-                      content: generated.body,
+                      content: `Generate release notes for version v${VERSION}.\n\n${gitLog}`,
                     },
                   ],
-                  max_tokens: 800,
+                  max_tokens: 1000,
                 }),
               });
 
               if (res.ok) {
                 const data = await res.json();
                 fs.writeFileSync('release-notes.md', data.choices[0].message.content);
-                core.info('Release notes generated via GitHub Copilot (GitHub Models).');
+                core.info('Release notes generated via GitHub Copilot (gpt-5-mini).');
                 return;
               }
-              core.warning(`GitHub Models API returned ${res.status} — falling back to auto-generated notes.`);
+              core.warning(`GitHub Models API returned ${res.status}: ${await res.text()} — falling back.`);
             } catch (err) {
-              core.warning(`GitHub Models API call failed (${err.message}) — falling back to auto-generated notes.`);
+              core.warning(`GitHub Models API call failed (${err.message}) — falling back.`);
             }
 
-            fs.writeFileSync('release-notes.md', generated.body);
+            // Fallback: raw commit log as Markdown
+            fs.writeFileSync('release-notes.md', `## What's new in v${VERSION}\n\n${gitLog}`);
 
+      # ── Create GitHub Release ──────────────────────────────────────────────
       - name: 🚀 Create GitHub Release
         run: |
-          gh release create "v${{ inputs.version }}" \
-            --title "v${{ inputs.version }}" \
-            --notes-file release-notes.md \
-            --latest
+          VERSION="v${{ steps.version.outputs.version }}"
+          if [[ "$VERSION" == *"-rc."* ]]; then
+            gh release create "$VERSION" \
+              --title "$VERSION" \
+              --notes-file release-notes.md \
+              --prerelease
+          else
+            gh release create "$VERSION" \
+              --title "$VERSION" \
+              --notes-file release-notes.md \
+              --latest
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
