@@ -21,7 +21,8 @@
     "extension"
   ],
   "dependencies": {
-    "@mariozechner/pi-coding-agent": "^0.66.1"
+    "@mariozechner/pi-coding-agent": "^0.66.1",
+    "@mariozechner/pi-tui": "^0.66.1"
   },
   "main": "dist/index.js",
   "exports": {
