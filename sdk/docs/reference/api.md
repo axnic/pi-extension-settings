@@ -3,8 +3,8 @@
 Complete list of symbols exported from the SDK public entry points.
 
 ```ts
-import {} from /* core */ "pi-extension-settings/sdk";
-import {} from /* hooks */ "pi-extension-settings/sdk/hooks";
+import { S, ExtensionSettings } from "pi-extension-settings/sdk";
+import { v, t, c, d } from "pi-extension-settings/sdk/hooks";
 ```
 
 ---

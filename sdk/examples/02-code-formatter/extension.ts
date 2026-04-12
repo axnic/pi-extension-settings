@@ -23,9 +23,9 @@
  *                            → subscribe to any setting change
  */
 
+import { ExtensionSettings, S } from "@axnic/pi-extension-settings-sdk";
+import { v } from "@axnic/pi-extension-settings-sdk/hooks";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { ExtensionSettings, S } from "../../index.ts";
-import { v } from "../../src/hooks/index.ts";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 

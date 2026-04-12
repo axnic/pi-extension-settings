@@ -24,7 +24,9 @@ flowchart LR
 
 ```ts
 import { v, t, c, d } from "pi-extension-settings/sdk/hooks";
+```
 
+```ts
 S.text({
   tooltip: "Config file",
   default: "",

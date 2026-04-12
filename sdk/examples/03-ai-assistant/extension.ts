@@ -17,10 +17,10 @@
  *   createAiAssistant(pi)  → returns the assistant handle used by the extension
  */
 
+import type { InferConfig } from "@axnic/pi-extension-settings-sdk";
+import { ExtensionSettings, S } from "@axnic/pi-extension-settings-sdk";
+import { d, t, v } from "@axnic/pi-extension-settings-sdk/hooks";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import type { InferConfig } from "../../index.ts";
-import { ExtensionSettings, S } from "../../index.ts";
-import { d, t, v } from "../../src/hooks/index.ts";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 

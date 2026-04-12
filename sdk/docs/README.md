@@ -53,7 +53,8 @@ Your extension never touches storage directly. It talks to `ExtensionSettings`, 
 ## 60-second example
 
 ```ts
-import { S, ExtensionSettings, v, t, d } from "pi-extension-settings/sdk";
+import { S, ExtensionSettings } from "pi-extension-settings/sdk";
+import { v, t, d } from "pi-extension-settings/sdk/hooks";
 
 // 1. Declare the schema
 const schema = S.settings({
