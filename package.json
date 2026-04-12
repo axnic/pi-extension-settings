@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Centralized settings panel for pi extensions.",
   "author": "axnic",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/axnic/pi-extension-settings.git"
