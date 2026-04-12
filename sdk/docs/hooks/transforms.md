@@ -22,7 +22,7 @@ Applies transforms left-to-right. The output of each transform is the input to t
 
 ```ts
 transform: t.pipe(t.trim(), t.lowercase());
-// "  Hello World  " → "  Hello World  " (trim) → "hello world"
+// "  Hello World  " → "Hello World" (trim) → "hello world" (lowercase)
 
 transform: t.pipe(t.rgbToHex(), t.hsvToHex(), t.htmlNamedToHex());
 // Converts any color format to hex, passing through values it does not recognize

@@ -240,13 +240,13 @@ S.list({
 
 ### Fields
 
-| Field        | Type                     | Required | Description                                  |
-| ------------ | ------------------------ | -------- | -------------------------------------------- |
-| `default`    | `ListItem[]`             | No       | Initial contents. Defaults to `[]`.          |
-| `items`      | `Struct`                 | Yes      | Schema for each row — see [Struct](#struct). |
-| `addLabel`   | `string`                 | No       | Label for the "add item" button.             |
-| `validation` | `ValidationFn<ListItem>` | No       | Validates each item individually.            |
-| `display`    | `DisplayFn<ListItem>`    | No       | Renders the collapsed row summary line.      |
+| Field        | Type                      | Required | Description                                  |
+| ------------ | ------------------------- | -------- | -------------------------------------------- |
+| `default`    | `ListItem[]`              | No       | Initial contents. Defaults to `[]`.          |
+| `items`      | `Struct`                  | Yes      | Schema for each row — see [Struct](#struct). |
+| `addLabel`   | `string`                  | No       | Label for the "add item" button.             |
+| `validation` | `ValidationFn<ListItem>`  | No       | Validates each item individually.            |
+| `display`    | `ListDisplayFn<ListItem>` | No       | Converts all items to display strings.       |
 
 > [!NOTE]
 > List items are stored as JSON. `settings.get("ignored-paths")` returns the parsed array; `settings.set()` serializes it back. You don't serialize or parse anything yourself.
@@ -350,7 +350,7 @@ S.struct({
 ```
 
 > [!IMPORTANT]
-> Properties are limited to **scalar** node types: `Text`, `Boolean`, and `Enum`. List items are rendered as table rows and cannot contain nested lists, dicts, or sections.
+> Properties are limited to **scalar** node types: `Text`, `Number`, `Boolean`, and `Enum`. List items are rendered as table rows and cannot contain nested lists, dicts, or sections.
 
 ---
 

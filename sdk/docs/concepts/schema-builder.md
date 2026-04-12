@@ -225,13 +225,13 @@ S.list({
 });
 ```
 
-| Field        | Type                     | Required | Description                         |
-| ------------ | ------------------------ | -------- | ----------------------------------- |
-| `default`    | `ListItem[]`             | No       | Initial contents. Defaults to `[]`. |
-| `items`      | `Struct`                 | Yes      | See [`S.struct`](#sstructopts).     |
-| `addLabel`   | `string`                 | No       | Label for the "add" button.         |
-| `validation` | `ValidationFn<ListItem>` | No       | Validates each item.                |
-| `display`    | `DisplayFn<ListItem>`    | No       | Renders the collapsed row summary.  |
+| Field        | Type                      | Required | Description                            |
+| ------------ | ------------------------- | -------- | -------------------------------------- |
+| `default`    | `ListItem[]`              | No       | Initial contents. Defaults to `[]`.    |
+| `items`      | `Struct`                  | Yes      | See [`S.struct`](#sstructopts).        |
+| `addLabel`   | `string`                  | No       | Label for the "add" button.            |
+| `validation` | `ValidationFn<ListItem>`  | No       | Validates each item.                   |
+| `display`    | `ListDisplayFn<ListItem>` | No       | Converts all items to display strings. |
 
 ---
 
@@ -321,7 +321,7 @@ S.struct({
 > [!IMPORTANT]
 >
 > - `Struct` is **not** a `SettingNode`. It cannot appear at the top level of a schema.
-> - Properties are limited to scalar types (`Text`, `Boolean`, `Enum`). No nested lists, dicts, or sections inside a struct — list items must stay simple enough to render as table rows.
+> - Properties are limited to scalar types (`Text`, `Number`, `Boolean`, `Enum`). No nested lists, dicts, or sections inside a struct — list items must stay simple enough to render as table rows.
 
 ---
 

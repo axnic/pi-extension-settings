@@ -16,11 +16,14 @@ S.text({ tooltip: "Accent color", default: "#fff", display: d.color() });
 
 ## Type signature
 
-Display functions conform to the `DisplayFn<T>` type:
+Display functions conform to the `DisplayFn<T>` type (or `ListDisplayFn<T>` for `List` nodes):
 
 ```ts
 type DisplayFn<T> = (value: T, theme: Theme) => string;
+type ListDisplayFn<T> = (items: T[], theme: Theme) => string[];
 ```
+
+`ListDisplayFn` receives all items at once so it can compute column alignment across the entire list.
 
 The `theme` parameter gives access to semantic color helpers from the pi editor. Use `theme.fg("accent", text)`, `theme.fg("dim", text)`, etc. to render text in theme-aware colors rather than hard-coded ANSI sequences.
 

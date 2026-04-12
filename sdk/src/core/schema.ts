@@ -391,7 +391,7 @@ function section<C extends Record<string, SettingNode>>(
 /**
  * Creates a `Struct` that describes the shape of each item in a `List` node.
  *
- * Only scalar node types (`Text`, `Boolean`, `Enum`) are accepted as
+ * Only scalar node types (`Text`, `Number`, `Boolean`, `Enum`) are accepted as
  * properties, because list items must remain simple enough to render as table
  * rows in the settings panel.
  *

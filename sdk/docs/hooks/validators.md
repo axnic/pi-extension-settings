@@ -8,7 +8,7 @@ Import from the `v` namespace:
 import { v } from "pi-extension-settings/sdk/hooks";
 ```
 
-Assign to the `validation` field of a `Text`, `List`, or `Dict` node:
+Assign to the `validation` field of a `Text`, `Number`, `List`, or `Dict` node:
 
 ```ts
 S.text({ tooltip: "API URL", default: "", validation: v.url() });

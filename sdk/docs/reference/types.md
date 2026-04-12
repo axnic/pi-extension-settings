@@ -17,14 +17,6 @@ import type {
 
 These types describe the runtime values returned by `ExtensionSettings.get()`.
 
-### `NumValue`
-
-```ts
-type NumValue = number;
-```
-
-Runtime value of a `Number` node.
-
 ### `TextValue`
 
 ```ts
@@ -32,6 +24,14 @@ type TextValue = string;
 ```
 
 Runtime value of a `Text` or `Enum` node.
+
+### `NumValue`
+
+```ts
+type NumValue = number;
+```
+
+Runtime value of a `Number` node.
 
 ### `BoolValue`
 
@@ -70,10 +70,12 @@ Runtime value of a single entry in a `Dict` node, as passed to `validation` and 
 ### `ValidationResult`
 
 ```ts
-type ValidationResult = { valid: true } | { valid: false; reason: string };
+type ValidationResult =
+  | { valid: true }
+  | { valid: false; reason: string | string[] };
 ```
 
-Returned by every `ValidationFn`. On failure, `reason` is the message shown to the user in the settings panel.
+Returned by every `ValidationFn`. On failure, `reason` is the message shown to the user in the settings panel. When `reason` is an array (produced by composition validators like `v.any()`), each entry is rendered on its own line.
 
 ### `ValidationFn<T>`
 
@@ -116,7 +118,7 @@ Provides autocomplete suggestions for the current partial input. Returns a promi
 ### `DisplayFn<T>`
 
 ```ts
-type DisplayFn<T extends TextValue | BoolValue | ListItem | DictEntry> = (
+type DisplayFn<T extends TextValue | NumValue | BoolValue | DictEntry> = (
   value: T,
   theme: Theme,
 ) => string;
@@ -134,9 +136,29 @@ The `theme` parameter provides semantic color helpers from the pi editor:
 **Type parameter `T`:**
 
 - `TextValue` for `Text` and `Enum` nodes
+- `NumValue` for `Number` nodes
 - `BoolValue` for `Boolean` nodes
-- `ListItem` for `List` nodes (renders an entire row as a summary line)
 - `DictEntry` for `Dict` nodes (renders a single key/value row)
+
+### `ListDisplayFn<T>`
+
+```ts
+type ListDisplayFn<T extends ListItem> = (items: T[], theme: Theme) => string[];
+```
+
+Converts the full list of items to an array of display strings (one per item). Called with all items so the function can compute column alignment across the entire list. Receives the active editor `theme` for ANSI styling.
+
+Used as the `display` field on `List` nodes (instead of `DisplayFn`).
+
+### `SettingChangedPayload`
+
+```ts
+type SettingChangedPayload = {
+  key: string;
+};
+```
+
+Payload emitted on the `pi-extension-settings:{extension}:changed` event. Only the key is transmitted; the SDK re-reads the current value from storage.
 
 ---
 
@@ -153,19 +175,6 @@ interface BaseSettingNode {
 }
 ```
 
-### `Number`
-
-```ts
-interface Number extends BaseSettingNode {
-  _tag: "number";
-  default: NumValue;
-  validation?: ValidationFn<NumValue>;
-  display?: DisplayFn<NumValue>;
-}
-```
-
-`settings.get()` returns a native JS `number` — no `parseInt` / `parseFloat` needed at the use site.
-
 ### `Text`
 
 ```ts
@@ -178,6 +187,19 @@ interface Text extends BaseSettingNode {
   display?: DisplayFn<TextValue>;
 }
 ```
+
+### `Number`
+
+```ts
+interface Number extends BaseSettingNode {
+  _tag: "number";
+  default: NumValue;
+  validation?: ValidationFn<NumValue>;
+  display?: DisplayFn<NumValue>;
+}
+```
+
+`settings.get()` returns a native JS `number` — no `parseInt` / `parseFloat` needed at the use site.
 
 ### `Boolean`
 
@@ -211,7 +233,7 @@ interface List<T extends ListItem> extends BaseSettingNode {
   items: Struct;
   addLabel?: string;
   validation?: ValidationFn<T>;
-  display?: DisplayFn<T>;
+  display?: ListDisplayFn<T>;
 }
 ```
 

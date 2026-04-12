@@ -226,29 +226,31 @@ See [Error Reference](./errors.md) for full documentation.
 
 All TypeScript types exported from the SDK:
 
-| Type               | Description                                                                  |
-| ------------------ | ---------------------------------------------------------------------------- |
-| `InferConfig<T>`   | Infer the flat config type from a schema.                                    |
-| `TextValue`        | `string`                                                                     |
-| `NumValue`         | `number`                                                                     |
-| `BoolValue`        | `boolean`                                                                    |
-| `ListItem`         | `string \| number \| boolean \| Record<string, string \| number \| boolean>` |
-| `DictEntry`        | `{ key: string; value: string }`                                             |
-| `ValidationResult` | `{ valid: true } \| { valid: false; reason: string }`                        |
-| `ValidationFn<T>`  | `(value: T) => ValidationResult`                                             |
-| `TransformFn`      | `(value: string) => string`                                                  |
-| `CompleteFn`       | `(partial: string) => Promise<string[]>`                                     |
-| `DisplayFn<T>`     | `(value: T, theme: Theme) => string`                                         |
-| `Text`             | Text node interface                                                          |
-| `Number`           | Number node interface                                                        |
-| `Boolean`          | Boolean node interface                                                       |
-| `Enum`             | Enum node interface                                                          |
-| `List`             | List node interface                                                          |
-| `Dict`             | Dict node interface                                                          |
-| `Section`          | Section node interface                                                       |
-| `Struct`           | Struct descriptor interface                                                  |
-| `SettingNode`      | `Text \| Number \| Boolean \| Enum \| List \| Dict \| Section`               |
-| `LeafNode`         | `Text \| Number \| Boolean \| Enum \| List \| Dict`                          |
+| Type                    | Description                                                                  |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| `InferConfig<T>`        | Infer the flat config type from a schema.                                    |
+| `TextValue`             | `string`                                                                     |
+| `NumValue`              | `number`                                                                     |
+| `BoolValue`             | `boolean`                                                                    |
+| `ListItem`              | `string \| number \| boolean \| Record<string, string \| number \| boolean>` |
+| `DictEntry`             | `{ key: string; value: string }`                                             |
+| `ValidationResult`      | `{ valid: true } \| { valid: false; reason: string \| string[] }`            |
+| `ValidationFn<T>`       | `(value: T) => ValidationResult`                                             |
+| `TransformFn`           | `(value: string) => string`                                                  |
+| `CompleteFn`            | `(partial: string) => Promise<string[]>`                                     |
+| `DisplayFn<T>`          | `(value: T, theme: Theme) => string`                                         |
+| `ListDisplayFn<T>`      | `(items: T[], theme: Theme) => string[]`                                     |
+| `SettingChangedPayload` | `{ key: string }` — event payload for setting changes                        |
+| `Text`                  | Text node interface                                                          |
+| `Number`                | Number node interface                                                        |
+| `Boolean`               | Boolean node interface                                                       |
+| `Enum`                  | Enum node interface                                                          |
+| `List`                  | List node interface                                                          |
+| `Dict`                  | Dict node interface                                                          |
+| `Section`               | Section node interface                                                       |
+| `Struct`                | Struct descriptor interface                                                  |
+| `SettingNode`           | `Text \| Number \| Boolean \| Enum \| List \| Dict \| Section`               |
+| `LeafNode`              | `Text \| Number \| Boolean \| Enum \| List \| Dict`                          |
 
 See [Type Reference](./types.md) for full documentation.
 

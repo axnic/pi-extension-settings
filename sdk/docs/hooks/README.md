@@ -15,12 +15,12 @@ flowchart LR
     Node --> D["d.*<br/>Display"]
 ```
 
-| Namespace | Role                                 | Imported as    | Applied to                                   |
-| --------- | ------------------------------------ | -------------- | -------------------------------------------- |
-| `v`       | **Validate** user input              | `import { v }` | `validation` field on `Text`, `List`, `Dict` |
-| `t`       | **Transform** values before storage  | `import { t }` | `transform` field on `Text`                  |
-| `c`       | **Complete** user input as they type | `import { c }` | `complete` field on `Text`                   |
-| `d`       | **Display** stored values            | `import { d }` | `display` field on any leaf node             |
+| Namespace | Role                                 | Imported as    | Applied to                                             |
+| --------- | ------------------------------------ | -------------- | ------------------------------------------------------ |
+| `v`       | **Validate** user input              | `import { v }` | `validation` field on `Text`, `Number`, `List`, `Dict` |
+| `t`       | **Transform** values before storage  | `import { t }` | `transform` field on `Text`                            |
+| `c`       | **Complete** user input as they type | `import { c }` | `complete` field on `Text`                             |
+| `d`       | **Display** stored values            | `import { d }` | `display` field on any leaf node                       |
 
 ```ts
 import { v, t, c, d } from "pi-extension-settings/sdk/hooks";

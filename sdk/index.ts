@@ -29,6 +29,8 @@ export type {
   List,
   ListDisplayFn,
   ListItem,
+  Number,
+  NumValue,
   Section,
   SettingNode,
   Struct,
