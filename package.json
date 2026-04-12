@@ -24,17 +24,11 @@
     "@mariozechner/pi-coding-agent": "^0.66.1"
   },
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.js"
     },
-    "./package.json": "./package.json",
-    "./src/*": {
-      "import": "./dist/src/*",
-      "types": "./dist/src/*"
-    }
+    "./package.json": "./package.json"
   },
   "files": [
     "dist/",
@@ -44,7 +38,7 @@
   ],
   "scripts": {
     "build": "mise run build",
-    "build:extension": "tsc -p tsconfig.json",
+    "build:extension": "node build.mjs",
     "build:sdk": "pnpm --filter @axnic/pi-extension-settings-sdk run build",
     "build:all": "pnpm run build:extension && pnpm run build:sdk",
     "clean": "rimraf dist",
@@ -59,6 +53,7 @@
     "@commitlint/cli": "catalog:",
     "@commitlint/types": "catalog:",
     "@types/node": "catalog:",
+    "esbuild": "catalog:",
     "rimraf": "catalog:",
     "trunk": "latest",
     "typescript": "catalog:",

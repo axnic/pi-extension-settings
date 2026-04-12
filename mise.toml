@@ -113,35 +113,33 @@ run = "commitlint --from HEAD~1 --to HEAD --verbose"
 # =============================================================================
 # Build
 # =============================================================================
-# build:extension  — compiles the extension (index.ts + src/) to dist/ via tsc.
-#                    During local development, pi loads .ts directly; dist/ is
-#                    used for distribution/production deployments.
-#                    Skipped by mise when sources are unchanged.
 # build:sdk        — compiles the SDK to sdk/dist/ via tsc.
 #                    Skipped by mise when sources are unchanged.
-# build            — meta task: triggers both builds above. No source tracking
-#                    so `mise run build` is always a reliable full-build check.
+# build:extension  — bundles index.ts + src/ + SDK into dist/index.js via esbuild.
+#                    The SDK must be compiled first (build:sdk).
+#                    Skipped by mise when sources are unchanged.
+# build            — meta task: build:sdk then build:extension.
 # =============================================================================
 
 [tasks."build:extension"]
-description = "Compile the extension to dist/ with tsc (tsconfig.json)"
+description = "Bundle the extension to dist/index.js with esbuild"
 alias = "be"
-run = "tsc -p tsconfig.json"
-sources = ["src/**/*.ts", "index.ts", "tsconfig.json"]
-
-[tasks."build:sdk"]
-description = "Compile the SDK to sdk/dist/ with tsc (requires extension to be built first)"
-alias = "bs"
-depends = ["build:extension"]
-run = "tsc -p sdk/tsconfig.json"
+run = "node build.mjs"
 sources = [
+  "src/**/*.ts",
+  "index.ts",
   "sdk/src/**/*.ts",
   "sdk/index.ts",
-  "sdk/tsconfig.json",
-  "src/core/storage.ts",
+  "build.mjs",
 ]
 
+[tasks."build:sdk"]
+description = "Compile the SDK to sdk/dist/ with tsc"
+alias = "bs"
+run = "tsc -p sdk/tsconfig.json"
+sources = ["sdk/src/**/*.ts", "sdk/index.ts", "sdk/tsconfig.json"]
+
 [tasks.build]
-description = "Build everything — extension (→ dist/) then SDK (→ sdk/dist/)."
+description = "Build everything — SDK (→ sdk/dist/) then extension bundle (→ dist/)."
 alias = "b"
-run = "mise run build:extension && mise run build:sdk"
+run = "mise run build:sdk && mise run build:extension"
