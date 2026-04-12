@@ -185,7 +185,6 @@ jobs:
           git push
           git push origin "v${{ steps.version.outputs.version }}"
 
-
       # ── Generate release notes via Copilot ────────────────────────────────
       - name: 🤖 Generate release notes via GitHub Copilot
         id: release-notes

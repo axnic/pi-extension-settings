@@ -1,0 +1,54 @@
+# This file controls the behavior of Trunk: https://docs.trunk.io/cli
+# To learn more about the format of this file, see https://docs.trunk.io/reference/trunk-yaml
+version: 0.1
+cli:
+  version: 1.25.0
+# Trunk provides extensibility via plugins. (https://docs.trunk.io/plugins)
+plugins:
+  sources:
+    - id: trunk
+      ref: v1.7.6
+      uri: https://github.com/trunk-io/plugins
+# Many linters and tools depend on runtimes - configure them here. (https://docs.trunk.io/runtimes)
+runtimes:
+  enabled:
+    - node@22.16.0
+    - python@3.10.8
+# This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
+lint:
+  disabled:
+    - eslint
+    - rome
+  enabled:
+    - biome@2.4.11
+    - markdownlint@0.48.0
+    - actionlint@1.7.12
+    - checkov@3.2.519
+    - git-diff-check
+    - osv-scanner@2.3.5
+    - oxipng@10.1.0
+    - prettier@3.8.2
+    - taplo@0.10.0
+    - trufflehog@3.94.3
+    - yamllint@1.38.0
+  ignore:
+    - # Prettier should not lint/format TS/JS files (handled by Biome)
+      linters: [prettier]
+      paths:
+        [
+          "*.ts",
+          "**/*.ts",
+          "*.tsx",
+          "**/*.tsx",
+          "*.js",
+          "**/*.js",
+          "*.json",
+          "**/*.json",
+        ]
+actions:
+  enabled:
+    - commitlint
+    - trunk-announce
+    - trunk-check-pre-push
+    - trunk-fmt-pre-commit
+    - trunk-upgrade-available

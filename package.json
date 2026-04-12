@@ -1,59 +1,58 @@
 {
-    "name": "@axnic/pi-extension-settings",
-    "version": "0.1.0",
-    "description": "Centralized settings panel for pi extensions.",
-    "author": "axnic",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/axnic/pi-extension-settings.git"
-    },
-    "homepage": "https://github.com/axnic/pi-extension-settings#readme",
-    "bugs": {
-        "url": "https://github.com/axnic/pi-extension-settings/issues"
-    },
-    "keywords": [
-        "pi-package",
-        "pi",
-        "pi-extension",
-        "settings",
-        "configuration",
-        "extension"
-    ],
-    "dependencies": {
-        "@mariozechner/pi-coding-agent": "^0.66.1"
-    },
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
-    "scripts": {
-        "build": "mise run build",
-        "build:extension": "tsc -p tsconfig.json",
-        "build:sdk": "npm --prefix sdk run build",
-        "build:all": "npm run build && npm run build:sdk",
-        "prepublishOnly": "npm run lint && npm run typecheck && npm run test && npm run build:all",
-        "test": "vitest run",
-        "test:watch": "vitest",
-        "typecheck": "tsc --noEmit -p tsconfig.json",
-        "lint": "mise run lint",
-        "lint:fix": "mise run lint:fix"
-    },
-
-    "devDependencies": {
-        "@biomejs/biome": "^2.4.11",
-        "@commitlint/cli": "^20.5.0",
-        "@commitlint/types": "^20.5.0",
-        "@types/node": "^20.0.0",
-        "markdownlint-cli2": "^0.17.2",
-        "memfs": "^4.57.1",
-        "typescript": "^5.0.0",
-        "vitest": "^4.0.18"
-    },
-    "pi": {
-        "extensions": [
-            "./src/index.ts"
-        ]
-    },
-    "engines": {
-        "node": ">=24"
-    }
+	"name": "@axnic/pi-extension-settings",
+	"version": "0.1.0",
+	"description": "Centralized settings panel for pi extensions.",
+	"author": "axnic",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/axnic/pi-extension-settings.git"
+	},
+	"homepage": "https://github.com/axnic/pi-extension-settings#readme",
+	"bugs": {
+		"url": "https://github.com/axnic/pi-extension-settings/issues"
+	},
+	"keywords": [
+		"pi-package",
+		"pi",
+		"pi-extension",
+		"settings",
+		"configuration",
+		"extension"
+	],
+	"dependencies": {
+		"@mariozechner/pi-coding-agent": "^0.66.1"
+	},
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"build": "mise run build",
+		"build:extension": "tsc -p tsconfig.json",
+		"build:sdk": "npm --prefix sdk run build",
+		"build:all": "npm run build && npm run build:sdk",
+		"prepublishOnly": "TRUNK_TELEMETRY=off trunk check --all ; npm run typecheck && npm run test && npm run build:all",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"lint": "mise run lint",
+		"lint:fix": "mise run lint:fix"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.11",
+		"@commitlint/cli": "^20.5.0",
+		"@commitlint/types": "^20.5.0",
+		"@types/node": "^20.0.0",
+		"memfs": "^4.57.1",
+		"trunk": "latest",
+		"typescript": "^5.0.0",
+		"vitest": "^4.0.18"
+	},
+	"pi": {
+		"extensions": [
+			"./src/index.ts"
+		]
+	},
+	"engines": {
+		"node": ">=24"
+	}
 }

@@ -5,10 +5,8 @@
 # =============================================================================
 # Validates every PR (and merge-queue entry) before it lands on main:
 #
-#   lint        — Biome (TypeScript/JS/Markdown, GitHub annotations) +
-#                 markdownlint-cli2 (Markdown style, reviewdog PR comments)
+#   lint        — Trunk (TypeScript/JS/Markdown/YAML/actions, GitHub annotations)
 #   commitlint  — Conventional Commits on every commit in the PR
-#   actionlint  — Lint the GitHub Actions workflow files themselves
 #   typecheck   — tsc (extension + SDK via project references)
 #   test        — Vitest (extension + SDK)
 #
@@ -16,7 +14,7 @@
 # See mise.toml for pinned versions.
 # =============================================================================
 
-name: 🚦 CI
+name: 🚦 PR & Merge-Queue Quality Gate
 
 on:
   merge_group: {}
@@ -31,7 +29,7 @@ permissions: {}
 
 jobs:
   # ---------------------------------------------------------------------------
-  # lint — Biome + markdownlint-cli2
+  # lint — Trunk (covers TS/JS/Markdown/YAML/actions via .trunk/trunk.yaml)
   # ---------------------------------------------------------------------------
   lint:
     name: 🔍 Lint
@@ -45,56 +43,22 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      # Installs every tool listed in mise.toml (Node, pnpm, Biome, markdownlint-cli2, …).
+      # Installs every tool listed in mise.toml (Node, pnpm, Trunk, …).
       # The cache key changes only when mise.toml or the lock file changes.
       - name: 🔧 Install tools via mise
         uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
         with:
           cache: true
 
-      # ── Biome ──────────────────────────────────────────────────────────────
+      # ── Trunk ──────────────────────────────────────────────────────────────
       # --reporter=github emits ::error:: annotation commands that GitHub renders
-      # as inline PR diff comments — same tool, same config as `mise run lint:biome`.
-      # continue-on-error so markdownlint still runs even when Biome finds issues.
-      - name: ⚡️ Lint TypeScript/JS/Markdown with Biome
-        id: biome
-        continue-on-error: true
-        run: biome check --reporter=github .
-
-      # ── markdownlint-cli2 + reviewdog ──────────────────────────────────────
-      # reviewdog converts markdownlint-cli2's output into PR review comments so
-      # Markdown issues appear inline in the diff just like Biome errors.
-      - name: 📦 Install reviewdog
-        uses: reviewdog/action-setup@d8a7baabd7f3e8544ee4dbde3ee41d0011c3a93f # v1
+      # as inline PR diff comments — same tool, same config as `mise run lint`.
+      - name: ⚡️ Lint with Trunk
+        uses: trunk-io/trunk-action@bf81325059d2534b31df5365182237788c5e0338
         with:
-          reviewdog_version: latest
-
-      - name: 📝 Lint Markdown with markdownlint-cli2
-        id: markdownlint
-        if: always()
-        continue-on-error: true
-        run: |
-          set -o pipefail
-          markdownlint-cli2 '**/*.md' '#node_modules' '#sdk/node_modules' 2>&1 | \
-            reviewdog \
-              -f=markdownlint \
-              -name=markdownlint \
-              -reporter=github-pr-review \
-              -fail-on-error
+          args: check --ci --all
         env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # ── Final gate ─────────────────────────────────────────────────────────
-      # Both linters ran to completion (all annotations posted).  Now fail the
-      # job if either one found issues.
-      - name: 🚨 Fail if any linter reported issues
-        if: always()
-        run: |
-          if [[ "${{ steps.biome.outcome }}" == "failure" || \
-                "${{ steps.markdownlint.outcome }}" == "failure" ]]; then
-            echo "One or more linters failed — see annotations above."
-            exit 1
-          fi
+          TRUNK_TELEMETRY: off
 
   # ---------------------------------------------------------------------------
   # commitlint — every commit in the PR must follow Conventional Commits
@@ -123,27 +87,6 @@ jobs:
             --from ${{ github.event.pull_request.base.sha }} \
             --to   ${{ github.event.pull_request.head.sha }} \
             --verbose
-
-  # ---------------------------------------------------------------------------
-  # actionlint — validate the GitHub Actions workflow files themselves
-  # ---------------------------------------------------------------------------
-  actionlint:
-    name: 🔒 Lint GitHub Actions workflows
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: ⬇️ Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-
-      - name: 📄 Run actionlint
-        run: |
-          # Download and run actionlint — outputs GitHub Actions annotation commands.
-          curl -sSfL \
-            https://raw.githubusercontent.com/rhysd/actionlint/03d0035246f3e81f36aed592ffb4bebf33a03106/scripts/download-actionlint.bash \
-            | bash
-          ./actionlint -color
 
   # ---------------------------------------------------------------------------
   # typecheck — tsc (extension + SDK via project references)
@@ -209,4 +152,3 @@ jobs:
 
       - name: 🧪 Run all tests
         run: pnpm test
-

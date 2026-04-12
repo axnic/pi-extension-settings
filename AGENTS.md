@@ -10,20 +10,19 @@ All dev tooling is managed via [mise](https://mise.run).
 # Setup (run once after clone)
 mise trust && mise install
 pnpm install
-mise run git:hooks        # install lefthook git hooks
 ```
 
 Common commands (short aliases available — see `mise.toml`):
 
 ```sh
-mise run lint             # run Biome + markdownlint in parallel
+mise run lint             # run Trunk (single source of linting)
 mise run lint:fix         # auto-fix all lint issues
 mise run build            # compile extension to dist/ + compile SDK to sdk/dist/
 mise run build:extension  # compile extension only (tsc -p tsconfig.json → dist/)
 mise run build:sdk        # compile SDK only (sdk/tsconfig.json → sdk/dist/)
 ```
 
-Linter configs: `biome.json` (TypeScript/JS), `.markdownlint.json` (Markdown), `.commitlintrc.js` (commit messages).
+Linter configs: `.trunk/trunk.yaml` (Trunk — manages all linters), `.commitlintrc.js` (commit messages).
 
 > **Extension build:** `tsconfig.json` at the repo root compiles `index.ts` + `src/` to `dist/`.
 > During local development, pi loads `.ts` files directly and no build is needed.

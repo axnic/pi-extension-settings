@@ -36,14 +36,14 @@ Thanks to all the contributors to this release:
 ## Prefix guide
 
 | Prefix | Conventional commit type(s)               |
-|--------|-------------------------------------------|
-| ✦      | `feat`                                    |
-| ✔      | `fix`                                     |
-| ⚙      | `chore`, `build`, `ci`, `deps`, `tooling` |
-| ¶      | `docs`                                    |
-| ↻      | `refactor`                                |
-| ⇧      | `perf`                                    |
-| ⛨      | `security`                                |
+| ------ | ----------------------------------------- |
+| `✦`    | `feat`                                    |
+| `✔`    | `fix`                                     |
+| `⚙`    | `chore`, `build`, `ci`, `deps`, `tooling` |
+| `¶`    | `docs`                                    |
+| `↻`    | `refactor`                                |
+| `⇧`    | `perf`                                    |
+| `⛨`    | `security`                                |
 
 ## Rules
 
@@ -74,22 +74,25 @@ subject: feat(sdk): Add S.struct() builder for nested object schemas
 body: Enables typed nested objects within a settings schema without flattening keys.
 author: Alice Martin (@alice)
 pr: #38 (https://github.com/axnic/pi-extension-settings/pull/38)
+
 ---
+
 sha: d4e5f6a
 subject: fix(sdk): URL validator now accepts localhost without a TLD
 body:
 author: Bob Chen (@bob-chen)
 pr: #45 (https://github.com/axnic/pi-extension-settings/pull/45)
+
 ---
+
 sha: f7a8b9c
 subject: chore(deps): Bump TypeScript to 5.5
 body:
 author: Alice Martin (@alice)
 pr: #41 (https://github.com/axnic/pi-extension-settings/pull/41)
----
---- END INPUT ---
 
---- OUTPUT ---
+#### Output
+
 ## What's new in v1.3.0
 
 This release adds support for nested object schemas in the SDK settings API
@@ -112,11 +115,8 @@ Thanks to all the contributors to this release:
 
 ---
 
-*These release notes were generated with the assistance of
-[GitHub Copilot](https://github.com/features/copilot).*
---- END OUTPUT ---
-
----
+_These release notes were generated with the assistance of
+[GitHub Copilot](https://github.com/features/copilot)._
 
 ### Example 2
 
@@ -128,16 +128,17 @@ subject: feat(ui): Add keyboard navigation to the settings panel
 body: Arrow keys and Enter now navigate and confirm settings entries in the TUI.
 author: Charlie Dupont (@charlie-d)
 pr: #52 (https://github.com/axnic/pi-extension-settings/pull/52)
+
 ---
+
 sha: e5f6a7b
 subject: fix(core): Registry no longer overwrites entries on hot-reload
 body:
 author: Alice Martin (@alice)
 pr: #50 (https://github.com/axnic/pi-extension-settings/pull/50)
----
---- END INPUT ---
 
---- OUTPUT ---
+#### Output
+
 ## What's new in v1.3.0-rc.1
 
 First release candidate for v1.3.0. This RC introduces keyboard navigation in
@@ -158,6 +159,5 @@ Thanks to all the contributors to this release:
 
 ---
 
-*These release notes were generated with the assistance of
-[GitHub Copilot](https://github.com/features/copilot).*
---- END OUTPUT ---
+_These release notes were generated with the assistance of
+[GitHub Copilot](https://github.com/features/copilot)._

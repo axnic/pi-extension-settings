@@ -21,7 +21,7 @@ cd ~/.pi/agent/extensions
 git clone <your-fork-url> pi-extension-settings
 cd pi-extension-settings
 
-# Trust the mise config and install all pinned tools (Node, Biome, markdownlint)
+# Trust the mise config and install all pinned tools (Node, Trunk, markdownlint)
 mise trust
 mise install
 
@@ -34,22 +34,19 @@ pnpm install
 All dev tasks are declared in `mise.toml`. Run `mise tasks` to list them.
 The most useful ones:
 
-| Command              | Alias | What it does                                        |
-| -------------------- | ----- | --------------------------------------------------- |
-| `mise run lint`      | `l`   | Run all linters in parallel                         |
-| `mise run lint:fix`  | `lf`  | Auto-fix all lint issues in parallel                |
-| `mise run build`     | `b`   | Type-check extension + compile SDK (always runs)    |
+| Command             | Alias | What it does                                     |
+| ------------------- | ----- | ------------------------------------------------ |
+| `mise run lint`     | `l`   | Run all linters in parallel                      |
+| `mise run lint:fix` | `lf`  | Auto-fix all lint issues in parallel             |
+| `mise run build`    | `b`   | Type-check extension + compile SDK (always runs) |
 
-Individual tasks when you only want one linter or one build target:
+Individual tasks when you only want a specific build target:
 
-| Command                       | Alias | What it does                             |
-| ----------------------------- | ----- | ---------------------------------------- |
-| `mise run lint:biome`         | `lb`  | Biome: check TypeScript/JS               |
-| `mise run lint:biome:fix`     | `lbf` | Biome: check + auto-fix TypeScript/JS    |
-| `mise run lint:markdownlint`  | `lm`  | markdownlint: check Markdown             |
-| `mise run lint:markdownlint:fix` | `lmf` | markdownlint: check + fix Markdown   |
-| `mise run build:extension`    | `be`  | Type-check the extension only            |
-| `mise run build:sdk`          | `bs`  | Compile SDK to `sdk/dist/` only          |
+| Command                    | Alias | What it does                     |
+| -------------------------- | ----- | -------------------------------- |
+| `mise run build:extension` | `be`  | Type-check the extension only    |
+| `mise run build:sdk`       | `bs`  | Compile SDK to `sdk/dist/` only  |
+| `mise run lint:commitlint` | `lc`  | Validate the last commit message |
 
 Tasks with `sources` configured are **incremental**: mise skips them when the
 relevant files have not changed since the last run. The meta `build` task has
@@ -58,10 +55,9 @@ compile?" check.
 
 ### Linter configuration
 
-| File                  | Linter       | Scope                         |
-| --------------------- | ------------ | ----------------------------- |
-| `biome.json`          | Biome        | TypeScript / JS formatting and linting |
-| `.markdownlint.json`  | markdownlint | Markdown style rules          |
+| File           | Linter | Scope                                       |
+| -------------- | ------ | ------------------------------------------- |
+| .trunk/configs | Trunk  | Trunk-managed linters and formatter configs |
 
 ## Register the extension with pi
 
@@ -117,7 +113,7 @@ functional reducer (`src/ui/model.ts`) that is also cheap to test directly.
 
 - TypeScript, ES modules.
 - No build step — pi loads `.ts` files directly.
-- Formatting and linting are handled by Biome (`biome.json`). Run
+- Formatting and linting are handled by Trunk (.trunk/configs). Run
   `mise run lint:fix` before pushing to auto-fix most issues.
 - Public SDK exports live in `sdk/index.ts`. If you add a new hook or builder,
   export it from there and document it under `sdk/docs/`.

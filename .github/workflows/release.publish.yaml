@@ -77,8 +77,8 @@ jobs:
       name: npm
       url: https://www.npmjs.com/org/axnic
     permissions:
-      contents: write  # upload release assets
-      id-token: write  # OIDC → npm provenance
+      contents: write # upload release assets
+      id-token: write # OIDC → npm provenance
 
     steps:
       - name: ⬇️ Checkout repository
@@ -145,7 +145,7 @@ jobs:
             --key  ~/.config/notation/localkeys/ci.key \
             --cert ~/.config/notation/localkeys/ci.crt
         env:
-          NOTATION_SIGNING_KEY:  ${{ secrets.NOTATION_SIGNING_KEY }}
+          NOTATION_SIGNING_KEY: ${{ secrets.NOTATION_SIGNING_KEY }}
           NOTATION_SIGNING_CERT: ${{ secrets.NOTATION_SIGNING_CERT }}
 
       - name: ✍️ Sign SBOMs and publish summary
