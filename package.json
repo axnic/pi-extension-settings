@@ -1,6 +1,6 @@
 {
   "name": "@axnic/pi-extension-settings",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Centralized settings panel for pi extensions.",
   "author": "axnic",
   "license": "MIT",
@@ -25,12 +25,26 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/",
+    "sdk/docs/",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "build": "mise run build",
     "build:extension": "tsc -p tsconfig.json",
-    "build:sdk": "npm --prefix sdk run build",
-    "build:all": "npm run build && npm run build:sdk",
-    "prepublishOnly": "TRUNK_TELEMETRY=off trunk check --all && npm run typecheck && npm run test && npm run build:all",
+    "build:sdk": "pnpm --filter @axnic/pi-extension-settings-sdk run build",
+    "build:all": "pnpm run build:extension && pnpm run build:sdk",
+    "clean": "rimraf dist",
+    "prepublishOnly": "pnpm run clean && pnpm run build:all && pnpm test",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -38,18 +52,17 @@
     "lint:fix": "mise run lint:fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.11",
-    "@commitlint/cli": "^20.5.0",
-    "@commitlint/types": "^20.5.0",
-    "@types/node": "^20.0.0",
-    "memfs": "^4.57.1",
+    "@commitlint/cli": "catalog:",
+    "@commitlint/types": "catalog:",
+    "@types/node": "catalog:",
+    "rimraf": "catalog:",
     "trunk": "latest",
-    "typescript": "^5.0.0",
-    "vitest": "^4.0.18"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "pi": {
     "extensions": [
-      "./src/index.ts"
+      "./dist/index.js"
     ]
   },
   "engines": {

@@ -1,6 +1,6 @@
 {
   "name": "@axnic/pi-extension-settings-sdk",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Type-safe SDK for interacting with the pi-extension-settings panel (for extension authors).",
   "author": "axnic",
   "license": "MIT",
@@ -34,16 +34,23 @@
   "files": [
     "dist/",
     "docs/",
-    "README.md",
-    "LICENSE"
+    "LICENSE",
+    "README.md"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "clean": "rm -rf dist",
-    "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build"
+    "clean": "rimraf dist",
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm test"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "memfs": "catalog:",
+    "rimraf": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "@axnic/pi-extension-settings": "workspace:*",
