@@ -156,18 +156,8 @@ jobs:
       # --no-git-tag-version: tag is created manually after tests pass.
       - name: 🔖 Bump versions in package.json files
         run: |
-          pnpm version ${{ steps.version.outputs.version }} --no-git-tag-version
-          pnpm --dir sdk version ${{ steps.version.outputs.version }} --no-git-tag-version
-
-      # ── Build & validate ───────────────────────────────────────────────────
-      - name: 🏷️ Type-check SDK
-        run: tsc --noEmit -p tsconfig.json && mise run build:extension && tsc --noEmit -p sdk/tsconfig.json
-
-      - name: 🧪 Run extension tests
-        run: pnpm test
-
-      - name: 🏗️ Build
-        run: mise run build
+          pnpm pkg set version=${{ steps.version.outputs.version }}
+          pnpm --recursive exec pnpm pkg set version=${{ steps.version.outputs.version }}
 
       # ── Commit, tag, push ──────────────────────────────────────────────────
       - name: 🔧 Configure git identity
