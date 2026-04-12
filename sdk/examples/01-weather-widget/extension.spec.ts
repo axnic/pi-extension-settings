@@ -59,11 +59,10 @@ function makePi() {
 
 /** Simulate the panel saving a single setting change for "weather-widget". */
 function emitChange(pi: ReturnType<typeof makePi>, key: string, value: string) {
-  pi.triggerEvent("pi-extension-settings:changed", {
-    extension: "weather-widget",
-    key,
-    value,
-  });
+  vi.mocked(getExtensionSetting).mockImplementation((_, k) =>
+    k === key ? value : undefined,
+  );
+  pi.triggerEvent(`pi-extension-settings:weather-widget:changed`, { key });
 }
 
 // ─── Suite ────────────────────────────────────────────────────────────────────
@@ -88,9 +87,9 @@ describe("WeatherWidget — createWeatherWidget()", () => {
       );
     });
 
-    it("registers a listener for pi-extension-settings:changed", () => {
+    it("registers a listener for pi-extension-settings:weather-widget:changed", () => {
       expect(pi.events.on).toHaveBeenCalledWith(
-        "pi-extension-settings:changed",
+        "pi-extension-settings:weather-widget:changed",
         expect.any(Function),
       );
     });
@@ -443,10 +442,8 @@ describe("WeatherWidget — createWeatherWidget()", () => {
     it("does NOT fire for an event from a different extension", () => {
       const cb = vi.fn();
       widget.onDisplayChange(cb);
-      pi.triggerEvent("pi-extension-settings:changed", {
-        extension: "other-extension",
+      pi.triggerEvent("pi-extension-settings:other-extension:changed", {
         key: "city",
-        value: "Seoul",
       });
       expect(cb).not.toHaveBeenCalled();
     });

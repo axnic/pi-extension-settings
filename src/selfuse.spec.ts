@@ -150,11 +150,15 @@ describe("pi-extension-settings — self-use via the public SDK", () => {
     const calls: unknown[] = [];
     settings.onChange("behavior.start-in-search-mode", (v) => calls.push(v));
 
-    // Simulate the panel saving a change.
-    pi.events.emit("pi-extension-settings:changed", {
-      extension: EXTENSION_NAME,
+    // Pre-populate storage so getExtensionSetting returns "false" when the SDK reads it.
+    storage.setExtensionSetting(
+      EXTENSION_NAME,
+      "behavior.start-in-search-mode",
+      "false",
+    );
+    // Simulate the panel saving a change (scoped event, key-only payload).
+    pi.events.emit(`pi-extension-settings:${EXTENSION_NAME}:changed`, {
       key: "behavior.start-in-search-mode",
-      value: "false",
     });
 
     expect(calls).toEqual([false]);

@@ -8,6 +8,7 @@
  * @module
  */
 
+export type { SettingChangedPayload } from "./src/core/extension-settings";
 export { ExtensionSettings } from "./src/core/extension-settings";
 export type {
   Boolean,

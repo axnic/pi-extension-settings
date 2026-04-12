@@ -62,11 +62,10 @@ function makePi() {
 
 /** Simulate the settings panel saving a change for "code-formatter". */
 function emitChange(pi: ReturnType<typeof makePi>, key: string, value: string) {
-  pi.triggerEvent("pi-extension-settings:changed", {
-    extension: "code-formatter",
-    key,
-    value,
-  });
+  vi.mocked(getExtensionSetting).mockImplementation((_, k) =>
+    k === key ? value : undefined,
+  );
+  pi.triggerEvent(`pi-extension-settings:code-formatter:changed`, { key });
 }
 
 /**
@@ -116,9 +115,9 @@ describe("CodeFormatter — createCodeFormatter()", () => {
       );
     });
 
-    it("registers a listener for pi-extension-settings:changed", () => {
+    it("registers a listener for pi-extension-settings:code-formatter:changed", () => {
       expect(pi.events.on).toHaveBeenCalledWith(
-        "pi-extension-settings:changed",
+        "pi-extension-settings:code-formatter:changed",
         expect.any(Function),
       );
     });
@@ -494,10 +493,8 @@ describe("CodeFormatter — createCodeFormatter()", () => {
     it("does NOT fire for a change from a different extension", () => {
       const cb = vi.fn();
       formatter.onConfigChange(cb);
-      pi.triggerEvent("pi-extension-settings:changed", {
-        extension: "other-extension",
+      pi.triggerEvent("pi-extension-settings:other-extension:changed", {
         key: "parser",
-        value: "biome",
       });
       expect(cb).not.toHaveBeenCalled();
     });

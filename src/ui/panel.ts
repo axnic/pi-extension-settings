@@ -109,12 +109,10 @@ export class SettingsPanel implements Component {
       data,
       this.state,
       this.rows,
-      // onSave: fire pi event to notify consumers of the change.
-      (extension, key, value) => {
-        this.pi.events.emit("pi-extension-settings:changed", {
-          extension,
+      // onSave: fire pi event (scoped to this extension) to notify consumers of the change.
+      (extension, key, _value) => {
+        this.pi.events.emit(`pi-extension-settings:${extension}:changed`, {
           key,
-          value,
         });
       },
       // onSuggestionsUpdate: update state with new completer suggestions.

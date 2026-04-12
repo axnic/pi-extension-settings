@@ -67,13 +67,13 @@ sequenceDiagram
 
     C->>ES: new ExtensionSettings(pi, id, schema)
     ES->>P: listen for "pi-extension-settings:ready"
-    ES->>P: listen for "pi-extension-settings:changed"
+    ES->>P: listen for "pi-extension-settings:{id}:changed"
     Note over P: pi session starts
     P-->>ES: "pi-extension-settings:ready"
     ES->>P: emit "pi-extension-settings:register" {id, schema}
     Note over P: user edits a setting
-    P-->>ES: "pi-extension-settings:changed" {key, value}
-    ES-->>C: fire onChange listeners
+    P-->>ES: "pi-extension-settings:{id}:changed" {key}
+    ES-->>C: read value from storage, fire onChange listeners
 ```
 
 You do not call any init method yourself. Construction alone is enough to wire everything up.

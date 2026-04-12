@@ -108,7 +108,7 @@ export function activate(pi: ExtensionAPI) {
 The constructor wires two pi event listeners:
 
 - `pi-extension-settings:ready` — when the session starts, `ExtensionSettings` registers your schema with the panel automatically.
-- `pi-extension-settings:changed` — when the user saves a change, registered `onChange` listeners fire.
+- `pi-extension-settings:{extension}:changed` — when the user saves a change in the panel, the event is scoped to your extension so only your listeners fire. The SDK re-reads the value from storage and fires registered `onChange` callbacks.
 
 You do not call any init method yourself.
 

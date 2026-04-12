@@ -26,6 +26,21 @@ import {
   getExtensionSetting,
   setExtensionSetting,
 } from "@axnic/pi-extension-settings/src/core/storage";
+
+// ─── Event types ──────────────────────────────────────────────────────────────
+
+/**
+ * Payload for the `pi-extension-settings:{extension}:changed` event.
+ *
+ * The panel emits this event (scoped per extension) when the user saves a
+ * setting. Only the key is transmitted; the SDK re-reads the current value
+ * from storage so the caller always receives a fully-written, up-to-date value.
+ */
+export type SettingChangedPayload = {
+  /** The dotted key path of the changed setting. */
+  key: string;
+};
+
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { SettingNotFoundError } from "./errors";
 import type { LeafNode, SettingNode } from "./nodes";
@@ -151,17 +166,23 @@ export class ExtensionSettings<S extends Record<string, SettingNode>> {
     });
 
     // When the settings panel saves a change for our extension, fire onChange listeners.
-    pi.events.on("pi-extension-settings:changed", (rawData: unknown) => {
-      const data = rawData as { extension: string; key: string; value: string };
-      if (!data?.extension || data.extension !== this.extension) return;
-      const node = findNode(schema, data.key);
-      if (!node) return;
-      const parsed = parseValue(node, data.value);
-      const cbs = this.listeners.get(data.key);
-      if (cbs) {
-        for (const cb of cbs) cb(parsed);
-      }
-    });
+    // The event is scoped to this extension so only our listeners are invoked.
+    pi.events.on(
+      `pi-extension-settings:${extension}:changed`,
+      (rawData: unknown) => {
+        const data = rawData as SettingChangedPayload;
+        if (!data?.key) return;
+        const node = findNode(schema, data.key);
+        if (!node) return;
+        const raw = getExtensionSetting(extension, data.key);
+        const parsed =
+          raw !== undefined ? parseValue(node, raw) : getDefaultValue(node);
+        const cbs = this.listeners.get(data.key);
+        if (cbs) {
+          for (const cb of cbs) cb(parsed);
+        }
+      },
+    );
   }
 
   /**

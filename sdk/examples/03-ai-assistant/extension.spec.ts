@@ -64,11 +64,10 @@ function makePi() {
 
 /** Simulate the settings panel saving a change for "ai-assistant". */
 function emitChange(pi: ReturnType<typeof makePi>, key: string, value: string) {
-  pi.triggerEvent("pi-extension-settings:changed", {
-    extension: "ai-assistant",
-    key,
-    value,
-  });
+  vi.mocked(getExtensionSetting).mockImplementation((_, k) =>
+    k === key ? value : undefined,
+  );
+  pi.triggerEvent(`pi-extension-settings:ai-assistant:changed`, { key });
 }
 
 /**
@@ -119,9 +118,9 @@ describe("AiAssistant — createAiAssistant()", () => {
       );
     });
 
-    it("registers a listener for pi-extension-settings:changed", () => {
+    it("registers a listener for pi-extension-settings:ai-assistant:changed", () => {
       expect(pi.events.on).toHaveBeenCalledWith(
-        "pi-extension-settings:changed",
+        "pi-extension-settings:ai-assistant:changed",
         expect.any(Function),
       );
     });
@@ -529,10 +528,8 @@ describe("AiAssistant — createAiAssistant()", () => {
     it("does NOT fire for a panel event from a different extension", () => {
       const cb = vi.fn();
       assistant.onClientChange(cb);
-      pi.triggerEvent("pi-extension-settings:changed", {
-        extension: "other-extension",
+      pi.triggerEvent("pi-extension-settings:other-extension:changed", {
         key: "endpoint",
-        value: "https://hijacked.example.com",
       });
       expect(cb).not.toHaveBeenCalled();
     });
