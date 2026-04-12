@@ -52,6 +52,11 @@ Every node shares two base fields:
 
 ---
 
+> [!NOTE]
+> Hook namespaces used in the snippets below (`v`, `t`, `c`, `d`) are imported from `"pi-extension-settings/sdk/hooks"`, **not** from the root `"pi-extension-settings/sdk"`. See [Getting Started](../getting-started.md#step-1--install-and-import) for the canonical import block.
+
+---
+
 ## `Text`
 
 A free-form string input. The foundation for every specialized input in the SDK — color pickers, file browsers, URL fields, and numeric inputs are all just `S.text` nodes with hooks attached.

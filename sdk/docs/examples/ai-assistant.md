@@ -34,6 +34,15 @@ schema
 
 ---
 
+## Imports
+
+```ts
+import { S, ExtensionSettings } from "pi-extension-settings/sdk";
+import { v, t, d } from "pi-extension-settings/sdk/hooks";
+```
+
+---
+
 ## Validators and transforms on numeric and text nodes
 
 ```ts

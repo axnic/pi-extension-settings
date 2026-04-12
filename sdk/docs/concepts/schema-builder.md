@@ -82,6 +82,9 @@ flowchart TD
 
 ## `S.text(opts)`
 
+> [!NOTE]
+> Hook namespaces used in the snippets below (`v`, `t`, `c`, `d`) are imported from `"pi-extension-settings/sdk/hooks"`, **not** from the root `"pi-extension-settings/sdk"`. See [Getting Started](../getting-started.md#step-1--install-and-import) for the canonical import block.
+
 A free-form text input. Every specialized input (color picker, URL field, path browser, number field) is built on top of `S.text` by attaching hooks.
 
 ```ts

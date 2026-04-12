@@ -28,6 +28,15 @@ schema
 
 ---
 
+## Imports
+
+```ts
+import { S, ExtensionSettings } from "pi-extension-settings/sdk";
+import { v } from "pi-extension-settings/sdk/hooks";
+```
+
+---
+
 ## Sections
 
 `S.section` groups related settings under a collapsible header. Children are accessed with dot notation:

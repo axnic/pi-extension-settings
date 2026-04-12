@@ -8,6 +8,15 @@ A minimal extension that displays current weather for a configured city. This ex
 
 ---
 
+## Imports
+
+```ts
+import { S, ExtensionSettings } from "pi-extension-settings/sdk";
+import { v } from "pi-extension-settings/sdk/hooks";
+```
+
+---
+
 ## Schema
 
 ```ts
