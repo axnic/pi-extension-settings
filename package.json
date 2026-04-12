@@ -32,7 +32,6 @@
   },
   "files": [
     "dist/",
-    "sdk/docs/",
     "LICENSE",
     "README.md"
   ],
@@ -42,7 +41,7 @@
     "build:sdk": "pnpm --filter @axnic/pi-extension-settings-sdk run build",
     "build:all": "pnpm run build:extension && pnpm run build:sdk",
     "clean": "rimraf dist",
-    "prepublishOnly": "pnpm run clean && pnpm run build:all && pnpm test",
+    "prepublishOnly": "pnpm run clean && pnpm run build:all && pnpm test && node scripts/prepare-publish-readmes.mjs root",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit -p tsconfig.json",
