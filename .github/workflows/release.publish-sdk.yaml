@@ -1,4 +1,4 @@
----
+# yaml-language-server: $schema=https://www.schemastore.org/github-action.json
 # =============================================================================
 # Publish SDK — push @axnic/pi-extension-settings-sdk to npm
 # =============================================================================
