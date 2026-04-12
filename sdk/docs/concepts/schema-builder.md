@@ -43,8 +43,7 @@ const schema = S.settings({
 | `tooltip` length ≤ 128 characters | [`TooltipTooLongError`](../reference/errors.md#tooltiptoolongerror)           |
 | `Enum` default ∈ `values`         | [`EnumDefaultMismatchError`](../reference/errors.md#enumdefaultmismatcherror) |
 
-> [!IMPORTANT]
-> These checks happen synchronously when you call `S.settings()` at module load time. Schema bugs fail fast, not silently at runtime.
+> **Important:** These checks happen synchronously when you call `S.settings()` at module load time. Schema bugs fail fast, not silently at runtime.
 
 ### Compile-time inference
 
@@ -82,8 +81,7 @@ flowchart TD
 
 ## `S.text(opts)`
 
-> [!NOTE]
-> Hook namespaces used in the snippets below (`v`, `t`, `c`, `d`) are imported from `"pi-extension-settings/sdk/hooks"`, **not** from the root `"pi-extension-settings/sdk"`. See [Getting Started](../getting-started.md#step-1--install-and-import) for the canonical import block.
+> **Note:** Hook namespaces used in the snippets below (`v`, `t`, `c`, `d`) are imported from `"pi-extension-settings/sdk/hooks"`, **not** from the root `"pi-extension-settings/sdk"`. See [Getting Started](../getting-started.md#step-1--install-and-import) for the canonical import block.
 
 A free-form text input. Every specialized input (color picker, URL field, path browser, number field) is built on top of `S.text` by attaching hooks.
 
@@ -112,8 +110,7 @@ S.text({
 | `complete`    | `CompleteFn`           | No       | Async autocomplete suggestions.          |
 | `display`     | `DisplayFn<string>`    | No       | Converts stored value to display string. |
 
-> [!TIP]
-> `Text` is the **only** node type that supports the full hook stack (`validation`, `transform`, `complete`, `display`). Boolean and Enum support only `display`; List and Dict support `validation` and `display` (on their items/entries).
+> **Tip:** `Text` is the **only** node type that supports the full hook stack (`validation`, `transform`, `complete`, `display`). Boolean and Enum support only `display`; List and Dict support `validation` and `display` (on their items/entries).
 
 ---
 
@@ -137,8 +134,7 @@ S.number({
 | `validation`  | `ValidationFn<number>` | No       | Blocks save on failure.                  |
 | `display`     | `DisplayFn<number>`    | No       | Converts stored value to display string. |
 
-> [!NOTE]
-> The numeric validators (`v.integer`, `v.positive`, `v.negative`, `v.range`) target `Number` nodes. The `v.percentage` validator also accepts `Text` nodes (0–100 range with optional `%`).
+> **Note:** The numeric validators (`v.integer`, `v.positive`, `v.negative`, `v.range`) target `Number` nodes. The `v.percentage` validator also accepts `Text` nodes (0–100 range with optional `%`).
 
 ---
 
@@ -201,8 +197,7 @@ values: [
 
 Use labeled entries when the stored value is a stable technical identifier that should not change with UI copy.
 
-> [!WARNING]
-> If `default` is not present in `values`, `S.settings()` throws `EnumDefaultMismatchError`. The check compares against `value` (not `label`) for labeled entries.
+> **Warning:** If `default` is not present in `values`, `S.settings()` throws `EnumDefaultMismatchError`. The check compares against `value` (not `label`) for labeled entries.
 
 ---
 
@@ -297,8 +292,7 @@ settings.get("appearance.theme"); // "dark" | "light"
 settings.get("appearance.advanced.line-height"); // "1.5"
 ```
 
-> [!NOTE]
-> Sections are containers, not leaves. You cannot call `settings.get("appearance")` — you address the leaves inside them.
+> **Note:** Sections are containers, not leaves. You cannot call `settings.get("appearance")` — you address the leaves inside them.
 
 ---
 
@@ -321,7 +315,7 @@ S.struct({
 });
 ```
 
-> [!IMPORTANT]
+> **Important:**
 >
 > - `Struct` is **not** a `SettingNode`. It cannot appear at the top level of a schema.
 > - Properties are limited to scalar types (`Text`, `Number`, `Boolean`, `Enum`). No nested lists, dicts, or sections inside a struct — list items must stay simple enough to render as table rows.
@@ -372,17 +366,13 @@ This inferred type flows through every method on `ExtensionSettings`:
 
 ## Common pitfalls
 
-> [!CAUTION]
-> **Passing a raw node object instead of calling `S.*`.** Builders stamp the internal `_tag` discriminant. Objects built by hand will not match the union type and will not work with inference.
+> **Caution:** **Passing a raw node object instead of calling `S.*`.** Builders stamp the internal `_tag` discriminant. Objects built by hand will not match the union type and will not work with inference.
 
-> [!CAUTION]
-> **Forgetting to wrap the top-level schema in `S.settings()`.** Without it, runtime validation never runs. Schema bugs will surface much later and much more cryptically.
+> **Caution:** **Forgetting to wrap the top-level schema in `S.settings()`.** Without it, runtime validation never runs. Schema bugs will surface much later and much more cryptically.
 
-> [!CAUTION]
-> **Using a long tooltip as documentation.** The 128-character limit is enforced to keep the UI scannable. Use `description` for long Markdown content — it has no length limit.
+> **Caution:** **Using a long tooltip as documentation.** The 128-character limit is enforced to keep the UI scannable. Use `description` for long Markdown content — it has no length limit.
 
-> [!CAUTION]
-> **Nesting non-scalar nodes inside a `Struct`.** Struct properties must be `Text`, `Boolean`, or `Enum`. List items are rendered as table rows and cannot contain nested lists or sections.
+> **Caution:** **Nesting non-scalar nodes inside a `Struct`.** Struct properties must be `Text`, `Boolean`, or `Enum`. List items are rendered as table rows and cannot contain nested lists or sections.
 
 ---
 

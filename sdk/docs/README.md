@@ -29,7 +29,7 @@ This SDK removes all of that. You write **one schema** and get:
 - **20 validators, 16 transforms, 2 completers, 5 display functions** out of the box. Compose them with `v.all`, `v.any`, `t.pipe`, `t.compose`.
 - **Live updates.** Subscribe to per-key events with `onChange()`. Session-scoped — no listener cleanup required.
 - **Strict runtime checks.** `S.settings()` validates tooltip length and enum defaults at construction time, so schema bugs fail fast.
-- **Renders on GitHub and GitBook.** Documentation is pure CommonMark with GitHub alerts and Mermaid diagrams — no platform lock-in.
+- **Renders on GitHub and GitBook.** Documentation is pure CommonMark with Mermaid diagrams — no platform lock-in.
 
 ---
 
@@ -90,8 +90,7 @@ settings.set("theme", "light"); // ok
 settings.onChange("theme", (t) => applyTheme(t));
 ```
 
-> [!TIP]
-> The settings panel UI is generated from your schema automatically. You do not write any UI code.
+> **Tip:** The settings panel UI is generated from your schema automatically. You do not write any UI code.
 
 ---
 

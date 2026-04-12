@@ -94,8 +94,7 @@ A function that validates a value. Returns `{ valid: true }` on success or `{ va
 - `ListItem` for per-item validation on `List` nodes
 - `DictEntry` for per-entry validation on `Dict` nodes
 
-> [!NOTE]
-> The numeric validators `v.integer`, `v.positive`, `v.negative`, and `v.range` return `ValidationFn<NumValue>` for use with `Number` nodes. The `v.percentage` validator returns `ValidationFn<TextValue | NumValue>` and works with both `Text` and `Number` nodes.
+> **Note:** The numeric validators `v.integer`, `v.positive`, `v.negative`, and `v.range` return `ValidationFn<NumValue>` for use with `Number` nodes. The `v.percentage` validator returns `ValidationFn<TextValue | NumValue>` and works with both `Text` and `Number` nodes.
 
 A single `ValidationFn` is accepted per node. Compose multiple rules with `v.all(...)` or `v.any(...)`.
 

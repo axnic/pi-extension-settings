@@ -60,8 +60,7 @@ flowchart LR
 
 `complete` runs independently during typing. It never blocks a save and is unaffected by validation or transformation.
 
-> [!NOTE]
-> Programmatic writes via `ExtensionSettings.set()` **skip validation**. The validator is enforced by the settings panel UI. If you call `set()` with untrusted input, validate it yourself first.
+> **Note:** Programmatic writes via `ExtensionSettings.set()` **skip validation**. The validator is enforced by the settings panel UI. If you call `set()` with untrusted input, validate it yourself first.
 
 ---
 
@@ -89,8 +88,7 @@ transform: t.pipe(t.trim(), t.normalizeUrl());
 transform: t.pipe(t.rgbToHex(), t.hsvToHex(), t.htmlNamedToHex());
 ```
 
-> [!TIP]
-> `t.pipe(a, b)(v)` is equivalent to `b(a(v))`. Prefer `pipe` over `compose` for readability — it reads in the same order as the transforms are applied.
+> **Tip:** `t.pipe(a, b)(v)` is equivalent to `b(a(v))`. Prefer `pipe` over `compose` for readability — it reads in the same order as the transforms are applied.
 
 ---
 

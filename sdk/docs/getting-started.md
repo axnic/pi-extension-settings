@@ -31,8 +31,7 @@ flowchart TD
 - A pi extension with access to the `ExtensionAPI` from `@mariozechner/pi-coding-agent`.
 - TypeScript — the SDK ships `.ts` source files and is authored for end-to-end type inference.
 
-> [!NOTE]
-> The SDK has no runtime dependencies beyond `@mariozechner/pi-coding-agent` (supplied by the pi host).
+> **Note:** The SDK has no runtime dependencies beyond `@mariozechner/pi-coding-agent` (supplied by the pi host).
 
 ---
 
@@ -89,8 +88,7 @@ const schema = S.settings({
 });
 ```
 
-> [!IMPORTANT]
-> Every node's `tooltip` must be **128 characters or fewer**. Use the optional `description` field for longer Markdown documentation. `S.settings()` throws `TooltipTooLongError` at construction time if this limit is exceeded.
+> **Important:** Every node's `tooltip` must be **128 characters or fewer**. Use the optional `description` field for longer Markdown documentation. `S.settings()` throws `TooltipTooLongError` at construction time if this limit is exceeded.
 
 ---
 
@@ -137,8 +135,7 @@ const all = settings.getAll();
 // { "api-url": "...", theme: "dark", enabled: true }
 ```
 
-> [!TIP]
-> If a key has never been saved, `get()` returns the schema default. You never need to handle "undefined because unset" manually.
+> **Tip:** If a key has never been saved, `get()` returns the schema default. You never need to handle "undefined because unset" manually.
 
 ---
 
@@ -300,17 +297,13 @@ settings.get("appearance.font-size"); // 14
 
 ## Troubleshooting
 
-> [!WARNING]
-> **`TooltipTooLongError` at startup.** Your schema has a tooltip longer than 128 characters. Shorten it and move the extra copy into `description`, which has no length limit.
+> **Warning:** **`TooltipTooLongError` at startup.** Your schema has a tooltip longer than 128 characters. Shorten it and move the extra copy into `description`, which has no length limit.
 
-> [!WARNING]
-> **`EnumDefaultMismatchError` at startup.** An enum's `default` value is not present in its `values` array. This is checked for every enum in the tree, including those inside nested sections and list struct properties.
+> **Warning:** **`EnumDefaultMismatchError` at startup.** An enum's `default` value is not present in its `values` array. This is checked for every enum in the tree, including those inside nested sections and list struct properties.
 
-> [!WARNING]
-> **`SettingNotFoundError` at runtime.** `get()` or `set()` was called with a key that does not exist in the schema. TypeScript will normally catch this at compile time — this error only fires when keys are computed dynamically.
+> **Warning:** **`SettingNotFoundError` at runtime.** `get()` or `set()` was called with a key that does not exist in the schema. TypeScript will normally catch this at compile time — this error only fires when keys are computed dynamically.
 
-> [!TIP]
-> Text nodes always return `string`, even for numeric values. Use `S.number()` for semantically numeric settings — `get()` returns a `number` directly. If you use `S.text()` for a numeric value, parse with `parseInt()` or `Number()` and validate with `v.range()`.
+> **Tip:** Text nodes always return `string`, even for numeric values. Use `S.number()` for semantically numeric settings — `get()` returns a `number` directly. If you use `S.text()` for a numeric value, parse with `parseInt()` or `Number()` and validate with `v.range()`.
 
 ---
 

@@ -47,13 +47,11 @@ Every node shares two base fields:
 | `tooltip`     | `string` | Yes      | Short inline label next to the control. **Max 128 chars.** |
 | `description` | `string` | No       | Full Markdown documentation. No length limit.              |
 
-> [!IMPORTANT]
-> The 128-character tooltip limit is enforced by `S.settings()` at construction time. Exceeding it throws `TooltipTooLongError`. Use `description` for longer content — it is rendered in an expandable sidebar only when the user opens it.
+> **Important:** The 128-character tooltip limit is enforced by `S.settings()` at construction time. Exceeding it throws `TooltipTooLongError`. Use `description` for longer content — it is rendered in an expandable sidebar only when the user opens it.
 
 ---
 
-> [!NOTE]
-> Hook namespaces used in the snippets below (`v`, `t`, `c`, `d`) are imported from `"pi-extension-settings/sdk/hooks"`, **not** from the root `"pi-extension-settings/sdk"`. See [Getting Started](../getting-started.md#step-1--install-and-import) for the canonical import block.
+> **Note:** Hook namespaces used in the snippets below (`v`, `t`, `c`, `d`) are imported from `"pi-extension-settings/sdk/hooks"`, **not** from the root `"pi-extension-settings/sdk"`. See [Getting Started](../getting-started.md#step-1--install-and-import) for the canonical import block.
 
 ---
 
@@ -148,8 +146,7 @@ S.number({
 | `validation` | `ValidationFn<number>` | No       | Called on input; blocks save on failure.        |
 | `display`    | `DisplayFn<number>`    | No       | Converts the stored number to a display string. |
 
-> [!NOTE]
-> The numeric validators (`v.integer`, `v.positive`, `v.negative`, `v.range`) target `Number` nodes. The `v.percentage` validator also accepts `Text` nodes (0–100 range with optional `%`).
+> **Note:** The numeric validators (`v.integer`, `v.positive`, `v.negative`, `v.range`) target `Number` nodes. The `v.percentage` validator also accepts `Text` nodes (0–100 range with optional `%`).
 
 ---
 
@@ -216,8 +213,7 @@ values: [
 
 Use labeled entries when the stored value must remain stable (e.g. it is a key used by your backend) but the UI copy might change.
 
-> [!WARNING]
-> `S.settings()` verifies that `default` is present in `values` (matching against `value` for labeled entries). A mismatch throws `EnumDefaultMismatchError`.
+> **Warning:** `S.settings()` verifies that `default` is present in `values` (matching against `value` for labeled entries). A mismatch throws `EnumDefaultMismatchError`.
 
 ---
 
@@ -253,8 +249,7 @@ S.list({
 | `validation` | `ValidationFn<ListItem>`  | No       | Validates each item individually.            |
 | `display`    | `ListDisplayFn<ListItem>` | No       | Converts all items to display strings.       |
 
-> [!NOTE]
-> List items are stored as JSON. `settings.get("ignored-paths")` returns the parsed array; `settings.set()` serializes it back. You don't serialize or parse anything yourself.
+> **Note:** List items are stored as JSON. `settings.get("ignored-paths")` returns the parsed array; `settings.set()` serializes it back. You don't serialize or parse anything yourself.
 
 ---
 
@@ -330,8 +325,7 @@ settings.get("appearance.advanced.line-height"); // "1.5"
 
 `InferConfig` flattens the tree so every leaf is a dot-separated key in the resulting config type.
 
-> [!NOTE]
-> Sections are containers, not leaves. `settings.get("appearance")` is **not** valid — you always address a leaf.
+> **Note:** Sections are containers, not leaves. `settings.get("appearance")` is **not** valid — you always address a leaf.
 
 ---
 
@@ -354,8 +348,7 @@ S.struct({
 });
 ```
 
-> [!IMPORTANT]
-> Properties are limited to **scalar** node types: `Text`, `Number`, `Boolean`, and `Enum`. List items are rendered as table rows and cannot contain nested lists, dicts, or sections.
+> **Important:** Properties are limited to **scalar** node types: `Text`, `Number`, `Boolean`, and `Enum`. List items are rendered as table rows and cannot contain nested lists, dicts, or sections.
 
 ---
 

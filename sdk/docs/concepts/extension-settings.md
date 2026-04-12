@@ -52,8 +52,7 @@ export function activate(pi: ExtensionAPI) {
 }
 ```
 
-> [!TIP]
-> Pick a unique `extension` identifier and keep it stable. It is the primary key for your stored settings — renaming it strands any previously saved values.
+> **Tip:** Pick a unique `extension` identifier and keep it stable. It is the primary key for your stored settings — renaming it strands any previously saved values.
 
 ---
 
@@ -98,8 +97,7 @@ const enabled = settings.get("enabled"); // boolean
 const theme = settings.get("appearance.theme"); // string (dot-notation for sections)
 ```
 
-> [!TIP]
-> `get()` always returns a value. If no value has been saved yet, it returns the node's `default`. You never need to handle an `undefined` "unset" state.
+> **Tip:** `get()` always returns a value. If no value has been saved yet, it returns the node's `default`. You never need to handle an `undefined` "unset" state.
 
 ---
 
@@ -134,8 +132,7 @@ settings.set("enabled", false);
 settings.set("appearance.theme", "light");
 ```
 
-> [!WARNING]
-> `set()` does not run the node's `validation` hook. Validation is enforced by the settings panel UI, not by programmatic writes. If your extension accepts untrusted input and calls `set()` directly, validate the input yourself first.
+> **Warning:** `set()` does not run the node's `validation` hook. Validation is enforced by the settings panel UI, not by programmatic writes. If your extension accepts untrusted input and calls `set()` directly, validate the input yourself first.
 
 ---
 
@@ -161,8 +158,7 @@ settings.onChange("appearance.font-size", (size) =>
 );
 ```
 
-> [!NOTE]
-> Listeners are **session-scoped**. They live for the lifetime of the pi session and do not need explicit cleanup. There is no `unsubscribe` method.
+> **Note:** Listeners are **session-scoped**. They live for the lifetime of the pi session and do not need explicit cleanup. There is no `unsubscribe` method.
 
 ---
 
