@@ -128,6 +128,15 @@ Every node requires `tooltip` (≤ 128 chars, enforced at schema construction ti
 
 The second argument to `ExtensionSettings(pi, id, schema)` is the storage namespace. Renaming it orphans saved values.
 
-### Public SDK exports
+### Public SDK exports — keep docs in sync
 
-All public SDK symbols are re-exported from `sdk/index.ts`. When adding a new hook or builder, export it from there and add documentation under `sdk/docs/`.
+All public SDK symbols are re-exported from `sdk/index.ts`. When modifying the SDK public surface (adding, renaming, or removing a hook, builder, type, or error class), you **must** update all of the following in the same PR:
+
+1. **`sdk/index.ts`** — add or remove the export.
+2. **`sdk/docs/reference/api.md`** — update the relevant table (Schema builder, Validators, Transforms, Completers, Display, Types, Errors).
+3. **`sdk/docs/reference/types.md`** — update type signatures and descriptions if a type changed.
+4. **Hook-specific doc page** (`sdk/docs/hooks/validators.md`, `transforms.md`, `completers.md`, `display.md`) — add or update the function's section.
+5. **`sdk/docs/concepts/node-types.md`** — update field tables and the hook availability matrix if a node's hook support changed.
+6. **`sdk/docs/concepts/schema-builder.md`** — update field tables for affected builders.
+
+The counts in `sdk/docs/README.md` and `sdk/docs/hooks/README.md` (e.g., "20 validators, 16 transforms") must also be updated when hooks are added or removed.
