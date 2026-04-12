@@ -30,7 +30,11 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./src/*": {
+      "import": "./dist/src/*",
+      "types": "./dist/src/*"
+    }
   },
   "files": [
     "dist/",
