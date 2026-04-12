@@ -112,19 +112,75 @@ jobs:
           git push origin "v${{ inputs.version }}"
 
       # ── GitHub Release ─────────────────────────────────────────────────────
+      - name: 🤖 Generate release notes via GitHub Copilot
+        id: release-notes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const inputNotes = `${{ inputs.notes }}`.trim();
+            if (inputNotes) {
+              fs.writeFileSync('release-notes.md', inputNotes);
+              return;
+            }
+
+            // Get base notes from GitHub's commit/PR algorithm
+            const { data: generated } = await github.rest.repos.generateReleaseNotes({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: 'v${{ inputs.version }}',
+              target_commitish: context.sha,
+            });
+
+            // Enhance with GitHub Copilot via GitHub Models API
+            try {
+              const res = await fetch('https://models.github.ai/inference/chat/completions', {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${{ secrets.GITHUB_TOKEN }}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  model: 'openai/gpt-4.1-mini',
+                  messages: [
+                    {
+                      role: 'system',
+                      content: [
+                        'You are a technical writer producing release notes for an open-source Node.js developer-tools library.',
+                        'Rewrite the provided auto-generated GitHub release notes into a polished Markdown release summary.',
+                        'Structure: one short paragraph of highlights, then a bullet list of changes grouped by type (Features, Fixes, Tooling).',
+                        'Be concise and user-focused. Do not invent features; only summarise what the input describes.',
+                        'Output only the Markdown text, no preamble.',
+                      ].join(' '),
+                    },
+                    {
+                      role: 'user',
+                      content: generated.body,
+                    },
+                  ],
+                  max_tokens: 800,
+                }),
+              });
+
+              if (res.ok) {
+                const data = await res.json();
+                fs.writeFileSync('release-notes.md', data.choices[0].message.content);
+                core.info('Release notes generated via GitHub Copilot (GitHub Models).');
+                return;
+              }
+              core.warning(`GitHub Models API returned ${res.status} — falling back to auto-generated notes.`);
+            } catch (err) {
+              core.warning(`GitHub Models API call failed (${err.message}) — falling back to auto-generated notes.`);
+            }
+
+            fs.writeFileSync('release-notes.md', generated.body);
+
       - name: 🚀 Create GitHub Release
         run: |
-          NOTES="${{ inputs.notes }}"
-          if [[ -z "$NOTES" ]]; then
-            gh release create "v${{ inputs.version }}" \
-              --title "v${{ inputs.version }}" \
-              --generate-notes \
-              --latest
-          else
-            gh release create "v${{ inputs.version }}" \
-              --title "v${{ inputs.version }}" \
-              --notes "$NOTES" \
-              --latest
-          fi
+          gh release create "v${{ inputs.version }}" \
+            --title "v${{ inputs.version }}" \
+            --notes-file release-notes.md \
+            --latest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
