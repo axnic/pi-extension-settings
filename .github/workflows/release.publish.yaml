@@ -1,0 +1,171 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+# =============================================================================
+# Publish packages — push all workspace packages to npm
+# =============================================================================
+# Triggered automatically when a GitHub Release is published.
+#
+# Security model — SLSA Build L2:
+#   • npm provenance via GitHub OIDC (--provenance)
+#   • CycloneDX SBOMs generated per workspace package via Syft
+#   • SBOMs and publish summary signed with Notation (COSE format)
+#   • All signed artefacts attached to the GitHub Release
+#
+# Required secrets:
+#   • NPM_TOKEN              — granular npm token (read/write on @axnic scope)
+#   • NOTATION_SIGNING_KEY   — PEM-encoded private key (ECDSA P-256 recommended)
+#   • NOTATION_SIGNING_CERT  — matching PEM-encoded certificate
+#
+# Required environment: "npm" (deployment gate / protection rules)
+# =============================================================================
+
+name: 📦 Publish packages to npm
+
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+jobs:
+  # ── Validate ──────────────────────────────────────────────────────────────
+  validate:
+    name: ✅ Validate (typecheck · tests · build)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          fetch-depth: 0
+
+      - name: 🔧 Install tools via mise
+        uses: jdx/mise-action@v2
+        with:
+          cache: true
+
+      - name: 💾 Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store/v3
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🏷️ Type-check
+        run: |
+          tsc --noEmit -p tsconfig.json
+          mise run build:extension
+          tsc --noEmit -p sdk/tsconfig.json
+
+      - name: 🧪 Run tests
+        run: pnpm test
+
+      - name: 🏗️ Build all
+        run: mise run build
+
+  # ── Publish ───────────────────────────────────────────────────────────────
+  publish:
+    name: 🚀 Publish all workspace packages
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: npm
+      url: https://www.npmjs.com/org/axnic
+    permissions:
+      contents: write  # upload release assets
+      id-token: write  # OIDC → npm provenance
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: 🔧 Install tools via mise
+        uses: jdx/mise-action@v2
+        with:
+          cache: false
+
+      - name: 💾 Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store/v3
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🏗️ Build all
+        run: mise run build
+
+      # ── SBOM generation ──────────────────────────────────────────────────
+      - name: 🔧 Install Syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh \
+            | sh -s -- -b /usr/local/bin
+
+      - name: 🧾 Generate CycloneDX SBOMs
+        run: |
+          syft scan dir:. --exclude ./sdk -o cyclonedx-json=sbom-extension.json
+          syft scan dir:sdk              -o cyclonedx-json=sbom-sdk.json
+
+      # ── Publish ───────────────────────────────────────────────────────────
+      - name: 🔑 Configure npm authentication
+        run: echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" >> ~/.npmrc
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: 🚀 Publish all workspace packages
+        run: |
+          pnpm publish \
+            --recursive \
+            --provenance \
+            --access public \
+            --no-git-checks \
+            --report-summary
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # ── Sign artefacts with Notation ─────────────────────────────────────
+      - name: 🔧 Set up Notation
+        uses: notaryproject/notation-action/setup@v1
+
+      - name: 🔐 Configure Notation signing key
+        run: |
+          mkdir -p ~/.config/notation/localkeys
+          printf '%s' "$NOTATION_SIGNING_KEY"  > ~/.config/notation/localkeys/ci.key
+          printf '%s' "$NOTATION_SIGNING_CERT" > ~/.config/notation/localkeys/ci.crt
+          notation key add --default "ci" \
+            --key  ~/.config/notation/localkeys/ci.key \
+            --cert ~/.config/notation/localkeys/ci.crt
+        env:
+          NOTATION_SIGNING_KEY:  ${{ secrets.NOTATION_SIGNING_KEY }}
+          NOTATION_SIGNING_CERT: ${{ secrets.NOTATION_SIGNING_CERT }}
+
+      - name: ✍️ Sign SBOMs and publish summary
+        run: |
+          notation blob sign --signature-format cose \
+            --output sbom-extension.json.sig sbom-extension.json
+          notation blob sign --signature-format cose \
+            --output sbom-sdk.json.sig sbom-sdk.json
+          notation blob sign --signature-format cose \
+            --output pnpm-publish-summary.json.sig pnpm-publish-summary.json
+
+      # ── Attach to GitHub Release ──────────────────────────────────────────
+      - name: 📤 Attach artefacts to GitHub Release
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            sbom-extension.json \
+            sbom-extension.json.sig \
+            sbom-sdk.json \
+            sbom-sdk.json.sig \
+            pnpm-publish-summary.json \
+            pnpm-publish-summary.json.sig
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
