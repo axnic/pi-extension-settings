@@ -25,7 +25,7 @@ import {
   getAllSettingsForExtension,
   getExtensionSetting,
   setExtensionSetting,
-} from "@axnic/pi-extension-settings/src/core/storage";
+} from "./storage.js";
 
 // ─── Event types ──────────────────────────────────────────────────────────────
 

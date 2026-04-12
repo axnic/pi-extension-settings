@@ -33,7 +33,10 @@
 import { matchesKey } from "@mariozechner/pi-tui";
 import type { LeafNode, ValidationResult } from "../../sdk/index.js";
 import { defaultAsString, enumValues } from "../../sdk/index.js";
-import { getExtensionSetting, setExtensionSetting } from "../core/storage.js";
+import {
+  getExtensionSetting,
+  setExtensionSetting,
+} from "../../sdk/src/core/storage.js";
 import { type ControlBindings, DEFAULT_CONTROL_BINDINGS } from "../settings.js";
 import { matchesBinding } from "./keys.js";
 import type { SettingRow, ViewRow } from "./model.js";

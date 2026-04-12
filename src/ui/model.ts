@@ -20,9 +20,9 @@
 
 import type { LeafNode, ListItem, SettingNode } from "../../sdk/index.js";
 import { defaultAsString } from "../../sdk/index.js";
+import { getExtensionSetting } from "../../sdk/src/core/storage.js";
 import type { Registry } from "../core/registry.js";
 import { countSettings } from "../core/registry.js";
-import { getExtensionSetting } from "../core/storage.js";
 import {
   isExtCollapsed,
   isGroupCollapsed,

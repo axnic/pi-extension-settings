@@ -18,7 +18,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ─── Mock storage ─────────────────────────────────────────────────────────────
 
-vi.mock("../core/storage.ts", () => {
+vi.mock("../../sdk/src/core/storage.ts", () => {
   const store = new Map<string, Map<string, string>>();
   return {
     getExtensionSetting: vi.fn(
@@ -51,8 +51,8 @@ vi.mock("../core/storage.ts", () => {
 
 import type { SettingNode } from "../../sdk/src/core/nodes.ts";
 import { S } from "../../sdk/src/core/schema.ts";
+import * as storage from "../../sdk/src/core/storage.ts";
 import { createRegistry } from "../core/registry.ts";
-import * as storage from "../core/storage.ts";
 import { buildRows, type ViewRow } from "./model.ts";
 import { createInitialState, extCollapseKey } from "./state.ts";
 

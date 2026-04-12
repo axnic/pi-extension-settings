@@ -10,9 +10,6 @@
     "strict": true,
     "moduleResolution": "node",
     "baseUrl": ".",
-    "paths": {
-      "@axnic/pi-extension-settings/*": ["../dist/*"]
-    },
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,

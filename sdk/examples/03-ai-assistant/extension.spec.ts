@@ -28,7 +28,7 @@ import { createAiAssistant, schema } from "./extension.ts";
 
 // ─── Mock: storage ────────────────────────────────────────────────────────────
 
-vi.mock("@axnic/pi-extension-settings/src/core/storage", () => ({
+vi.mock("../../src/core/storage", () => ({
   getExtensionSetting: vi.fn(),
   setExtensionSetting: vi.fn(),
   getAllSettingsForExtension: vi.fn(),
@@ -38,7 +38,7 @@ import {
   getAllSettingsForExtension,
   getExtensionSetting,
   setExtensionSetting,
-} from "@axnic/pi-extension-settings/src/core/storage";
+} from "../../src/core/storage";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
