@@ -12,7 +12,7 @@
     "lib": ["ES2022"],
     "noEmit": true,
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,

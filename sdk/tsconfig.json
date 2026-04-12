@@ -8,7 +8,7 @@
     "outDir": "dist",
     "rootDir": ".",
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "baseUrl": ".",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
