@@ -42,7 +42,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "rimraf dist",
-    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm test && node ../scripts/prepare-publish-readmes.mjs sdk"
+    "prepublishOnly": "pnpm run clean && pnpm run build && pnpm test && node ../scripts/prepare-publish-readmes.mjs prepare:sdk",
+    "postpublish": "node ../scripts/prepare-publish-readmes.mjs restore:sdk"
   },
   "devDependencies": {
     "@types/node": "catalog:",

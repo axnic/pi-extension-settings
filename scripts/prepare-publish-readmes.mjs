@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const mode = process.argv[2];
@@ -21,8 +21,12 @@ function replaceBannerAssets(content) {
     .replaceAll('src="docs/assets/', `src="${REPO_RAW}docs/assets/`);
 }
 
-if (mode === "root") {
+if (mode === "prepare:extension") {
   const readmePath = join(process.cwd(), "README.md");
+  const backupPath = join(process.cwd(), ".README.md.publish-backup");
+  if (!existsSync(backupPath)) {
+    writeFileSync(backupPath, readFileSync(readmePath, "utf8"), "utf8");
+  }
   let readme = readFileSync(readmePath, "utf8");
   readme = replaceRelativeHtmlHref(readme, REPO_BLOB);
   readme = replaceRelativeMarkdownLinks(readme, REPO_BLOB);
@@ -31,9 +35,13 @@ if (mode === "root") {
   process.exit(0);
 }
 
-if (mode === "sdk") {
+if (mode === "prepare:sdk") {
   const sourcePath = join(process.cwd(), "docs", "README.md");
   const outputPath = join(process.cwd(), "README.md");
+  const backupPath = join(process.cwd(), ".README.md.publish-backup");
+  if (!existsSync(backupPath) && existsSync(outputPath)) {
+    writeFileSync(backupPath, readFileSync(outputPath, "utf8"), "utf8");
+  }
   let readme = readFileSync(sourcePath, "utf8");
   readme = replaceRelativeMarkdownLinks(readme, `${REPO_BLOB}sdk/docs/`);
   readme = replaceRelativeHtmlHref(readme, `${REPO_BLOB}sdk/docs/`);
@@ -41,4 +49,28 @@ if (mode === "sdk") {
   process.exit(0);
 }
 
-throw new Error("Usage: node scripts/prepare-publish-readmes.mjs <root|sdk>");
+if (mode === "restore:extension") {
+  const readmePath = join(process.cwd(), "README.md");
+  const backupPath = join(process.cwd(), ".README.md.publish-backup");
+  if (existsSync(backupPath)) {
+    writeFileSync(readmePath, readFileSync(backupPath, "utf8"), "utf8");
+    rmSync(backupPath);
+  }
+  process.exit(0);
+}
+
+if (mode === "restore:sdk") {
+  const outputPath = join(process.cwd(), "README.md");
+  const backupPath = join(process.cwd(), ".README.md.publish-backup");
+  if (existsSync(backupPath)) {
+    writeFileSync(outputPath, readFileSync(backupPath, "utf8"), "utf8");
+    rmSync(backupPath);
+  } else if (existsSync(outputPath)) {
+    rmSync(outputPath);
+  }
+  process.exit(0);
+}
+
+throw new Error(
+  "Usage: node scripts/prepare-publish-readmes.mjs <prepare:extension|prepare:sdk|restore:extension|restore:sdk>",
+);
