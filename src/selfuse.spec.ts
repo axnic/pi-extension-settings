@@ -24,17 +24,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // ─── Mock the storage layer (no real disk I/O) ────────────────────────────────
 
 vi.mock("../sdk/src/core/storage", () => {
-  const store = new Map<string, Map<string, string>>();
+  const store = new Map<string, Map<string, unknown>>();
   return {
     getExtensionSetting: vi.fn(
-      (extension: string, key: string, fallback?: string) => {
+      (extension: string, key: string, fallback?: unknown) => {
         const ext = store.get(extension);
         if (!ext?.has(key)) return fallback;
         return ext.get(key);
       },
     ),
     setExtensionSetting: vi.fn(
-      (extension: string, key: string, value: string) => {
+      (extension: string, key: string, value: unknown) => {
         let ext = store.get(extension);
         if (!ext) {
           ext = new Map();
@@ -43,11 +43,6 @@ vi.mock("../sdk/src/core/storage", () => {
         ext.set(key, value);
       },
     ),
-    getAllSettingsForExtension: vi.fn((extension: string) => {
-      const ext = store.get(extension);
-      if (!ext) return {};
-      return Object.fromEntries(ext.entries());
-    }),
     __reset: () => store.clear(),
   };
 });
@@ -150,11 +145,11 @@ describe("pi-extension-settings — self-use via the public SDK", () => {
     const calls: unknown[] = [];
     settings.onChange("behavior.start-in-search-mode", (v) => calls.push(v));
 
-    // Pre-populate storage so getExtensionSetting returns "false" when the SDK reads it.
+    // Pre-populate storage so getExtensionSetting returns false when the SDK reads it.
     storage.setExtensionSetting(
       EXTENSION_NAME,
       "behavior.start-in-search-mode",
-      "false",
+      false,
     );
     // Simulate the panel saving a change (scoped event, key-only payload).
     pi.events.emit(`pi-extension-settings:${EXTENSION_NAME}:changed`, {

@@ -23,7 +23,7 @@ flowchart LR
 | `d`       | **Display** stored values            | `import { d }` | `display` field on any leaf node             |
 
 ```ts
-import { v, t, c, d } from "pi-extension-settings/sdk";
+import { v, t, c, d } from "pi-extension-settings/sdk/hooks";
 
 S.text({
   tooltip: "Config file",

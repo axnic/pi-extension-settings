@@ -5,7 +5,7 @@ Display functions convert a stored value to a formatted string for rendering in 
 Import from the `d` namespace:
 
 ```ts
-import { d } from "pi-extension-settings/sdk";
+import { d } from "pi-extension-settings/sdk/hooks";
 ```
 
 Assign to the `display` field of any leaf node:

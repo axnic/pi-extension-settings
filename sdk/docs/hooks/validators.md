@@ -5,7 +5,7 @@ Validators check a value before it is saved. If validation fails, the save is bl
 Import from the `v` namespace:
 
 ```ts
-import { v } from "pi-extension-settings/sdk";
+import { v } from "pi-extension-settings/sdk/hooks";
 ```
 
 Assign to the `validation` field of a `Text`, `List`, or `Dict` node:

@@ -16,7 +16,8 @@
  *   - {@link createSettingsReader}      — wraps an `ExtensionSettings` instance with named getters.
  */
 
-import { d, type ExtensionSettings, S, t, v } from "../sdk/index.js";
+import { type ExtensionSettings, S } from "../sdk/index.js";
+import { d, t, v } from "../sdk/src/hooks/index.js";
 
 /** Extension identifier — also the storage namespace key. */
 export const EXTENSION_NAME = "pi-extension-settings";

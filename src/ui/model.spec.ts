@@ -19,15 +19,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // ─── Mock storage ─────────────────────────────────────────────────────────────
 
 vi.mock("../../sdk/src/core/storage.ts", () => {
-  const store = new Map<string, Map<string, string>>();
+  const store = new Map<string, Map<string, unknown>>();
   return {
     getExtensionSetting: vi.fn(
-      (extension: string, key: string, fallback?: string) => {
+      (extension: string, key: string, fallback?: unknown) => {
         return store.get(extension)?.get(key) ?? fallback;
       },
     ),
     setExtensionSetting: vi.fn(
-      (extension: string, key: string, value: string) => {
+      (extension: string, key: string, value: unknown) => {
         let ext = store.get(extension);
         if (!ext) {
           ext = new Map();
@@ -36,8 +36,7 @@ vi.mock("../../sdk/src/core/storage.ts", () => {
         ext.set(key, value);
       },
     ),
-    getAllSettingsForExtension: vi.fn(),
-    __seed: (extension: string, key: string, value: string) => {
+    __seed: (extension: string, key: string, value: unknown) => {
       let ext = store.get(extension);
       if (!ext) {
         ext = new Map();
@@ -166,16 +165,12 @@ describe("buildRows — theme-free row model", () => {
   it("injects list-item / separator / list-add rows for an expanded list", () => {
     (
       storage as unknown as {
-        __seed(ext: string, key: string, value: string): void;
+        __seed(ext: string, key: string, value: unknown): void;
       }
-    ).__seed(
-      "pi-test",
-      "servers",
-      JSON.stringify([
-        { host: "alpha", port: "22" },
-        { host: "beta", port: "2222" },
-      ]),
-    );
+    ).__seed("pi-test", "servers", [
+      { host: "alpha", port: "22" },
+      { host: "beta", port: "2222" },
+    ]);
 
     const registry = makeRegistry();
     const state = createInitialState(false);

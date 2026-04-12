@@ -19,7 +19,7 @@
  */
 
 import type { LeafNode, ListItem, SettingNode } from "../../sdk/index.js";
-import { defaultAsString } from "../../sdk/index.js";
+import { defaultAsString } from "../../sdk/src/core/nodes.js";
 import { getExtensionSetting } from "../../sdk/src/core/storage.js";
 import type { Registry } from "../core/registry.js";
 import { countSettings } from "../core/registry.js";
@@ -201,6 +201,15 @@ function buildPrefix(ancestorIsLast: boolean[], isLast: boolean): string {
 
 // ─── Value helpers ────────────────────────────────────────────────────────────
 
+/** Convert a native stored value to the raw string used in the TUI editing buffer. */
+function nativeToRawString(node: LeafNode, value: unknown): string {
+  if (node._tag === "list" || node._tag === "dict") {
+    return JSON.stringify(value);
+  }
+  if (typeof value === "string") return value;
+  return String(value);
+}
+
 /**
  * Get the raw stored string for a setting key, falling back to the schema's
  * default-as-string when the value is unset.
@@ -211,7 +220,7 @@ function getRawValue(
   node: LeafNode,
 ): string {
   const stored = getExtensionSetting(extensionName, key);
-  if (stored !== undefined) return stored;
+  if (stored !== undefined) return nativeToRawString(node, stored);
   return defaultAsString(node);
 }
 

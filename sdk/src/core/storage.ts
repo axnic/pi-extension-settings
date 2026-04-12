@@ -10,7 +10,7 @@
  *   }
  * }
  *
- * Values are stored as their natural JSON types:
+ * Values are stored and returned as their natural JSON types:
  *   - Booleans  →  true / false
  *   - Numbers   →  42, 3.14, …
  *   - Arrays    →  [{…}, …]
@@ -18,8 +18,6 @@
  *   - Everything else → plain JSON string
  *
  * Section keys are flattened with dot notation (e.g., "colors.primary").
- * Internally, every value is handled as a string; conversion happens only at
- * the storage boundary via `toJsonValue` / `fromJsonValue`.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -30,41 +28,6 @@ const SETTINGS_FILE_NAME = "settings.json";
 const EXTENSIONS_SETTINGS_KEY = "extensions:settings";
 
 type StorageFile = Record<string, Record<string, unknown>>;
-
-// ─── Value conversion ─────────────────────────────────────────────────────────
-
-/**
- * Convert an internal string value to its natural JSON representation.
- * Booleans, numbers, arrays, and objects are stored as their real types.
- * Plain text values remain strings.
- */
-function toJsonValue(value: string): unknown {
-  if (value === "true") return true;
-  if (value === "false") return false;
-  try {
-    const parsed: unknown = JSON.parse(value);
-    if (
-      typeof parsed === "number" ||
-      Array.isArray(parsed) ||
-      (typeof parsed === "object" && parsed !== null)
-    ) {
-      return parsed;
-    }
-  } catch {
-    // Not valid JSON — store as a plain string.
-  }
-  return value;
-}
-
-/**
- * Convert a JSON storage value back to the internal string representation.
- * Strings pass through unchanged; everything else is JSON-serialized.
- */
-function fromJsonValue(value: unknown): string {
-  if (typeof value === "string") return value;
-  if (value === null || value === undefined) return "";
-  return JSON.stringify(value);
-}
 
 // ─── File I/O ─────────────────────────────────────────────────────────────────
 
@@ -114,64 +77,33 @@ function saveFile(data: StorageFile): void {
 
 /**
  * Get a single setting value for an extension.
- * Returns the stored value serialized as a string, or `defaultValue` if not found.
+ * Returns the raw stored JSON value, or `defaultValue` if not found.
  */
 export function getExtensionSetting(
   extension: string,
   key: string,
-  defaultValue?: string,
-): string | undefined {
+  defaultValue?: unknown,
+): unknown {
   const data = loadFile();
   const extSettings = data[extension];
   if (extSettings && key in extSettings) {
-    return fromJsonValue(extSettings[key]);
+    return extSettings[key];
   }
   return defaultValue;
 }
 
 /**
  * Set a single setting value for an extension.
- * The string value is converted to its natural JSON type before writing.
- * Writes to disk immediately.
+ * The value is stored as-is (native JSON type). Writes to disk immediately.
  */
 export function setExtensionSetting(
   extension: string,
   key: string,
-  value: string,
+  value: unknown,
 ): void {
   const data = loadFile();
   if (!data[extension]) data[extension] = {};
-  data[extension]![key] = toJsonValue(value);
-  saveFile(data);
-}
-
-/**
- * Get all stored settings for an extension as a key→string map.
- * Returns an empty object if no settings have been saved for this extension.
- */
-export function getAllSettingsForExtension(
-  extension: string,
-): Record<string, string> {
-  const data = loadFile();
-  const raw = data[extension] ?? {};
-  return Object.fromEntries(
-    Object.entries(raw).map(([k, v]) => [k, fromJsonValue(v)]),
-  );
-}
-
-/**
- * Replace all settings for an extension atomically.
- * String values are converted to their natural JSON types before writing.
- * Useful for bulk saves (e.g., after a list edit).
- */
-export function setAllSettingsForExtension(
-  extension: string,
-  settings: Record<string, string>,
-): void {
-  const data = loadFile();
-  data[extension] = Object.fromEntries(
-    Object.entries(settings).map(([k, v]) => [k, toJsonValue(v)]),
-  );
+  data[extension]![key] = value;
   saveFile(data);
 }
 

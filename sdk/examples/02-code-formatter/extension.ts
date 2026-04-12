@@ -24,7 +24,8 @@
  */
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { ExtensionSettings, S, v } from "../../index.ts";
+import { ExtensionSettings, S } from "../../index.ts";
+import { v } from "../../src/hooks/index.ts";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 

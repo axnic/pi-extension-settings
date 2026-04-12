@@ -21,7 +21,7 @@
 import type { Theme } from "@mariozechner/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@mariozechner/pi-tui";
 import type { Enum } from "../../sdk/index.js";
-import { enumLabel, enumValues } from "../../sdk/index.js";
+import { enumLabel, enumValues } from "../../sdk/src/core/nodes.js";
 import type { Registry } from "../core/registry.js";
 import type { ControlBindings } from "../settings.js";
 import {

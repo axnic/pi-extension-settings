@@ -32,7 +32,7 @@
 
 import { matchesKey } from "@mariozechner/pi-tui";
 import type { LeafNode, ValidationResult } from "../../sdk/index.js";
-import { defaultAsString, enumValues } from "../../sdk/index.js";
+import { defaultAsString, enumValues } from "../../sdk/src/core/nodes.js";
 import {
   getExtensionSetting,
   setExtensionSetting,
@@ -62,6 +62,32 @@ export type SaveCallback = (
   value: string,
 ) => void;
 
+// ─── Value conversion ─────────────────────────────────────────────────────────
+
+/**
+ * Convert a raw TUI string buffer value to the native JSON type for storage.
+ * Mirrors the type information in the node schema.
+ */
+function rawStringToNative(node: LeafNode, raw: string): unknown {
+  switch (node._tag) {
+    case "boolean":
+      return raw === "true";
+    case "number": {
+      const n = Number(raw);
+      return Number.isFinite(n) ? n : node.default;
+    }
+    case "list":
+    case "dict":
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return node._tag === "list" ? [] : {};
+      }
+    default:
+      return raw;
+  }
+}
+
 // ─── Enum cycling ─────────────────────────────────────────────────────────────
 
 function cycleEnum(row: SettingRow): string {
@@ -74,7 +100,7 @@ function cycleEnum(row: SettingRow): string {
 
 function resetSettingToDefault(row: SettingRow, onSave: SaveCallback): void {
   const defaultValue = defaultAsString(row.node);
-  setExtensionSetting(row.extensionName, row.settingKey, defaultValue);
+  setExtensionSetting(row.extensionName, row.settingKey, row.node.default);
   onSave(row.extensionName, row.settingKey, defaultValue);
 }
 
@@ -160,14 +186,14 @@ function deleteListItem(
   itemIndex: number,
   onSave: SaveCallback,
 ): void {
-  const items = parseListValue(
-    getExtensionSetting(extension, settingKey, "[]"),
+  const raw = getExtensionSetting(extension, settingKey);
+  const items = (
+    Array.isArray(raw) ? [...(raw as Record<string, string>[])] : []
   ) as Record<string, string>[];
   if (itemIndex < 0 || itemIndex >= items.length) return;
   items.splice(itemIndex, 1);
-  const serialized = JSON.stringify(items);
-  setExtensionSetting(extension, settingKey, serialized);
-  onSave(extension, settingKey, serialized);
+  setExtensionSetting(extension, settingKey, items);
+  onSave(extension, settingKey, JSON.stringify(items));
 }
 
 function moveListItem(
@@ -177,16 +203,16 @@ function moveListItem(
   direction: "up" | "down",
   onSave: SaveCallback,
 ): void {
-  const items = parseListValue(
-    getExtensionSetting(extension, settingKey, "[]"),
+  const raw = getExtensionSetting(extension, settingKey);
+  const items = (
+    Array.isArray(raw) ? [...(raw as Record<string, string>[])] : []
   ) as Record<string, string>[];
   const targetIdx = direction === "up" ? itemIndex - 1 : itemIndex + 1;
   if (targetIdx < 0 || targetIdx >= items.length) return;
   if (itemIndex < 0 || itemIndex >= items.length) return;
   [items[itemIndex], items[targetIdx]] = [items[targetIdx]!, items[itemIndex]!];
-  const serialized = JSON.stringify(items);
-  setExtensionSetting(extension, settingKey, serialized);
-  onSave(extension, settingKey, serialized);
+  setExtensionSetting(extension, settingKey, items);
+  onSave(extension, settingKey, JSON.stringify(items));
 }
 
 // ─── Main input handler ───────────────────────────────────────────────────────
@@ -274,13 +300,13 @@ function handleAddFormInput(
     const isLastField = form.focusedFieldIndex === form.fieldKeys.length - 1;
     if (isLastField) {
       // Confirm: save the new item
-      const items = parseListValue(
-        getExtensionSetting(form.extension, form.settingKey, "[]"),
+      const raw = getExtensionSetting(form.extension, form.settingKey);
+      const items = (
+        Array.isArray(raw) ? [...(raw as Record<string, string>[])] : []
       ) as Record<string, string>[];
       items.push({ ...form.values });
-      const serialized = JSON.stringify(items);
-      setExtensionSetting(form.extension, form.settingKey, serialized);
-      onSave(form.extension, form.settingKey, serialized);
+      setExtensionSetting(form.extension, form.settingKey, items);
+      onSave(form.extension, form.settingKey, JSON.stringify(items));
       return {
         state: { ...state, addFormState: null },
         close: false,
@@ -432,7 +458,11 @@ function handleEditInput(
     }
 
     // Save
-    setExtensionSetting(edit.extension, edit.settingKey, finalValue);
+    setExtensionSetting(
+      edit.extension,
+      edit.settingKey,
+      rawStringToNative(edit.node, finalValue),
+    );
     onSave(edit.extension, edit.settingKey, finalValue);
 
     return {
@@ -888,9 +918,10 @@ function handleSpaceKey(
     const { node, extensionName, settingKey } = focusedRow;
 
     if (node._tag === "boolean") {
-      const newValue = focusedRow.rawValue === "true" ? "false" : "true";
-      setExtensionSetting(extensionName, settingKey, newValue);
-      onSave(extensionName, settingKey, newValue);
+      const nativeBool = focusedRow.rawValue !== "true";
+      const displayValue = nativeBool ? "true" : "false";
+      setExtensionSetting(extensionName, settingKey, nativeBool);
+      onSave(extensionName, settingKey, displayValue);
       return { state, close: false, dirty: true };
     }
 
@@ -956,9 +987,10 @@ function handleEnterKey(
     const { node, extensionName, settingKey } = focusedRow;
 
     if (node._tag === "boolean") {
-      const newValue = focusedRow.rawValue === "true" ? "false" : "true";
-      setExtensionSetting(extensionName, settingKey, newValue);
-      onSave(extensionName, settingKey, newValue);
+      const nativeBool = focusedRow.rawValue !== "true";
+      const displayValue = nativeBool ? "true" : "false";
+      setExtensionSetting(extensionName, settingKey, nativeBool);
+      onSave(extensionName, settingKey, displayValue);
       return { state, close: false, dirty: true };
     }
 

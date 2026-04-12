@@ -9,7 +9,6 @@
  *                                     replay panel events via `emitChange()`
  *   - `getExtensionSetting`         → controls what individual `get()` calls see
  *   - `setExtensionSetting`         → lets us assert storage writes
- *   - `getAllSettingsForExtension`  → controls what `getAll()` / `buildConfig()` sees
  *
  * Covers
  * ──────
@@ -21,6 +20,7 @@
  *   settings.getAll() — full typed snapshot
  */
 
+import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createCodeFormatter, schema } from "./extension.ts";
 
@@ -29,11 +29,9 @@ import { createCodeFormatter, schema } from "./extension.ts";
 vi.mock("../../src/core/storage", () => ({
   getExtensionSetting: vi.fn(),
   setExtensionSetting: vi.fn(),
-  getAllSettingsForExtension: vi.fn(),
 }));
 
 import {
-  getAllSettingsForExtension,
   getExtensionSetting,
   setExtensionSetting,
 } from "../../src/core/storage";
@@ -51,17 +49,21 @@ function makePi() {
         listeners.set(event, bucket);
       }),
       emit: vi.fn((event: string, data?: unknown) => {
-        for (const cb of listeners.get(event) ?? []) cb(data!);
+        for (const cb of listeners.get(event) ?? []) cb(data);
       }),
     },
     triggerEvent(event: string, data?: unknown) {
-      for (const cb of listeners.get(event) ?? []) cb(data!);
+      for (const cb of listeners.get(event) ?? []) cb(data);
     },
   };
 }
 
 /** Simulate the settings panel saving a change for "code-formatter". */
-function emitChange(pi: ReturnType<typeof makePi>, key: string, value: string) {
+function emitChange(
+  pi: ReturnType<typeof makePi>,
+  key: string,
+  value: unknown,
+) {
   vi.mocked(getExtensionSetting).mockImplementation((_, k) =>
     k === key ? value : undefined,
   );
@@ -70,27 +72,29 @@ function emitChange(pi: ReturnType<typeof makePi>, key: string, value: string) {
 
 /**
  * Build a full storage snapshot from explicit overrides + schema defaults.
- * Used to drive `getAllSettingsForExtension` in `buildConfig()` tests.
+ * Used to drive `getExtensionSetting` in `buildConfig()` tests.
  */
 function makeSnapshot(
-  overrides: Record<string, string> = {},
-): Record<string, string> {
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
   return {
     parser: "prettier",
-    enabled: "true",
-    formatOnSave: "true",
+    enabled: true,
+    formatOnSave: true,
     "formatting.indentStyle": "spaces",
-    "formatting.indentWidth": "2",
-    "formatting.lineWidth": "80",
+    "formatting.indentWidth": 2,
+    "formatting.lineWidth": 80,
     "formatting.semicolons": "always",
-    "formatting.singleQuote": "false",
+    "formatting.singleQuote": false,
     "formatting.trailingComma": "all",
-    ignore: JSON.stringify([
-      { pattern: "node_modules/**" },
-      { pattern: "dist/**" },
-    ]),
+    ignore: [{ pattern: "node_modules/**" }, { pattern: "dist/**" }],
     ...overrides,
   };
+}
+
+/** Seed getExtensionSetting to serve values from a snapshot object. */
+function seedStorage(snapshot: Record<string, unknown>) {
+  vi.mocked(getExtensionSetting).mockImplementation((_, key) => snapshot[key]);
 }
 
 // ─── Suite ────────────────────────────────────────────────────────────────────
@@ -102,7 +106,7 @@ describe("CodeFormatter — createCodeFormatter()", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     pi = makePi();
-    formatter = createCodeFormatter(pi as any);
+    formatter = createCodeFormatter(pi as unknown as ExtensionAPI);
   });
 
   // ── pi event wiring ──────────────────────────────────────────────────────────
@@ -143,13 +147,13 @@ describe("CodeFormatter — createCodeFormatter()", () => {
       expect(formatter.isReady()).toBe(true);
     });
 
-    it("returns true when enabled is stored as 'true'", () => {
-      vi.mocked(getExtensionSetting).mockReturnValue("true");
+    it("returns true when enabled is stored as true", () => {
+      vi.mocked(getExtensionSetting).mockReturnValue(true);
       expect(formatter.isReady()).toBe(true);
     });
 
-    it("returns false when enabled is stored as 'false'", () => {
-      vi.mocked(getExtensionSetting).mockReturnValue("false");
+    it("returns false when enabled is stored as false", () => {
+      vi.mocked(getExtensionSetting).mockReturnValue(false);
       expect(formatter.isReady()).toBe(false);
     });
 
@@ -167,7 +171,7 @@ describe("CodeFormatter — createCodeFormatter()", () => {
 
   describe("buildConfig()", () => {
     it("returns all default values when storage is empty", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({});
+      vi.mocked(getExtensionSetting).mockReturnValue(undefined);
 
       const config = formatter.buildConfig();
 
@@ -180,71 +184,56 @@ describe("CodeFormatter — createCodeFormatter()", () => {
       expect(config.trailingComma).toBe("all");
     });
 
-    it("parses indentWidth from string to number", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "formatting.indentWidth": "4" }),
-      );
+    it("returns indentWidth as a number", () => {
+      seedStorage(makeSnapshot({ "formatting.indentWidth": 4 }));
       expect(formatter.buildConfig().indentWidth).toBe(4);
       expect(typeof formatter.buildConfig().indentWidth).toBe("number");
     });
 
-    it("parses lineWidth from string to number", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "formatting.lineWidth": "120" }),
-      );
+    it("returns lineWidth as a number", () => {
+      seedStorage(makeSnapshot({ "formatting.lineWidth": 120 }));
       expect(formatter.buildConfig().lineWidth).toBe(120);
     });
 
     it("reflects a stored parser override", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ parser: "biome" }),
-      );
+      seedStorage(makeSnapshot({ parser: "biome" }));
       expect(formatter.buildConfig().parser).toBe("biome");
     });
 
     it("reflects stored formatting.indentStyle = tabs", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "formatting.indentStyle": "tabs" }),
-      );
+      seedStorage(makeSnapshot({ "formatting.indentStyle": "tabs" }));
       expect(formatter.buildConfig().indentStyle).toBe("tabs");
     });
 
     it("reflects stored formatting.semicolons = never", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "formatting.semicolons": "never" }),
-      );
+      seedStorage(makeSnapshot({ "formatting.semicolons": "never" }));
       expect(formatter.buildConfig().semicolons).toBe("never");
     });
 
     it("reflects stored formatting.singleQuote = true", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "formatting.singleQuote": "true" }),
-      );
+      seedStorage(makeSnapshot({ "formatting.singleQuote": true }));
       expect(formatter.buildConfig().singleQuote).toBe(true);
     });
 
     it("reflects stored formatting.trailingComma = es5", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "formatting.trailingComma": "es5" }),
-      );
+      seedStorage(makeSnapshot({ "formatting.trailingComma": "es5" }));
       expect(formatter.buildConfig().trailingComma).toBe("es5");
     });
 
-    it("calls getAllSettingsForExtension with 'code-formatter'", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({});
+    it("re-reads settings per-key from getExtensionSetting", () => {
+      seedStorage(makeSnapshot());
       formatter.buildConfig();
-      expect(getAllSettingsForExtension).toHaveBeenCalledWith("code-formatter");
+      expect(getExtensionSetting).toHaveBeenCalledWith(
+        "code-formatter",
+        "parser",
+      );
     });
 
     it("re-reads settings on every call — no stale cache", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ parser: "biome" }),
-      );
+      seedStorage(makeSnapshot({ parser: "biome" }));
       expect(formatter.buildConfig().parser).toBe("biome");
 
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ parser: "dprint" }),
-      );
+      seedStorage(makeSnapshot({ parser: "dprint" }));
       expect(formatter.buildConfig().parser).toBe("dprint");
     });
   });
@@ -254,8 +243,8 @@ describe("CodeFormatter — createCodeFormatter()", () => {
   describe("shouldFormat()", () => {
     it("returns true for a normal source file when no ignore patterns match", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
-        if (key === "enabled") return "true";
-        if (key === "ignore") return JSON.stringify([{ pattern: "dist/**" }]);
+        if (key === "enabled") return true;
+        if (key === "ignore") return [{ pattern: "dist/**" }];
         return undefined;
       });
       expect(formatter.shouldFormat("src/components/Button.tsx")).toBe(true);
@@ -263,9 +252,8 @@ describe("CodeFormatter — createCodeFormatter()", () => {
 
     it("returns false when the file matches an exact ignore pattern", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
-        if (key === "enabled") return "true";
-        if (key === "ignore")
-          return JSON.stringify([{ pattern: "src/generated.ts" }]);
+        if (key === "enabled") return true;
+        if (key === "ignore") return [{ pattern: "src/generated.ts" }];
         return undefined;
       });
       expect(formatter.shouldFormat("src/generated.ts")).toBe(false);
@@ -273,12 +261,9 @@ describe("CodeFormatter — createCodeFormatter()", () => {
 
     it("returns false for node_modules/** (default ignore list)", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
-        if (key === "enabled") return "true";
+        if (key === "enabled") return true;
         if (key === "ignore")
-          return JSON.stringify([
-            { pattern: "node_modules/**" },
-            { pattern: "dist/**" },
-          ]);
+          return [{ pattern: "node_modules/**" }, { pattern: "dist/**" }];
         return undefined;
       });
       expect(formatter.shouldFormat("node_modules/lodash/index.js")).toBe(
@@ -288,12 +273,9 @@ describe("CodeFormatter — createCodeFormatter()", () => {
 
     it("returns false for dist/** (default ignore list)", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
-        if (key === "enabled") return "true";
+        if (key === "enabled") return true;
         if (key === "ignore")
-          return JSON.stringify([
-            { pattern: "node_modules/**" },
-            { pattern: "dist/**" },
-          ]);
+          return [{ pattern: "node_modules/**" }, { pattern: "dist/**" }];
         return undefined;
       });
       expect(formatter.shouldFormat("dist/bundle.js")).toBe(false);
@@ -301,8 +283,8 @@ describe("CodeFormatter — createCodeFormatter()", () => {
 
     it("returns false when enabled is false, regardless of the path", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
-        if (key === "enabled") return "false";
-        if (key === "ignore") return JSON.stringify([]);
+        if (key === "enabled") return false;
+        if (key === "ignore") return [];
         return undefined;
       });
       // A totally clean path — would normally be formatted
@@ -311,8 +293,8 @@ describe("CodeFormatter — createCodeFormatter()", () => {
 
     it("returns true when the ignore list is empty", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
-        if (key === "enabled") return "true";
-        if (key === "ignore") return JSON.stringify([]);
+        if (key === "enabled") return true;
+        if (key === "ignore") return [];
         return undefined;
       });
       expect(formatter.shouldFormat("anything/at/all.ts")).toBe(true);
@@ -320,9 +302,8 @@ describe("CodeFormatter — createCodeFormatter()", () => {
 
     it("handles a wildcard pattern that matches only a single segment", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
-        if (key === "enabled") return "true";
-        if (key === "ignore")
-          return JSON.stringify([{ pattern: "*.config.js" }]);
+        if (key === "enabled") return true;
+        if (key === "ignore") return [{ pattern: "*.config.js" }];
         return undefined;
       });
       expect(formatter.shouldFormat("prettier.config.js")).toBe(false);
@@ -331,13 +312,13 @@ describe("CodeFormatter — createCodeFormatter()", () => {
 
     it("multiple patterns: returns false when any one matches", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
-        if (key === "enabled") return "true";
+        if (key === "enabled") return true;
         if (key === "ignore")
-          return JSON.stringify([
+          return [
             { pattern: "build/**" },
             { pattern: "coverage/**" },
             { pattern: "**/*.min.js" },
-          ]);
+          ];
         return undefined;
       });
       expect(formatter.shouldFormat("coverage/lcov-report/index.html")).toBe(
@@ -360,12 +341,12 @@ describe("CodeFormatter — createCodeFormatter()", () => {
       );
     });
 
-    it("writes 'enabled' as a serialized boolean string", () => {
+    it("writes 'enabled' as a native boolean", () => {
       formatter.settings.set("enabled", false);
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "code-formatter",
         "enabled",
-        "false",
+        false,
       );
     });
 
@@ -387,22 +368,22 @@ describe("CodeFormatter — createCodeFormatter()", () => {
       );
     });
 
-    it("writes 'formatting.singleQuote' serialized as 'true'", () => {
+    it("writes 'formatting.singleQuote' as a native boolean", () => {
       formatter.settings.set("formatting.singleQuote", true);
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "code-formatter",
         "formatting.singleQuote",
-        "true",
+        true,
       );
     });
 
-    it("writes the ignore list as a JSON string", () => {
+    it("writes the ignore list as a native array", () => {
       const patterns = [{ pattern: "build/**" }, { pattern: ".cache/**" }];
       formatter.settings.set("ignore", patterns);
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "code-formatter",
         "ignore",
-        JSON.stringify(patterns),
+        patterns,
       );
     });
   });
@@ -469,7 +450,7 @@ describe("CodeFormatter — createCodeFormatter()", () => {
     it("fires when the panel emits a change for 'formatting.singleQuote'", () => {
       const cb = vi.fn();
       formatter.onConfigChange(cb);
-      emitChange(pi, "formatting.singleQuote", "true");
+      emitChange(pi, "formatting.singleQuote", true);
       expect(cb).toHaveBeenCalledTimes(1);
     });
 
@@ -516,7 +497,7 @@ describe("CodeFormatter — createCodeFormatter()", () => {
 
   describe("settings.getAll() — full snapshot", () => {
     it("returns all defaults when storage is empty", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({});
+      vi.mocked(getExtensionSetting).mockReturnValue(undefined);
 
       const all = formatter.settings.getAll();
 
@@ -532,7 +513,7 @@ describe("CodeFormatter — createCodeFormatter()", () => {
     });
 
     it("snapshot contains a parsed array for 'ignore' (default two patterns)", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({});
+      vi.mocked(getExtensionSetting).mockReturnValue(undefined);
 
       const all = formatter.settings.getAll();
       expect(Array.isArray(all.ignore)).toBe(true);
@@ -540,17 +521,17 @@ describe("CodeFormatter — createCodeFormatter()", () => {
     });
 
     it("snapshot has exactly 10 leaf keys", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({});
+      vi.mocked(getExtensionSetting).mockReturnValue(undefined);
       const keys = Object.keys(formatter.settings.getAll());
       expect(keys).toHaveLength(10);
     });
 
     it("merges stored values over defaults", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
+      seedStorage(
         makeSnapshot({
           parser: "biome",
           "formatting.indentStyle": "tabs",
-          "formatting.singleQuote": "true",
+          "formatting.singleQuote": true,
         }),
       );
 
@@ -560,20 +541,25 @@ describe("CodeFormatter — createCodeFormatter()", () => {
       expect(all["formatting.singleQuote"]).toBe(true); // parsed to boolean
     });
 
-    it("parses the stored ignore JSON array back into an array of objects", () => {
+    it("merges stored ignore array override", () => {
       const patterns = [{ pattern: "build/**" }, { pattern: ".cache/**" }];
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ ignore: JSON.stringify(patterns) }),
-      );
+      seedStorage(makeSnapshot({ ignore: patterns }));
 
       const all = formatter.settings.getAll();
       expect(all.ignore).toEqual(patterns);
     });
 
-    it("calls getAllSettingsForExtension with 'code-formatter'", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({});
+    it("calls getExtensionSetting for each leaf key", () => {
+      vi.mocked(getExtensionSetting).mockReturnValue(undefined);
       formatter.settings.getAll();
-      expect(getAllSettingsForExtension).toHaveBeenCalledWith("code-formatter");
+      expect(getExtensionSetting).toHaveBeenCalledWith(
+        "code-formatter",
+        "parser",
+      );
+      expect(getExtensionSetting).toHaveBeenCalledWith(
+        "code-formatter",
+        "formatting.singleQuote",
+      );
     });
   });
 });

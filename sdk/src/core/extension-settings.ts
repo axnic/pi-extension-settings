@@ -21,11 +21,7 @@
  * @module
  */
 
-import {
-  getAllSettingsForExtension,
-  getExtensionSetting,
-  setExtensionSetting,
-} from "./storage.js";
+import { getExtensionSetting, setExtensionSetting } from "./storage.js";
 
 // ─── Event types ──────────────────────────────────────────────────────────────
 
@@ -94,46 +90,6 @@ function collectKeys(
   return keys;
 }
 
-/** Parse a raw string from storage to the properly typed value for a leaf node. */
-function parseValue(node: LeafNode, raw: string): unknown {
-  switch (node._tag) {
-    case "boolean":
-      return raw === "true";
-    case "number": {
-      const n = Number(raw);
-      return Number.isFinite(n) ? n : node.default;
-    }
-    case "list":
-    case "dict":
-      try {
-        return JSON.parse(raw);
-      } catch {
-        return node._tag === "list" ? [] : {};
-      }
-    default:
-      return raw;
-  }
-}
-
-/** Serialize a typed value to a string for storage. */
-function serializeValue(node: LeafNode, value: unknown): string {
-  switch (node._tag) {
-    case "boolean":
-    case "number":
-      return String(value);
-    case "list":
-    case "dict":
-      return JSON.stringify(value);
-    default:
-      return String(value);
-  }
-}
-
-/** Return the default value of a leaf node as a typed value. */
-function getDefaultValue(node: LeafNode): unknown {
-  return node.default;
-}
-
 // ─── ExtensionSettings class ──────────────────────────────────────────────────
 
 /**
@@ -174,12 +130,11 @@ export class ExtensionSettings<S extends Record<string, SettingNode>> {
         if (!data?.key) return;
         const node = findNode(schema, data.key);
         if (!node) return;
-        const raw = getExtensionSetting(extension, data.key);
-        const parsed =
-          raw !== undefined ? parseValue(node, raw) : getDefaultValue(node);
+        const value = getExtensionSetting(extension, data.key);
+        const finalValue = value !== undefined ? value : node.default;
         const cbs = this.listeners.get(data.key);
         if (cbs) {
-          for (const cb of cbs) cb(parsed);
+          for (const cb of cbs) cb(finalValue);
         }
       },
     );
@@ -202,14 +157,13 @@ export class ExtensionSettings<S extends Record<string, SettingNode>> {
     if (!node) {
       throw new SettingNotFoundError(this.extension, k);
     }
-    const raw = getExtensionSetting(this.extension, k);
-    if (raw === undefined) {
-      if (fallback !== undefined) {
-        return fallback;
-      }
-      return getDefaultValue(node) as InferConfig<S>[K];
+    const value = getExtensionSetting(this.extension, k);
+    if (value === undefined) {
+      return fallback !== undefined
+        ? fallback
+        : (node.default as InferConfig<S>[K]);
     }
-    return parseValue(node, raw) as InferConfig<S>[K];
+    return value as InferConfig<S>[K];
   }
 
   /**
@@ -224,18 +178,16 @@ export class ExtensionSettings<S extends Record<string, SettingNode>> {
       throw new SettingNotFoundError(this.extension, k);
     }
 
-    let serialized = serializeValue(node, value);
-
+    let finalValue: unknown = value;
     if (node._tag === "text" && node.transform) {
-      serialized = node.transform(serialized);
+      finalValue = node.transform(value as string);
     }
 
-    setExtensionSetting(this.extension, k, serialized);
+    setExtensionSetting(this.extension, k, finalValue);
 
     const cbs = this.listeners.get(k);
     if (cbs) {
-      const parsed = parseValue(node, serialized);
-      for (const cb of cbs) cb(parsed);
+      for (const cb of cbs) cb(finalValue);
     }
   }
 
@@ -260,15 +212,13 @@ export class ExtensionSettings<S extends Record<string, SettingNode>> {
    * Keys that have no stored value fall back to their schema defaults.
    */
   getAll(): InferConfig<S> {
-    const stored = getAllSettingsForExtension(this.extension);
     const result: Record<string, unknown> = {};
 
     for (const k of collectKeys(this.schema)) {
       const node = findNode(this.schema, k);
       if (!node) continue;
-      const raw = stored[k];
-      result[k] =
-        raw !== undefined ? parseValue(node, raw) : getDefaultValue(node);
+      const value = getExtensionSetting(this.extension, k);
+      result[k] = value !== undefined ? value : node.default;
     }
 
     return result as InferConfig<S>;

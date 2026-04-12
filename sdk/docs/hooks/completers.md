@@ -5,7 +5,7 @@ Completers provide autocomplete suggestions as the user types in a `Text` field.
 Import from the `c` namespace:
 
 ```ts
-import { c } from "pi-extension-settings/sdk";
+import { c } from "pi-extension-settings/sdk/hooks";
 ```
 
 Assign to the `complete` field of a `Text` node:

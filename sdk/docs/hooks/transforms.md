@@ -5,7 +5,7 @@ Transforms mutate a value before it is written to storage. They are applied afte
 Import from the `t` namespace:
 
 ```ts
-import { t } from "pi-extension-settings/sdk";
+import { t } from "pi-extension-settings/sdk/hooks";
 ```
 
 Assign to the `transform` field of a `Text` node (transforms are only available on `Text` nodes):

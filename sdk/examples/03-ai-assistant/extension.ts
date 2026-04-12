@@ -19,7 +19,8 @@
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import type { InferConfig } from "../../index.ts";
-import { d, ExtensionSettings, S, t, v } from "../../index.ts";
+import { ExtensionSettings, S } from "../../index.ts";
+import { d, t, v } from "../../src/hooks/index.ts";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
@@ -224,7 +225,10 @@ export function createAiAssistant(pi: ExtensionAPI): AiAssistant {
 
   // Reload the HTTP client whenever any of these keys change.
   const clientChangeListeners: Array<() => void> = [];
-  const notifyClientChange = () => clientChangeListeners.forEach((cb) => cb());
+  const notifyClientChange = () =>
+    clientChangeListeners.forEach((cb) => {
+      cb();
+    });
 
   settings.onChange("endpoint", notifyClientChange);
   settings.onChange("apiKey", notifyClientChange);

@@ -3,8 +3,8 @@
  *
  * Tests `createWeatherWidget()` in isolation by:
  *   - Mocking `pi.events.on` / `pi.events.emit` to capture and replay events
- *   - Mocking `getExtensionSetting`, `setExtensionSetting` and
- *     `getAllSettingsForExtension` so no file is ever touched
+ *   - Mocking `getExtensionSetting`, `setExtensionSetting`
+ *     so no file is ever touched
  *
  * Each describe block exercises one aspect of the widget's public API.
  */
@@ -18,11 +18,9 @@ import { createWeatherWidget, schema } from "./extension.ts";
 vi.mock("../../src/core/storage", () => ({
   getExtensionSetting: vi.fn(),
   setExtensionSetting: vi.fn(),
-  getAllSettingsForExtension: vi.fn(),
 }));
 
 import {
-  getAllSettingsForExtension,
   getExtensionSetting,
   setExtensionSetting,
 } from "../../src/core/storage";
@@ -58,7 +56,11 @@ function makePi() {
 }
 
 /** Simulate the panel saving a single setting change for "weather-widget". */
-function emitChange(pi: ReturnType<typeof makePi>, key: string, value: string) {
+function emitChange(
+  pi: ReturnType<typeof makePi>,
+  key: string,
+  value: unknown,
+) {
   vi.mocked(getExtensionSetting).mockImplementation((_, k) =>
     k === key ? value : undefined,
   );
@@ -238,7 +240,7 @@ describe("WeatherWidget — createWeatherWidget()", () => {
 
     it("includes humidity line when showHumidity is true (default)", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
-        if (key === "showHumidity") return "true";
+        if (key === "showHumidity") return true;
         return undefined;
       });
       const lines = widget.renderLines(weatherData);
@@ -247,7 +249,7 @@ describe("WeatherWidget — createWeatherWidget()", () => {
 
     it("omits humidity line when showHumidity is false", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
-        if (key === "showHumidity") return "false";
+        if (key === "showHumidity") return false;
         return undefined;
       });
       const lines = widget.renderLines(weatherData);
@@ -256,7 +258,7 @@ describe("WeatherWidget — createWeatherWidget()", () => {
 
     it("includes wind line when showWind is true", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
-        if (key === "showWind") return "true";
+        if (key === "showWind") return true;
         return undefined;
       });
       const lines = widget.renderLines(weatherData);
@@ -271,8 +273,8 @@ describe("WeatherWidget — createWeatherWidget()", () => {
 
     it("returns exactly 2 lines when both optional lines are disabled", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
-        if (key === "showHumidity") return "false";
-        if (key === "showWind") return "false";
+        if (key === "showHumidity") return false;
+        if (key === "showWind") return false;
         return undefined;
       });
       expect(widget.renderLines(weatherData)).toHaveLength(2);
@@ -280,8 +282,8 @@ describe("WeatherWidget — createWeatherWidget()", () => {
 
     it("returns 4 lines when both optional lines are enabled", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
-        if (key === "showHumidity") return "true";
-        if (key === "showWind") return "true";
+        if (key === "showHumidity") return true;
+        if (key === "showWind") return true;
         return undefined;
       });
       expect(widget.renderLines(weatherData)).toHaveLength(4);
@@ -428,14 +430,14 @@ describe("WeatherWidget — createWeatherWidget()", () => {
     it("fires when the panel toggles showHumidity", () => {
       const cb = vi.fn();
       widget.onDisplayChange(cb);
-      emitChange(pi, "showHumidity", "false");
+      emitChange(pi, "showHumidity", false);
       expect(cb).toHaveBeenCalledTimes(1);
     });
 
     it("fires when the panel toggles showWind", () => {
       const cb = vi.fn();
       widget.onDisplayChange(cb);
-      emitChange(pi, "showWind", "true");
+      emitChange(pi, "showWind", true);
       expect(cb).toHaveBeenCalledTimes(1);
     });
 
@@ -468,21 +470,21 @@ describe("WeatherWidget — createWeatherWidget()", () => {
       );
     });
 
-    it("serializes the boolean showHumidity as the string 'false'", () => {
+    it("writes the boolean showHumidity as a native boolean false", () => {
       widget.settings.set("showHumidity", false);
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "weather-widget",
         "showHumidity",
-        "false",
+        false,
       );
     });
 
-    it("serializes the boolean showWind as the string 'true'", () => {
+    it("writes the boolean showWind as a native boolean true", () => {
       widget.settings.set("showWind", true);
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "weather-widget",
         "showWind",
-        "true",
+        true,
       );
     });
   });
@@ -491,7 +493,7 @@ describe("WeatherWidget — createWeatherWidget()", () => {
 
   describe("settings.getAll() — full snapshot", () => {
     it("returns all defaults when nothing is stored", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({});
+      vi.mocked(getExtensionSetting).mockReturnValue(undefined);
 
       expect(widget.settings.getAll()).toEqual({
         apiKey: "",
@@ -503,9 +505,12 @@ describe("WeatherWidget — createWeatherWidget()", () => {
     });
 
     it("merges stored values over defaults", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({
-        city: "Tokyo",
-        units: "fahrenheit",
+      vi.mocked(getExtensionSetting).mockImplementation((_, k) => {
+        const stored: Record<string, unknown> = {
+          city: "Tokyo",
+          units: "fahrenheit",
+        };
+        return stored[k];
       });
 
       const all = widget.settings.getAll();
@@ -515,10 +520,13 @@ describe("WeatherWidget — createWeatherWidget()", () => {
       expect(all.showHumidity).toBe(true); // still the default
     });
 
-    it("parses booleans correctly in the snapshot", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({
-        showHumidity: "false",
-        showWind: "true",
+    it("returns native booleans in the snapshot", () => {
+      vi.mocked(getExtensionSetting).mockImplementation((_, k) => {
+        const stored: Record<string, unknown> = {
+          showHumidity: false,
+          showWind: true,
+        };
+        return stored[k];
       });
 
       const all = widget.settings.getAll();
@@ -526,10 +534,17 @@ describe("WeatherWidget — createWeatherWidget()", () => {
       expect(all.showWind).toBe(true);
     });
 
-    it("calls getAllSettingsForExtension with 'weather-widget'", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({});
+    it("calls getExtensionSetting for each leaf key", () => {
+      vi.mocked(getExtensionSetting).mockReturnValue(undefined);
       widget.settings.getAll();
-      expect(getAllSettingsForExtension).toHaveBeenCalledWith("weather-widget");
+      expect(getExtensionSetting).toHaveBeenCalledWith(
+        "weather-widget",
+        "city",
+      );
+      expect(getExtensionSetting).toHaveBeenCalledWith(
+        "weather-widget",
+        "showHumidity",
+      );
     });
   });
 });

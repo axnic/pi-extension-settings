@@ -425,7 +425,7 @@ function renderDashboard(config: MyConfig) {
 Validators run as the user types (in the inline edit mode). The first failing validator blocks `Enter` and shows `✗ reason` in the tooltip. When all validators pass, `✓ reason` is shown.
 
 ```ts
-import { v } from "../pi-extension-settings/sdk/index.js";
+import { v } from "../pi-extension-settings/sdk/src/hooks/index.js";
 ```
 
 | Validator                  | Description                                                  |
@@ -467,7 +467,7 @@ const noSpaces: ValidationFn<string> = (value) =>
 Transforms run after `Enter` (on confirm), before the value is written to storage.
 
 ```ts
-import { t } from "../pi-extension-settings/sdk/index.js";
+import { t } from "../pi-extension-settings/sdk/src/hooks/index.js";
 ```
 
 | Transform            | Description                                          |
@@ -504,7 +504,7 @@ const removeProtocol: TransformFn = (value) =>
 Completers supply autocomplete suggestions. They are called 250ms after the user stops typing, and suggestions appear inline below the focused row.
 
 ```ts
-import { c } from "../pi-extension-settings/sdk/index.js";
+import { c } from "../pi-extension-settings/sdk/src/hooks/index.js";
 ```
 
 | Completer              | Description                     |
@@ -530,7 +530,7 @@ const myCompleter: CompleteFn = async (partial) => {
 Display functions run at render time. They transform the stored value into a displayable string (may include ANSI escape sequences). They do NOT affect the stored value or the inline edit bar.
 
 ```ts
-import { d } from "../pi-extension-settings/sdk/index.js";
+import { d } from "../pi-extension-settings/sdk/src/hooks/index.js";
 ```
 
 | Display fn       | Description                                                  |

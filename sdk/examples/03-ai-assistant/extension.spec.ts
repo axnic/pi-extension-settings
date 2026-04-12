@@ -9,7 +9,6 @@
  *                                     panel events via `emitChange()`
  *   - `getExtensionSetting`         → controls what individual `get()` calls see
  *   - `setExtensionSetting`         → lets us assert storage writes + transforms
- *   - `getAllSettingsForExtension`  → drives `getAll()` / `buildRequest()`
  *
  * Covers
  * ──────
@@ -31,11 +30,9 @@ import { createAiAssistant, schema } from "./extension.ts";
 vi.mock("../../src/core/storage", () => ({
   getExtensionSetting: vi.fn(),
   setExtensionSetting: vi.fn(),
-  getAllSettingsForExtension: vi.fn(),
 }));
 
 import {
-  getAllSettingsForExtension,
   getExtensionSetting,
   setExtensionSetting,
 } from "../../src/core/storage";
@@ -53,17 +50,21 @@ function makePi() {
         listeners.set(event, bucket);
       }),
       emit: vi.fn((event: string, data?: unknown) => {
-        for (const cb of listeners.get(event) ?? []) cb(data!);
+        for (const cb of listeners.get(event) ?? []) cb(data);
       }),
     },
     triggerEvent(event: string, data?: unknown) {
-      for (const cb of listeners.get(event) ?? []) cb(data!);
+      for (const cb of listeners.get(event) ?? []) cb(data);
     },
   };
 }
 
 /** Simulate the settings panel saving a change for "ai-assistant". */
-function emitChange(pi: ReturnType<typeof makePi>, key: string, value: string) {
+function emitChange(
+  pi: ReturnType<typeof makePi>,
+  key: string,
+  value: unknown,
+) {
   vi.mocked(getExtensionSetting).mockImplementation((_, k) =>
     k === key ? value : undefined,
   );
@@ -75,25 +76,30 @@ function emitChange(pi: ReturnType<typeof makePi>, key: string, value: string) {
  * Used by tests that call `buildRequest()` or `settings.getAll()`.
  */
 function makeSnapshot(
-  overrides: Record<string, string> = {},
-): Record<string, string> {
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
   return {
     endpoint: "https://api.openai.com/v1",
     apiKey: "",
     "model.name": "gpt-4o-mini",
-    "model.sampling.temperature": "0.7",
-    "model.sampling.maxTokens": "2048",
-    "model.sampling.topP": "1",
+    "model.sampling.temperature": 0.7,
+    "model.sampling.maxTokens": 2048,
+    "model.sampling.topP": 1,
     "prompt.system":
       "You are a helpful coding assistant embedded in a terminal IDE.",
     "prompt.locale": "en",
-    "context.maxTurns": "10",
-    "context.pinned": "[]",
-    extraHeaders: "{}",
-    streamResponses: "true",
-    logRequests: "false",
+    "context.maxTurns": 10,
+    "context.pinned": [],
+    extraHeaders: {},
+    streamResponses: true,
+    logRequests: false,
     ...overrides,
   };
+}
+
+/** Seed getExtensionSetting to serve values from a snapshot object. */
+function seedStorage(snapshot: Record<string, unknown>) {
+  vi.mocked(getExtensionSetting).mockImplementation((_, key) => snapshot[key]);
 }
 
 // ─── Suite ────────────────────────────────────────────────────────────────────
@@ -213,7 +219,7 @@ describe("AiAssistant — createAiAssistant()", () => {
     it("returns just the base system prompt when there are no pinned messages", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
         if (key === "prompt.system") return "You are a helpful assistant.";
-        if (key === "context.pinned") return "[]";
+        if (key === "context.pinned") return [];
         return undefined;
       });
       expect(assistant.buildSystemPrompt()).toBe(
@@ -232,14 +238,14 @@ describe("AiAssistant — createAiAssistant()", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
         if (key === "prompt.system") return "Base prompt.";
         if (key === "context.pinned")
-          return JSON.stringify([
+          return [
             {
               label: "Rule 1",
               content: "Always respond in bullet points.",
               enabled: true,
             },
             { label: "Rule 2", content: "Never use emojis.", enabled: true },
-          ]);
+          ];
         return undefined;
       });
       const result = assistant.buildSystemPrompt();
@@ -252,10 +258,10 @@ describe("AiAssistant — createAiAssistant()", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
         if (key === "prompt.system") return "Base prompt.";
         if (key === "context.pinned")
-          return JSON.stringify([
+          return [
             { label: "Active", content: "Keep it brief.", enabled: true },
             { label: "Disabled", content: "Use formal tone.", enabled: false },
-          ]);
+          ];
         return undefined;
       });
       const result = assistant.buildSystemPrompt();
@@ -267,9 +273,7 @@ describe("AiAssistant — createAiAssistant()", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
         if (key === "prompt.system") return "Base.";
         if (key === "context.pinned")
-          return JSON.stringify([
-            { label: "A", content: "Pinned A.", enabled: true },
-          ]);
+          return [{ label: "A", content: "Pinned A.", enabled: true }];
         return undefined;
       });
       expect(assistant.buildSystemPrompt()).toBe("Base.\n\nPinned A.");
@@ -279,9 +283,7 @@ describe("AiAssistant — createAiAssistant()", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
         if (key === "prompt.system") return "Only base.";
         if (key === "context.pinned")
-          return JSON.stringify([
-            { label: "Off", content: "Never shown.", enabled: false },
-          ]);
+          return [{ label: "Off", content: "Never shown.", enabled: false }];
         return undefined;
       });
       expect(assistant.buildSystemPrompt()).toBe("Only base.");
@@ -291,11 +293,11 @@ describe("AiAssistant — createAiAssistant()", () => {
       vi.mocked(getExtensionSetting).mockImplementation((_, key) => {
         if (key === "prompt.system") return "Base.";
         if (key === "context.pinned")
-          return JSON.stringify([
+          return [
             { label: "1st", content: "First.", enabled: true },
             { label: "2nd", content: "Second.", enabled: true },
             { label: "3rd", content: "Third.", enabled: true },
-          ]);
+          ];
         return undefined;
       });
       const result = assistant.buildSystemPrompt();
@@ -310,57 +312,45 @@ describe("AiAssistant — createAiAssistant()", () => {
     const userMessages = [{ role: "user" as const, content: "Hello!" }];
 
     it("sets the URL to endpoint + /chat/completions", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ endpoint: "https://api.openai.com/v1" }),
-      );
+      seedStorage(makeSnapshot({ endpoint: "https://api.openai.com/v1" }));
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.url).toBe("https://api.openai.com/v1/chat/completions");
     });
 
     it("uses a custom endpoint when stored", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ endpoint: "http://localhost:11434/v1" }),
-      );
+      seedStorage(makeSnapshot({ endpoint: "http://localhost:11434/v1" }));
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.url).toBe("http://localhost:11434/v1/chat/completions");
     });
 
     it("includes Content-Type: application/json in every request", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(makeSnapshot());
+      seedStorage(makeSnapshot());
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.headers["Content-Type"]).toBe("application/json");
     });
 
     it("includes Authorization: Bearer when apiKey is set", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ apiKey: "sk-secret-token" }),
-      );
+      seedStorage(makeSnapshot({ apiKey: "sk-secret-token" }));
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.headers.Authorization).toBe("Bearer sk-secret-token");
     });
 
     it("omits Authorization header when apiKey is empty", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ apiKey: "" }),
-      );
+      seedStorage(makeSnapshot({ apiKey: "" }));
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.headers.Authorization).toBeUndefined();
     });
 
     it("merges extraHeaders into the request headers", () => {
       const extra = { "X-Custom-Header": "my-value", "X-Proxy-Auth": "token" };
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ extraHeaders: JSON.stringify(extra) }),
-      );
+      seedStorage(makeSnapshot({ extraHeaders: extra }));
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.headers["X-Custom-Header"]).toBe("my-value");
       expect(req.headers["X-Proxy-Auth"]).toBe("token");
     });
 
     it("extraHeaders override nothing when they are an empty dict", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ extraHeaders: "{}" }),
-      );
+      seedStorage(makeSnapshot({ extraHeaders: {} }));
       const req = assistant.buildRequest({ messages: userMessages });
       expect(Object.keys(req.headers)).toEqual(
         expect.arrayContaining(["Content-Type"]),
@@ -368,15 +358,13 @@ describe("AiAssistant — createAiAssistant()", () => {
     });
 
     it("includes the model name in the body", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "model.name": "gpt-4o" }),
-      );
+      seedStorage(makeSnapshot({ "model.name": "gpt-4o" }));
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.body.model).toBe("gpt-4o");
     });
 
     it("passes the messages array through to the body unchanged", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(makeSnapshot());
+      seedStorage(makeSnapshot());
       const messages = [
         { role: "system" as const, content: "You are helpful." },
         { role: "user" as const, content: "What is 2+2?" },
@@ -387,68 +375,61 @@ describe("AiAssistant — createAiAssistant()", () => {
       expect(req.body.messages).toEqual(messages);
     });
 
-    it("converts temperature string to a number in the body", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "model.sampling.temperature": "0.3" }),
-      );
+    it("uses native temperature number in the body", () => {
+      seedStorage(makeSnapshot({ "model.sampling.temperature": 0.3 }));
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.body.temperature).toBe(0.3);
       expect(typeof req.body.temperature).toBe("number");
     });
 
-    it("converts maxTokens string to a number in the body", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "model.sampling.maxTokens": "4096" }),
-      );
+    it("uses native maxTokens number in the body", () => {
+      seedStorage(makeSnapshot({ "model.sampling.maxTokens": 4096 }));
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.body.max_tokens).toBe(4096);
       expect(typeof req.body.max_tokens).toBe("number");
     });
 
-    it("converts topP string to a number in the body", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "model.sampling.topP": "0.9" }),
-      );
+    it("uses native topP number in the body", () => {
+      seedStorage(makeSnapshot({ "model.sampling.topP": 0.9 }));
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.body.top_p).toBe(0.9);
     });
 
     it("sets stream: true in the body when streamResponses is enabled", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ streamResponses: "true" }),
-      );
+      seedStorage(makeSnapshot({ streamResponses: true }));
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.body.stream).toBe(true);
     });
 
     it("sets stream: false in the body when streamResponses is disabled", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ streamResponses: "false" }),
-      );
+      seedStorage(makeSnapshot({ streamResponses: false }));
       const req = assistant.buildRequest({ messages: userMessages });
       expect(req.body.stream).toBe(false);
     });
 
     it("reads a fresh snapshot on every call — no stale cache", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "model.name": "gpt-4o" }),
-      );
+      seedStorage(makeSnapshot({ "model.name": "gpt-4o" }));
       expect(
         assistant.buildRequest({ messages: userMessages }).body.model,
       ).toBe("gpt-4o");
 
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "model.name": "o3-mini" }),
-      );
+      seedStorage(makeSnapshot({ "model.name": "o3-mini" }));
       expect(
         assistant.buildRequest({ messages: userMessages }).body.model,
       ).toBe("o3-mini");
     });
 
-    it("calls getAllSettingsForExtension with 'ai-assistant'", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(makeSnapshot());
+    it("reads settings per-key from getExtensionSetting", () => {
+      seedStorage(makeSnapshot());
       assistant.buildRequest({ messages: userMessages });
-      expect(getAllSettingsForExtension).toHaveBeenCalledWith("ai-assistant");
+      expect(getExtensionSetting).toHaveBeenCalledWith(
+        "ai-assistant",
+        "endpoint",
+      );
+      expect(getExtensionSetting).toHaveBeenCalledWith(
+        "ai-assistant",
+        "streamResponses",
+      );
     });
   });
 
@@ -500,14 +481,14 @@ describe("AiAssistant — createAiAssistant()", () => {
     it("fires when the panel emits a change for 'extraHeaders'", () => {
       const cb = vi.fn();
       assistant.onClientChange(cb);
-      emitChange(pi, "extraHeaders", JSON.stringify({ "X-My": "header" }));
+      emitChange(pi, "extraHeaders", { "X-My": "header" });
       expect(cb).toHaveBeenCalledTimes(1);
     });
 
     it("does NOT fire when 'model.sampling.temperature' changes", () => {
       const cb = vi.fn();
       assistant.onClientChange(cb);
-      assistant.settings.set("model.sampling.temperature", "1.0");
+      assistant.settings.set("model.sampling.temperature", 1.0);
       expect(cb).not.toHaveBeenCalled();
     });
 
@@ -631,20 +612,20 @@ describe("AiAssistant — createAiAssistant()", () => {
     });
 
     it("writes 'model.sampling.temperature' with the two-level dotted key", () => {
-      assistant.settings.set("model.sampling.temperature", "1.2");
+      assistant.settings.set("model.sampling.temperature", 1.2);
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "ai-assistant",
         "model.sampling.temperature",
-        "1.2",
+        1.2,
       );
     });
 
-    it("writes 'model.sampling.maxTokens' as a plain string", () => {
-      assistant.settings.set("model.sampling.maxTokens", "8192");
+    it("writes 'model.sampling.maxTokens' as a native number", () => {
+      assistant.settings.set("model.sampling.maxTokens", 8192);
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "ai-assistant",
         "model.sampling.maxTokens",
-        "8192",
+        8192,
       );
     });
 
@@ -657,41 +638,41 @@ describe("AiAssistant — createAiAssistant()", () => {
       );
     });
 
-    it("writes 'context.maxTurns' as a plain string", () => {
-      assistant.settings.set("context.maxTurns", "20");
+    it("writes 'context.maxTurns' as a native number", () => {
+      assistant.settings.set("context.maxTurns", 20);
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "ai-assistant",
         "context.maxTurns",
-        "20",
+        20,
       );
     });
 
-    it("serializes 'context.pinned' as a JSON string", () => {
+    it("writes 'context.pinned' as a native array", () => {
       const pinned = [{ label: "Rule", content: "Be brief.", enabled: true }];
       assistant.settings.set("context.pinned", pinned);
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "ai-assistant",
         "context.pinned",
-        JSON.stringify(pinned),
+        pinned,
       );
     });
 
-    it("serializes 'extraHeaders' as a JSON string", () => {
+    it("writes 'extraHeaders' as a native object", () => {
       const headers = { "X-Org": "my-org", "X-Project": "pi" };
       assistant.settings.set("extraHeaders", headers);
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "ai-assistant",
         "extraHeaders",
-        JSON.stringify(headers),
+        headers,
       );
     });
 
-    it("serializes the boolean 'streamResponses' as the string 'false'", () => {
+    it("writes the boolean 'streamResponses' as a native boolean", () => {
       assistant.settings.set("streamResponses", false);
       expect(setExtensionSetting).toHaveBeenCalledWith(
         "ai-assistant",
         "streamResponses",
-        "false",
+        false,
       );
     });
   });
@@ -700,13 +681,13 @@ describe("AiAssistant — createAiAssistant()", () => {
 
   describe("settings.getAll() — full snapshot", () => {
     it("returns all 13 leaf keys when storage is empty", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({});
+      vi.mocked(getExtensionSetting).mockReturnValue(undefined);
       const keys = Object.keys(assistant.settings.getAll());
       expect(keys).toHaveLength(13);
     });
 
     it("returns the correct defaults for every key when storage is empty", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({});
+      vi.mocked(getExtensionSetting).mockReturnValue(undefined);
       const all = assistant.settings.getAll();
 
       expect(all.endpoint).toBe("https://api.openai.com/v1");
@@ -718,71 +699,69 @@ describe("AiAssistant — createAiAssistant()", () => {
       expect(all["prompt.system"]).toContain("helpful coding assistant");
       expect(all["prompt.locale"]).toBe("en");
       expect(all["context.maxTurns"]).toBe(10); // number node → native number
-      expect(all["context.pinned"]).toEqual([]); // list → parsed array
-      expect(all.extraHeaders).toEqual({}); // dict → parsed object
-      expect(all.streamResponses).toBe(true); // boolean → parsed
-      expect(all.logRequests).toBe(false); // boolean → parsed
+      expect(all["context.pinned"]).toEqual([]);
+      expect(all.extraHeaders).toEqual({});
+      expect(all.streamResponses).toBe(true);
+      expect(all.logRequests).toBe(false);
     });
 
-    it("parses boolean 'streamResponses' correctly in the snapshot", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ streamResponses: "false" }),
-      );
+    it("returns native boolean 'streamResponses' from storage", () => {
+      seedStorage(makeSnapshot({ streamResponses: false }));
       expect(assistant.settings.getAll().streamResponses).toBe(false);
     });
 
-    it("parses boolean 'logRequests' correctly in the snapshot", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ logRequests: "true" }),
-      );
+    it("returns native boolean 'logRequests' from storage", () => {
+      seedStorage(makeSnapshot({ logRequests: true }));
       expect(assistant.settings.getAll().logRequests).toBe(true);
     });
 
-    it("deserializes the 'context.pinned' JSON array in the snapshot", () => {
+    it("returns native 'context.pinned' array from storage", () => {
       const pinned = [
         { label: "A", content: "Keep it short.", enabled: true },
         { label: "B", content: "Use markdown.", enabled: false },
       ];
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "context.pinned": JSON.stringify(pinned) }),
-      );
+      seedStorage(makeSnapshot({ "context.pinned": pinned }));
       expect(assistant.settings.getAll()["context.pinned"]).toEqual(pinned);
     });
 
-    it("deserializes the 'extraHeaders' JSON object in the snapshot", () => {
+    it("returns native 'extraHeaders' object from storage", () => {
       const headers = { "X-Custom": "value", "X-Trace": "id-123" };
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ extraHeaders: JSON.stringify(headers) }),
-      );
+      seedStorage(makeSnapshot({ extraHeaders: headers }));
       expect(assistant.settings.getAll().extraHeaders).toEqual(headers);
     });
 
-    it("returns empty array for 'context.pinned' when stored JSON is invalid", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue(
-        makeSnapshot({ "context.pinned": "NOT VALID JSON" }),
-      );
-      expect(assistant.settings.getAll()["context.pinned"]).toEqual([]);
+    it("merges stored context.pinned over defaults", () => {
+      const pinned = [{ label: "Only", content: "One", enabled: true }];
+      seedStorage(makeSnapshot({ "context.pinned": pinned }));
+      expect(assistant.settings.getAll()["context.pinned"]).toEqual(pinned);
     });
 
     it("merges stored values over defaults — absent keys fall back", () => {
       // Only override a few keys; the rest should come from defaults
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({
+      seedStorage({
         "model.name": "claude-sonnet",
-        streamResponses: "false",
+        streamResponses: false,
       });
 
       const all = assistant.settings.getAll();
       expect(all["model.name"]).toBe("claude-sonnet"); // stored
-      expect(all.streamResponses).toBe(false); // stored + parsed
+      expect(all.streamResponses).toBe(false); // stored
       expect(all.endpoint).toBe("https://api.openai.com/v1"); // default
       expect(all.apiKey).toBe(""); // default
       expect(all["model.sampling.temperature"]).toBe(0.7); // default, number node
     });
 
-    it("calls getAllSettingsForExtension with 'ai-assistant'", () => {
-      vi.mocked(getAllSettingsForExtension).mockReturnValue({});
+    it("calls getExtensionSetting for each leaf key", () => {
+      vi.mocked(getExtensionSetting).mockReturnValue(undefined);
       assistant.settings.getAll();
-      expect(getAllSettingsForExtension).toHaveBeenCalledWith("ai-assistant");
+      expect(getExtensionSetting).toHaveBeenCalledWith(
+        "ai-assistant",
+        "endpoint",
+      );
+      expect(getExtensionSetting).toHaveBeenCalledWith(
+        "ai-assistant",
+        "context.pinned",
+      );
     });
   });
 });

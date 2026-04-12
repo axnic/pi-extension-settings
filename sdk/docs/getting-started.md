@@ -42,11 +42,13 @@ flowchart TD
 import {
   S, // schema builder namespace
   ExtensionSettings, // the runtime accessor class
+} from "pi-extension-settings/sdk";
+import {
   v, // validators
   t, // transforms
   c, // completers (not used in this quickstart)
   d, // display functions (not used in this quickstart)
-} from "pi-extension-settings/sdk";
+} from "pi-extension-settings/sdk/hooks";
 ```
 
 All four hook namespaces (`v`, `t`, `c`, `d`) are optional. Import only what you use.
@@ -164,7 +166,8 @@ Here is everything stitched together as a single file:
 
 ```ts
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { S, ExtensionSettings, v, t } from "pi-extension-settings/sdk";
+import { S, ExtensionSettings } from "pi-extension-settings/sdk";
+import { t, v } from "pi-extension-settings/sdk/hooks";
 
 const schema = S.settings({
   "api-url": S.text({

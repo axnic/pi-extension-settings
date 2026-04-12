@@ -1,9 +1,10 @@
 # API Reference
 
-Complete list of every symbol exported from the SDK's public entry point (`pi-extension-settings/sdk`).
+Complete list of symbols exported from the SDK public entry points.
 
 ```ts
-import {} from /* see below */ "pi-extension-settings/sdk";
+import {} from /* core */ "pi-extension-settings/sdk";
+import {} from /* hooks */ "pi-extension-settings/sdk/hooks";
 ```
 
 ---
@@ -54,6 +55,7 @@ See [Schema Builder](../concepts/schema-builder.md) for full documentation.
 ## Validators (`v`)
 
 The `v` namespace contains validator factory functions. All return `ValidationFn<T>`.
+Import from `pi-extension-settings/sdk/hooks`.
 
 ### General
 
@@ -117,6 +119,7 @@ See [Validators](../hooks/validators.md) for full documentation.
 ## Transforms (`t`)
 
 The `t` namespace contains transform factory functions. All return `TransformFn`.
+Import from `pi-extension-settings/sdk/hooks`.
 
 ### Composition
 
@@ -166,6 +169,7 @@ See [Transforms](../hooks/transforms.md) for full documentation.
 ## Completers (`c`)
 
 The `c` namespace contains completer factory functions. All return `CompleteFn`.
+Import from `pi-extension-settings/sdk/hooks`.
 
 | Function               | Description                                      |
 | ---------------------- | ------------------------------------------------ |
@@ -179,6 +183,7 @@ See [Completers](../hooks/completers.md) for full documentation.
 ## Display functions (`d`)
 
 The `d` namespace contains display function factories. All return `DisplayFn<T>`.
+Import from `pi-extension-settings/sdk/hooks`.
 
 | Function            | Description                                                          |
 | ------------------- | -------------------------------------------------------------------- |
@@ -196,13 +201,10 @@ See [Display Functions](../hooks/display.md) for full documentation.
 
 Utility functions for inspecting nodes at runtime.
 
-| Function          | Signature                                 | Description                                  |
-| ----------------- | ----------------------------------------- | -------------------------------------------- |
-| `isLeafNode`      | `(node: SettingNode) => node is LeafNode` | Returns `true` for non-Section nodes.        |
-| `isSectionNode`   | `(node: SettingNode) => node is Section`  | Returns `true` for Section nodes.            |
-| `enumValues`      | `(node: Enum) => string[]`                | Extracts plain value strings from an Enum.   |
-| `enumLabel`       | `(node: Enum, value: string) => string`   | Returns the display label for an enum value. |
-| `defaultAsString` | `(node: LeafNode) => string`              | Serializes the node's default to a string.   |
+| Function        | Signature                                 | Description                           |
+| --------------- | ----------------------------------------- | ------------------------------------- |
+| `isLeafNode`    | `(node: SettingNode) => node is LeafNode` | Returns `true` for non-Section nodes. |
+| `isSectionNode` | `(node: SettingNode) => node is Section`  | Returns `true` for Section nodes.     |
 
 ---
 
