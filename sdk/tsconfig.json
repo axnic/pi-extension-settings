@@ -9,7 +9,6 @@
     "rootDir": ".",
     "strict": true,
     "moduleResolution": "bundler",
-    "baseUrl": ".",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
