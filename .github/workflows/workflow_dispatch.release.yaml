@@ -157,7 +157,7 @@ jobs:
       - name: 🔖 Bump versions in package.json files
         run: |
           pnpm version ${{ steps.version.outputs.version }} --no-git-tag-version
-          pnpm -C sdk version ${{ steps.version.outputs.version }} --no-git-tag-version
+          pnpm --dir sdk version ${{ steps.version.outputs.version }} --no-git-tag-version
 
       # ── Build & validate ───────────────────────────────────────────────────
       - name: 🏷️ Type-check SDK
