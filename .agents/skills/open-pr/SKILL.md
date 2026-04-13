@@ -1,10 +1,12 @@
 ---
 name: open-pr
 description: >
-  Opens a well-formed pull request for this repository. Use this skill
-  whenever you are asked to create, open, or submit a pull request. The skill
-  enforces the correct branch name, conventional commit title, signed-off
-  commits, and the project PR template.
+  Opens a well-formed pull request for this repository. Use when asked to
+  create, open, or submit a pull request, or to push a branch and request a
+  review. Enforces correct branch naming, conventional commit title, signed-off
+  commits, the project PR template, and a green CI suite before submitting.
+compatibility: Requires git and GitHub CLI (gh)
+allowed-tools: Bash(git:*) Bash(gh:*)
 ---
 
 # Open Pull Request Skill
