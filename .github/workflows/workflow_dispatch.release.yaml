@@ -146,11 +146,11 @@ jobs:
           RANGE="${PREV}..HEAD"
           [[ "$PREV" == "v0.0.0" ]] && RANGE="HEAD"
 
-          git log --no-merges \
+          git log --first-parent \
             --format="%H%x1f%s%x1f%b%x1f%an%x1f%ae%x1e" \
             "$RANGE" > git-commits.txt
 
-          echo "::notice::Collected $(git log --no-merges --oneline \"$RANGE\" | wc -l | tr -d ' ') commit(s) (${RANGE})"
+          echo "::notice::Collected $(git log --first-parent --oneline "$RANGE" | wc -l | tr -d ' ') commit(s) (${RANGE})"
 
       # ── Resolve PR metadata ────────────────────────────────────────────────
       # Writes pr-data.json: { "<sha>": { number, url, login } | null }
@@ -294,18 +294,26 @@ jobs:
 
           Write the final improved release notes to release-notes.md"
 
-          if copilot -p "${PROMPT}" \
-              --model 'gpt-5-mini' \
-              --allow-tool='write' \
-              --allow-tool='shell(node:*)' \
-              --allow-tool='shell(git:*)' \
-              --allow-url='https://api.github.com/*' \
-              --allow-url='https://raw.githubusercontent.com/*' \
-              --allow-url='https://github.com/*' \
-              --no-ask-user; then
-            echo "::notice::Copilot CLI generated polished release notes."
-          else
-            echo "::warning::Copilot CLI failed — using deterministic draft as fallback."
+          COPILOT_SUCCESS=false
+          for attempt in 1 2 3; do
+            if copilot -p "${PROMPT}" \
+                --model 'gpt-5-mini' \
+                --allow-tool='write' \
+                --allow-tool='shell(node:*)' \
+                --allow-tool='shell(git:*)' \
+                --allow-url='https://api.github.com/*' \
+                --allow-url='https://raw.githubusercontent.com/*' \
+                --allow-url='https://github.com/*' \
+                --no-ask-user; then
+              echo "::notice::Copilot succeeded on attempt ${attempt}."
+              COPILOT_SUCCESS=true
+              break
+            fi
+            echo "::warning::Copilot attempt ${attempt}/3 failed."
+            [[ $attempt -lt 3 ]] && sleep 5
+          done
+          if [[ "$COPILOT_SUCCESS" != "true" ]]; then
+            echo "::warning::Copilot CLI failed after 3 attempts — using deterministic draft as fallback."
             cp release-notes-deterministic.md release-notes.md
           fi
 
