@@ -18,7 +18,7 @@
  *   [hint bar]
  */
 
-import type { Theme } from "@mariozechner/pi-coding-agent";
+import type { Theme, ThemeColor } from "@mariozechner/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@mariozechner/pi-tui";
 import type { Enum } from "../../sdk/index.js";
 import { enumLabel, enumValues } from "../../sdk/src/core/nodes.js";
@@ -369,6 +369,9 @@ function wrapText(text: string, maxWidth: number, indent: string): string[] {
  *   - line 1: row description / tooltip
  *   - line 2+: validation result (may wrap across multiple lines)
  *   - last line: suggestions hint (when autocomplete is open)
+ *
+ * All lines are wrapped to `width` in a single final pass so that every output
+ * line is safe to render regardless of content length.
  */
 function renderTooltip(
   rows: ViewRow[],
@@ -382,7 +385,12 @@ function renderTooltip(
 
   const dim = (t: string) => theme.fg("dim", t);
 
-  // Line 1: description
+  // Each pending line carries raw text and an optional color key.
+  // Color is applied per wrapped line so ANSI codes are never split across lines.
+  type PendingLine = { text: string; colorKey?: ThemeColor };
+  const pending: PendingLine[] = [];
+
+  // Line 1: description — may contain partial dim() annotations (short, safe to wrap as-is)
   let line1 = "";
   switch (focusedRow.type) {
     case "extension-header": {
@@ -405,63 +413,86 @@ function renderTooltip(
       line1 = "List item";
       break;
   }
+  pending.push({ text: line1 });
 
   // Line 2+: validation result OR type hint
-  let validationLines: string[] = [];
   if (state.editState && state.validation !== null) {
     const { valid, reason } = state.validation as {
       valid: boolean;
       reason?: string | string[];
     };
-    const color = valid ? "success" : "error";
+    const colorKey = valid ? "success" : "error";
 
     if (!valid && Array.isArray(reason) && reason.length > 1) {
       // Multiple failures from v.any(): header + one line per reason
-      validationLines.push(
-        theme.fg(color, "✗ none of the validations passed:"),
-      );
+      pending.push({ text: "✗ none of the validations passed:", colorKey });
       for (const r of reason) {
-        // "  · " = 4 visible columns → indent wrapped continuation by 4 spaces
-        const wrapped = wrapText(`  · ${r}`, width, "    ");
-        for (const l of wrapped) validationLines.push(theme.fg(color, l));
+        pending.push({ text: `  · ${r}`, colorKey });
       }
     } else {
-      // Single failure or success — single wrapped block
+      // Single failure or success
       const message = Array.isArray(reason)
         ? (reason[0] ?? (valid ? "valid" : "invalid"))
         : (reason ?? (valid ? "valid" : "invalid"));
-      const prefix = valid ? "✓" : "✗";
-      const fullText = `${prefix} ${message}`;
-      // "✓ " / "✗ " = 2 visible columns → indent continuation lines by 2 spaces
-      const wrapped = wrapText(fullText, width, "  ");
-      validationLines = wrapped.map((l) => theme.fg(color, l));
+      pending.push({ text: `${valid ? "✓" : "✗"} ${message}`, colorKey });
     }
   } else if (focusedRow.type === "setting") {
     const node = focusedRow.node;
     if (node._tag === "text") {
-      const hints: string[] = [];
-      if (node.validation) {
-        hints.push("validated");
-      }
-      if (node.complete) hints.push("<tab> for suggestions");
-      validationLines =
-        hints.length > 0 ? [dim(hints.join(" · "))] : [dim("<enter> to edit")];
+      const items = [];
+      if (node.validation) items.push("validated");
+      if (node.complete) items.push("<tab> for suggestions");
+      pending.push({
+        text:
+          items.length > 0
+            ? renderNavigationHint(items, width)
+            : "<enter> to edit",
+        colorKey: "dim",
+      });
     }
   } else if (state.addFormState) {
-    validationLines = [
-      dim("<tab> next field · <enter> confirm · <esc> cancel"),
-    ];
+    pending.push({
+      text: renderNavigationHint(
+        ["<tab> next field", "<enter> confirm", "<esc> cancel"],
+        width,
+      ),
+      colorKey: "dim",
+    });
   }
 
-  // Last line: scope info OR autocomplete hint
-  let hintLine = "";
+  // Last line: autocomplete hint
   if (state.suggestions.length > 0) {
-    hintLine = dim("↑↓ navigate · Tab accept suggestion");
+    pending.push({
+      text: renderNavigationHint(
+        ["↑↓ navigate", "Tab accept suggestion"],
+        width,
+      ),
+      colorKey: "dim",
+    });
   }
 
-  return [line1, ...validationLines, ...(hintLine ? [hintLine] : [])].flatMap(
-    (l) => wrapText(l, width, ""),
-  );
+  // Single wrap pass: each raw line is word-wrapped to width, then colored per line.
+  return pending.flatMap(({ text, colorKey }) => {
+    const lines = wrapText(text, width, "");
+    return colorKey ? lines.map((l) => theme.fg(colorKey, l)) : lines;
+  });
+}
+
+// ─── Navigation hint rendering ───────────────────────────────────────────────
+
+/**
+ * Render a navigation hint from ordered items joined by " · ".
+ *
+ * Items are listed from most to least important. If the joined result exceeds
+ * `width`, the rightmost item is dropped and the attempt is repeated until the
+ * string fits. Returns an empty string if even the first item alone overflows.
+ */
+function renderNavigationHint(items: string[], width: number): string {
+  for (let i = items.length; i > 0; i--) {
+    const text = items.slice(0, i).join(" · ");
+    if (visibleWidth(text) <= width) return text;
+  }
+  return "";
 }
 
 // ─── Hint bar rendering ───────────────────────────────────────────────────────
@@ -472,69 +503,96 @@ function renderHintBar(
   rows: ViewRow[],
   theme: Theme,
   controls: ControlBindings,
+  width: number,
 ): string {
   const dim = (t: string) => theme.fg("dim", t);
+  const hint = (items: string[]) => dim(renderNavigationHint(items, width));
 
   if (state.addFormState) {
-    return dim("<tab> next field · <enter> confirm · <esc> cancel");
+    return hint(["<tab> next field", "<enter> confirm", "<esc> cancel"]);
   }
 
   if (state.editState) {
     if (state.suggestions.length > 0) {
-      return dim(
-        `<enter> to confirm · <esc> to cancel / <esc> cancel suggestions · <${controls.resetToDefault}> reset default`,
-      );
+      return hint([
+        "<enter> to confirm",
+        "<esc> cancel suggestions",
+        `<${controls.resetToDefault}> reset default`,
+      ]);
     }
     const focusedRow = rows[state.focusedIndex];
     if (focusedRow?.type === "setting" && focusedRow.node._tag === "enum") {
-      return dim(
-        `<enter>/<space> to cycle · <esc> to cancel · <${controls.resetToDefault}> reset default`,
-      );
+      return hint([
+        "<enter>/<space> to cycle",
+        "<esc> to cancel",
+        `<${controls.resetToDefault}> reset default`,
+      ]);
     }
-    return dim(
-      `<enter> to confirm · <esc> to cancel · <${controls.resetToDefault}> reset default`,
-    );
+    return hint([
+      "<enter> to confirm",
+      "<esc> to cancel",
+      `<${controls.resetToDefault}> reset default`,
+    ]);
   }
 
-  // Check if focused row is inside a list
   const focusedRow = rows[state.focusedIndex];
   const exitHint =
     state.scope.length > 0 ? "<esc> to exit scope" : "<esc> to cancel";
 
   if (state.searchActive) {
-    return dim(`Type to search · <esc> leave search`);
+    return hint(["Type to search", "<esc> leave search"]);
   }
 
   if (focusedRow?.type === "list-item" || focusedRow?.type === "list-add") {
-    return dim(
-      `↑↓ navigate · <${controls.reorderItemUp}>/<${controls.reorderItemDown}> reorder · <${controls.deleteItem}> delete · <enter> on [+] · </> search · ${exitHint} · <${controls.collapseAll}> collapse all`,
-    );
+    return hint([
+      "↑↓ navigate",
+      `<${controls.reorderItemUp}>/<${controls.reorderItemDown}> reorder`,
+      `<${controls.deleteItem}> delete`,
+      "<enter> on [+]",
+      "</> search",
+      exitHint,
+      `<${controls.collapseAll}> collapse all`,
+    ]);
   }
 
   if (focusedRow?.type === "extension-header" || focusedRow?.type === "group") {
-    return dim(
-      `<${controls.collapseExpand}> collapse/expand · <enter> to enter section · </> search · ${exitHint} · <${controls.collapseAll}> collapse all`,
-    );
+    return hint([
+      `<${controls.collapseExpand}> collapse/expand`,
+      "<enter> to enter section",
+      "</> search",
+      exitHint,
+      `<${controls.collapseAll}> collapse all`,
+    ]);
   }
 
   if (focusedRow?.type === "setting") {
-    const base = `<${controls.resetToDefault}> reset default · </> search · ${exitHint} · <${controls.collapseAll}> collapse all`;
-    switch (focusedRow.node._tag) {
-      case "boolean":
-        return dim(`${base} · <enter> to toggle`);
-      case "enum":
-        return dim(`${base} · <enter> to cycle`);
-      case "list":
-      case "dict":
-        return dim(`${base} · <enter> to expand/collapse`);
-      default:
-        return dim(`${base} · <enter> to edit`);
-    }
+    const actionHint = (() => {
+      switch (focusedRow.node._tag) {
+        case "boolean":
+          return "<enter> to toggle";
+        case "enum":
+          return "<enter> to cycle";
+        case "list":
+        case "dict":
+          return "<enter> to expand/collapse";
+        default:
+          return "<enter> to edit";
+      }
+    })();
+    return hint([
+      actionHint,
+      `<${controls.resetToDefault}> reset default`,
+      "</> search",
+      exitHint,
+      `<${controls.collapseAll}> collapse all`,
+    ]);
   }
 
-  return dim(
-    `</> search · ${exitHint} · <${controls.collapseAll}> collapse all`,
-  );
+  return hint([
+    "</> search",
+    exitHint,
+    `<${controls.collapseAll}> collapse all`,
+  ]);
 }
 
 // ─── Pagination counter ───────────────────────────────────────────────────────
@@ -739,7 +797,7 @@ export function renderPanel(
   lines.push("");
 
   // 5. Hint bar
-  lines.push(renderHintBar(state, rows, theme, controls));
+  lines.push(renderHintBar(state, rows, theme, controls, width));
 
   return lines;
 }
