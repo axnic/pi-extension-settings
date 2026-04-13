@@ -1,0 +1,77 @@
+name: Feature request
+description: Propose a new feature or improvement.
+labels: [enhancement, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Got an idea? We'd love to hear it. Please fill in as much detail as you can.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: One sentence describing the feature.
+      placeholder: e.g. "Add a S.color() builder for hex color settings"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the project would this affect?
+      options:
+        - SDK – new schema builder (S.*)
+        - SDK – new hook (validator / transform / completer / display)
+        - SDK – ExtensionSettings API
+        - Extension – TUI panel / UI
+        - Extension – storage / settings persistence
+        - Extension – event protocol
+        - Docs / README
+        - Tooling / build / tests
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type of change
+      options:
+        - New capability (adds something that doesn't exist)
+        - Improvement (enhances an existing feature)
+        - Developer experience (DX / ergonomics)
+        - Performance
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation / problem
+      description: Why is this needed? What pain point or gap does it address?
+      placeholder: As a consumer extension author, I need ... so that ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How should it work? Feel free to include API sketches, pseudocode, or UI mockups.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Did you consider other approaches? Why did you prefer this one?
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Links, prior art, related issues, or anything else useful.
