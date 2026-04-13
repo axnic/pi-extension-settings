@@ -459,7 +459,9 @@ function renderTooltip(
     hintLine = dim("↑↓ navigate · Tab accept suggestion");
   }
 
-  return [line1, ...validationLines, ...(hintLine ? [hintLine] : [])];
+  return [line1, ...validationLines, ...(hintLine ? [hintLine] : [])].flatMap(
+    (l) => wrapText(l, width, ""),
+  );
 }
 
 // ─── Hint bar rendering ───────────────────────────────────────────────────────
