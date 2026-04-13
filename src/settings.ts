@@ -36,7 +36,7 @@ export const DEFAULT_CONTROL_BINDINGS = {
 } as const;
 
 /** Default value for `behavior.start-in-search-mode`. */
-export const DEFAULT_START_IN_SEARCH_MODE = true;
+export const DEFAULT_START_IN_SEARCH_MODE = false;
 
 /** Resolved keyboard bindings, normalised to lowercase trimmed strings. */
 export interface ControlBindings {

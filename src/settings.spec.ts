@@ -71,13 +71,13 @@ describe("settings control bindings", () => {
     expect(rendered).toBe("ctrl");
   });
 
-  it("defines behavior.start-in-search-mode with default true", () => {
+  it("defines behavior.start-in-search-mode with default false", () => {
     const behavior = schema.behavior;
     expect(behavior._tag).toBe("section");
     const start = behavior.children["start-in-search-mode"];
     expect(start?._tag).toBe("boolean");
     if (start && start._tag === "boolean") {
-      expect(start.default).toBe(true);
+      expect(start.default).toBe(false);
     }
   });
 });
