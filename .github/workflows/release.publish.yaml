@@ -23,6 +23,9 @@ name: 📦 Publish packages to npm
 on:
   release:
     types: [published]
+  workflow_run:
+    workflows: [🚀 Release]
+    types: [completed]
 
 permissions: {}
 
@@ -30,6 +33,7 @@ jobs:
   # ── Validate ──────────────────────────────────────────────────────────────
   validate:
     name: ✅ Validate (typecheck · tests · build)
+    if: github.event_name == 'release' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -38,7 +42,7 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || github.event.workflow_run.head_branch }}
           fetch-depth: 0
 
       - name: 🔧 Install tools via mise
@@ -71,6 +75,7 @@ jobs:
   # ── Publish ───────────────────────────────────────────────────────────────
   publish:
     name: 🚀 Publish all workspace packages
+    if: github.event_name == 'release' || github.event.workflow_run.conclusion == 'success'
     needs: validate
     runs-on: ubuntu-latest
     environment:
@@ -84,7 +89,21 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || github.event.workflow_run.head_branch }}
+          fetch-depth: 0
+
+      - name: 🔖 Resolve release tag
+        id: tag
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          if [[ -z "$TAG" ]]; then
+            TAG=$(git describe --tags --exact-match HEAD 2>/dev/null || true)
+          fi
+          if [[ -z "$TAG" ]]; then
+            echo "::error::Unable to resolve a release tag for HEAD. This workflow was triggered via '${{ github.event_name }}', but the checked out commit is not exactly at a tag. Ensure the triggering run references a tagged commit."
+            exit 1
+          fi
+          echo "name=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: 🔧 Install tools via mise
         uses: jdx/mise-action@v2
@@ -160,7 +179,7 @@ jobs:
       # ── Attach to GitHub Release ──────────────────────────────────────────
       - name: 📤 Attach artefacts to GitHub Release
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" \
+          gh release upload "${{ steps.tag.outputs.name }}" \
             sbom-extension.json \
             sbom-extension.json.sig \
             sbom-sdk.json \
