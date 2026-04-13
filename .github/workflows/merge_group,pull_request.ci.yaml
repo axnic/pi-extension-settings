@@ -81,11 +81,21 @@ jobs:
         with:
           cache: true
 
+      - name: 💾 Cache pnpm store
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.local/share/pnpm/store/v3
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: ✅ Validate commit messages
         run: |
-          commitlint \
-            --from ${{ github.event.pull_request.base.sha }} \
-            --to   ${{ github.event.pull_request.head.sha }} \
+          pnpm exec commitlint \
+            --from ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }} \
+            --to   ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }} \
             --verbose
 
   # ---------------------------------------------------------------------------
