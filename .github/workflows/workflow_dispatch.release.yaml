@@ -132,8 +132,8 @@ jobs:
           esac
 
           { echo "version=${NEW_VER}"; echo "prev_tag=${PREV_TAG}"; } >> "$GITHUB_OUTPUT"
-          echo "ℹ️  New version  : v${NEW_VER}"
-          echo "ℹ️  Changelog from : ${PREV_TAG}"
+          echo "::notice::New version: v${NEW_VER}"
+          echo "::notice::Changelog from: ${PREV_TAG}"
 
       # ── Collect commit log ─────────────────────────────────────────────────
       # Captured before the version-bump commit so it only contains meaningful
@@ -150,7 +150,7 @@ jobs:
             --format="%H%x1f%s%x1f%b%x1f%an%x1f%ae%x1e" \
             "$RANGE" > git-commits.txt
 
-          echo "--- Collected $(git log --no-merges --oneline "$RANGE" | wc -l | tr -d ' ') commit(s) (${RANGE}) ---"
+          echo "::notice::Collected $(git log --no-merges --oneline \"$RANGE\" | wc -l | tr -d ' ') commit(s) (${RANGE})"
 
       # ── Resolve PR metadata ────────────────────────────────────────────────
       # Writes pr-data.json: { "<sha>": { number, url, login } | null }
@@ -297,16 +297,20 @@ jobs:
           if copilot -p "${PROMPT}" \
               --allow-tool='write' \
               --allow-tool='shell(node:*)' \
+              --allow-tool='shell(git:*)' \
+              --allow-url='https://api.github.com/*' \
+              --allow-url='https://raw.githubusercontent.com/*' \
+              --allow-url='https://github.com/*' \
               --no-ask-user; then
-            echo "✔ Copilot CLI generated polished release notes."
+            echo "::notice::Copilot CLI generated polished release notes."
           else
-            echo "⚠ Copilot CLI failed — using deterministic draft as fallback."
+            echo "::warning::Copilot CLI failed — using deterministic draft as fallback."
             cp release-notes-deterministic.md release-notes.md
           fi
 
           # Safety net: if copilot ran but did not write the output file, fall back.
           if [[ ! -f release-notes.md ]]; then
-            echo "⚠ release-notes.md not found after Copilot run — using deterministic draft."
+            echo "::warning::release-notes.md not found after Copilot run — using deterministic draft."
             cp release-notes-deterministic.md release-notes.md
           fi
 
