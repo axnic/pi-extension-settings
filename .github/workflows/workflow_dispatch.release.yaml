@@ -263,7 +263,7 @@ jobs:
               const res = await fetch('https://models.github.ai/inference/chat/completions', {
                 method: 'POST',
                 headers: {
-                  Authorization: `Bearer ${{ secrets.GITHUB_TOKEN }}`,
+                  Authorization: `Bearer ${{ secrets.GH_COPILOT_TOKEN }}`,
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
