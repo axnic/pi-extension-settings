@@ -295,7 +295,7 @@ jobs:
           Write the final improved release notes to release-notes.md"
 
           if copilot -p "${PROMPT}" \
-              --model 'openai/gpt-5-mini' \
+              --model 'gpt-5-mini' \
               --allow-tool='write' \
               --allow-tool='shell(node:*)' \
               --allow-tool='shell(git:*)' \
