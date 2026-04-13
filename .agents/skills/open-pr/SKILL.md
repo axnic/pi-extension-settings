@@ -6,7 +6,7 @@ description: >
   review. Enforces correct branch naming, conventional commit title, signed-off
   commits, the project PR template, and a green CI suite before submitting.
 compatibility: Requires git and GitHub CLI (gh)
-allowed-tools: Bash(git:*) Bash(gh:*)
+allowed-tools: Bash(git:*) Bash(gh:*) Bash(pnpm:*) Bash(mise:*)
 ---
 
 # Open Pull Request Skill
