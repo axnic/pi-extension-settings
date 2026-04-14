@@ -40,18 +40,18 @@ jobs:
 
     steps:
       - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.event.release.tag_name || github.event.workflow_run.head_branch }}
           fetch-depth: 0
 
       - name: 🔧 Install tools via mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
         with:
           cache: true
 
       - name: 💾 Cache pnpm store
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.local/share/pnpm/store/v3
           key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
@@ -87,7 +87,7 @@ jobs:
 
     steps:
       - name: ⬇️ Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.event.release.tag_name || github.event.workflow_run.head_branch }}
           fetch-depth: 0
@@ -106,12 +106,12 @@ jobs:
           echo "name=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: 🔧 Install tools via mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
         with:
           cache: false
 
       - name: 💾 Cache pnpm store
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.local/share/pnpm/store/v3
           key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
@@ -140,9 +140,9 @@ jobs:
       # fails with ENEEDAUTH even when id-token: write is granted. No
       # NODE_AUTH_TOKEN is set so the OIDC trusted-publishers flow handles auth.
       - name: 🔧 Configure npm registry for pnpm
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          registry-url: "https://registry.npmjs.org/"
+          registry-url: https://registry.npmjs.org/
 
       - name: 🚀 Publish all workspace packages
         run: |
@@ -155,7 +155,7 @@ jobs:
 
       # ── Sign artefacts with cosign (keyless OIDC) ────────────────────────
       - name: 🔧 Install cosign
-        uses: sigstore/cosign-installer@v3
+        uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3
 
       - name: ✍️ Sign SBOMs and publish summary
         run: |

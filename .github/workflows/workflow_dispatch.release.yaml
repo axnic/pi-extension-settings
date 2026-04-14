@@ -156,7 +156,7 @@ jobs:
       # Writes pr-data.json: { "<sha>": { number, url, login } | null }
       - name: 🔗 Resolve PR numbers and authors
         id: resolve-prs
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const fs = require('fs');
@@ -235,7 +235,7 @@ jobs:
 
       - name: 📦 Install Copilot CLI
         if: inputs.notes == ''
-        run: npm install -g @github/copilot
+        run: npm install -g @github/copilot@1.0.26
 
       - name: 🧠 Enhance release notes via Copilot CLI
         if: inputs.notes == ''
