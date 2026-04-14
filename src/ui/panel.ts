@@ -20,6 +20,7 @@ import { type Component, matchesKey } from "@mariozechner/pi-tui";
 import type { List, ListItem, SettingNode } from "../../sdk/index.js";
 import type { Registry } from "../core/registry.js";
 import type { SettingsReader } from "../settings.js";
+import { descriptionLineCount } from "./blocks/description.js";
 import { handleInput as processKeyInput } from "./input.js";
 import { buildRows, type ViewRow } from "./model.js";
 import { MAX_VISIBLE_ROWS, renderPanel } from "./renderer.js";
@@ -78,6 +79,35 @@ export class SettingsPanel implements Component {
   }
 
   handleInput(data: string): void {
+    // Scroll the description panel with Shift+Up / Shift+Down in navigation mode.
+    if (
+      !this.state.editState &&
+      !this.state.addFormState &&
+      !this.state.searchActive
+    ) {
+      if (matchesKey(data, "shift+up")) {
+        this.state = {
+          ...this.state,
+          descScrollOffset: Math.max(0, this.state.descScrollOffset - 1),
+        };
+        return;
+      }
+      if (matchesKey(data, "shift+down")) {
+        const focusedRow = this.rows[this.state.focusedIndex];
+        const rightWidth = this.descColumnWidth();
+        const totalLines =
+          rightWidth > 0 ? descriptionLineCount(focusedRow, rightWidth) : 0;
+        this.state = {
+          ...this.state,
+          descScrollOffset: Math.min(
+            Math.max(0, totalLines - 1),
+            this.state.descScrollOffset + 1,
+          ),
+        };
+        return;
+      }
+    }
+
     const focusedRow = this.rows[this.state.focusedIndex];
 
     // Special case: Enter on list-add row — build the add form. This needs
@@ -124,7 +154,12 @@ export class SettingsPanel implements Component {
       this.settingsReader.controls,
     );
 
-    this.state = state;
+    // Reset description scroll when focus moves to a different row.
+    const nextState =
+      state.focusedIndex !== this.state.focusedIndex
+        ? { ...state, descScrollOffset: 0 }
+        : state;
+    this.state = nextState;
 
     if (close && this.done) {
       this.done();
@@ -135,6 +170,21 @@ export class SettingsPanel implements Component {
       this.rows = buildRows(this.registry, this.state);
       this.state = this.clampFocus(this.state, this.rows);
     }
+  }
+
+  /**
+   * Estimate the right (description) column width for scroll-clamping purposes.
+   *
+   * The exact width is only known at render time; this uses a conservative
+   * 80-column assumption which is acceptable since the result only affects the
+   * upper bound of `descScrollOffset` clamping — a best-effort operation.
+   */
+  private descColumnWidth(): number {
+    const assumedTotal = 80;
+    const candidateLeft = Math.floor((assumedTotal * 2) / 3);
+    const candidateRight = assumedTotal - candidateLeft - 1;
+    // Mirror the MIN_DESC_WIDTH threshold used in renderer.ts
+    return candidateRight >= 20 ? candidateRight : 0;
   }
 
   /** Find the `List` node for a given extension + dotted setting key. */

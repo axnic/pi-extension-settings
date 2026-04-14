@@ -114,6 +114,12 @@ export interface UIState {
    * Scroll offset: first visible row index in the flat row list.
    */
   scrollOffset: number;
+
+  /**
+   * Scroll offset for the description panel (right column).
+   * Resets to 0 whenever the focused row changes.
+   */
+  descScrollOffset: number;
 }
 
 // ─── Factory ──────────────────────────────────────────────────────────────────
@@ -136,6 +142,7 @@ export function createInitialState(searchActive = true): UIState {
     suggestions: [],
     focusedSuggestion: -1,
     scrollOffset: 0,
+    descScrollOffset: 0,
   };
 }
 
