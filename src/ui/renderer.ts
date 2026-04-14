@@ -73,7 +73,7 @@ export function renderPanel(
     theme.fg("dim", "─".repeat(Math.max(0, width))),
     ...new SearchBlock(state, theme).render(width),
     "",
-    ...zipColumns(leftLines, leftWidth, rightLines),
+    ...zipColumns(leftLines, leftWidth, rightLines, theme),
     "",
     ...new NavigationBlock(rows, state, theme, controls).render(width),
   ];
@@ -90,6 +90,7 @@ function zipColumns(
   leftLines: string[],
   leftWidth: number,
   rightLines: string[] | undefined,
+  theme: Theme,
 ): string[] {
   if (!rightLines) return leftLines;
 
@@ -97,6 +98,6 @@ function zipColumns(
   return Array.from({ length: count }, (_, i) => {
     const leftLine = leftLines[i] ?? "";
     const padding = " ".repeat(Math.max(0, leftWidth - visibleWidth(leftLine)));
-    return `${leftLine}${padding} ${rightLines[i] ?? ""}`;
+    return `${leftLine}${padding}${theme.fg("dim", "│")}${rightLines[i] ?? ""}`;
   });
 }
