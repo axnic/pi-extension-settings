@@ -24,7 +24,7 @@
 #   stable → commits since the last stable (non-RC) tag, so RC commits
 #            are included in the final release summary
 #
-# Publishing to npm is handled by release.publish.yaml, triggered
+# Publishing to npm is handled by workflow_run.publish.yaml, triggered
 # automatically when this release is published.
 #
 # Prerequisites:
@@ -331,12 +331,13 @@ jobs:
             gh release create "$VERSION" \
               --title "$VERSION" \
               --notes-file release-notes.md \
-              --prerelease
+              --prerelease \
+              --draft
           else
             gh release create "$VERSION" \
               --title "$VERSION" \
               --notes-file release-notes.md \
-              --latest
+              --draft
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

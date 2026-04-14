@@ -3,7 +3,9 @@
 # =============================================================================
 # Publish packages — push all workspace packages to npm
 # =============================================================================
-# Triggered automatically when a GitHub Release is published.
+# Triggered automatically when the Release workflow completes successfully.
+# The release is created as a draft by the Release workflow; this workflow
+# publishes it only after npm publishing and asset upload succeed.
 #
 # Security model — SLSA Build L2:
 #   • npm provenance via GitHub OIDC (--provenance)
@@ -17,26 +19,21 @@
 name: Publish packages to npm
 
 on:
-  release:
-    types: [published]
   workflow_run:
     workflows: [Release]
     types: [completed]
 
 permissions: {}
 
-# Prevent double-publish when both `release.published` and `workflow_run`
-# fire for the same release (e.g. the release event arrives while the
-# workflow_run trigger also fires).
 concurrency:
-  group: npm-publish-${{ github.event.release.tag_name || github.event.workflow_run.head_sha }}
+  group: npm-publish-${{ github.event.workflow_run.head_sha }}
   cancel-in-progress: false
 
 jobs:
   # ── Validate ──────────────────────────────────────────────────────────────
   validate:
     name: ✅ Validate (typecheck · tests · build)
-    if: github.event_name == 'release' || github.event.workflow_run.conclusion == 'success'
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -78,7 +75,7 @@ jobs:
   # ── Publish ───────────────────────────────────────────────────────────────
   publish:
     name: 🚀 Publish all workspace packages
-    if: github.event_name == 'release' || github.event.workflow_run.conclusion == 'success'
+    if: github.event.workflow_run.conclusion == 'success'
     needs: validate
     runs-on: ubuntu-latest
     environment:
@@ -175,7 +172,7 @@ jobs:
             --output-certificate pnpm-publish-summary.json.crt \
             pnpm-publish-summary.json
 
-      # ── Attach to GitHub Release ──────────────────────────────────────────
+      # ── Attach artefacts and publish release ─────────────────────────────
       - name: 📤 Attach artefacts to GitHub Release
         run: |
           gh release upload "${{ steps.tag.outputs.name }}" \
@@ -188,5 +185,16 @@ jobs:
             pnpm-publish-summary.json \
             pnpm-publish-summary.json.sig \
             pnpm-publish-summary.json.crt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🚀 Publish GitHub Release
+        run: |
+          TAG="${{ steps.tag.outputs.name }}"
+          if [[ "$TAG" == *"-rc."* ]]; then
+            gh release edit "$TAG" --draft=false --prerelease
+          else
+            gh release edit "$TAG" --draft=false --latest
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
