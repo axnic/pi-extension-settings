@@ -63,10 +63,16 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     }
   }
 
-  const output = generateReleaseNotes(version, commits, prBySha);
+  // Exclude bump commits and commits authored by github-actions[bot]
+  const filteredCommits = commits.filter((c) => !isGithubActionsBot(c));
+  const excludedCount = commits.reduce(
+    (acc, c) => (acc + isGithubActionsBot(c) ? 1 : 0),
+    0,
+  );
+  const output = generateReleaseNotes(version, filteredCommits, prBySha);
   writeFileSync(outputFile, output, "utf8");
   console.log(
-    `✔ Deterministic release notes written to ${outputFile} (${commits.length} commit(s))`,
+    `✔ Deterministic release notes written to ${outputFile} (${filteredCommits.length} commit(s) included, ${excludedCount} excluded as github-actions[bot])`,
   );
 }
 
@@ -153,6 +159,15 @@ export function parseConventionalSubject(subject) {
     scope: match[2] ?? null,
     description: match[3],
   };
+}
+
+export function isGithubActionsBot(commit) {
+  const name = (commit.authorName || "").toLowerCase();
+  const email = (commit.authorEmail || "").toLowerCase();
+  // Match author name like 'github-actions[bot]' or email containing 'github-actions'
+  if (/github-actions(?:\[bot\])?/.test(name)) return true;
+  if (email.includes("github-actions")) return true;
+  return false;
 }
 
 /**
@@ -292,15 +307,6 @@ export function generateReleaseNotes(version, commits, prBySha) {
   if (contributors.length > 0) {
     sections.push("", buildContributorsSection(contributors));
   }
-
-  sections.push(
-    "",
-    "---",
-    "",
-    "_These release notes were generated with the assistance of",
-    "[GitHub Copilot](https://github.com/features/copilot)._",
-    "",
-  );
 
   return sections.join("\n");
 }
