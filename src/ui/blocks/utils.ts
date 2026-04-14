@@ -1,7 +1,12 @@
 /**
  * utils.ts — Shared pure rendering utilities used by two or more blocks.
  *
- * All functions are ANSI-free or explicitly documented about ANSI handling.
+ * ANSI handling:
+ *   - dimChar / stylePrefix  — output ANSI-styled strings (safe to render).
+ *   - wrapText               — requires ANSI-free input; callers must apply
+ *                              theme styling only after wrapping.
+ *   - renderNavigationHint   — ANSI-free input and output.
+ *
  * None have side effects.
  */
 
@@ -83,13 +88,16 @@ export function wrapText(
       current = candidate;
     } else {
       if (current) lines.push(current);
-      // Hard-truncate a single word that alone exceeds the budget so no line
-      // overflows, even with long URLs or hashes in tooltip/validation text.
-      const indented = indent + word;
+      // On the very first overflow (no line emitted yet) preserve the
+      // original leading whitespace so bullet prefixes like "  · " survive
+      // narrow terminals. For all subsequent overflows, use the caller-
+      // supplied indent so continuation lines stay aligned.
+      const prefix = current === "" ? leading : indent;
+      const prefixed = prefix + word;
       current =
-        visibleWidth(indented) > maxWidth
-          ? truncateToWidth(indented, maxWidth, "…")
-          : indented;
+        visibleWidth(prefixed) > maxWidth
+          ? truncateToWidth(prefixed, maxWidth, "…")
+          : prefixed;
     }
   }
 
