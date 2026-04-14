@@ -18,7 +18,7 @@
 # Required environment: "npm" (deployment gate / protection rules)
 # =============================================================================
 
-name: 📦 Publish packages to npm
+name: Publish packages to npm
 
 on:
   release:

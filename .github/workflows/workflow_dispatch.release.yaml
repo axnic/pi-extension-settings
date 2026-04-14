@@ -34,7 +34,7 @@
 #     `secrets.GITHUB_TOKEN` with `secrets.RELEASE_TOKEN` in the checkout step.
 # =============================================================================
 
-name: 🚀 Release
+name: Release
 
 on:
   workflow_dispatch:

@@ -14,7 +14,7 @@
 # See mise.toml for pinned versions.
 # =============================================================================
 
-name: 🚦 PR & Merge-Queue Quality Gate
+name: PR & Merge-Queue Quality Gate
 
 on:
   merge_group: {}

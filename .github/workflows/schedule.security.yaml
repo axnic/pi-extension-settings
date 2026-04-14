@@ -13,7 +13,7 @@
 # All findings are surfaced in the repository's Security tab.
 # =============================================================================
 
-name: 🔒 Security
+name: Security
 
 on:
   schedule:
