@@ -1,6 +1,6 @@
 {
   "name": "@axnic/pi-extension-settings",
-  "version": "0.0.2-rc.4",
+  "version": "0.0.2-rc.5",
   "description": "Centralized settings panel for pi extensions.",
   "author": "axnic",
   "license": "Apache-2.0",
