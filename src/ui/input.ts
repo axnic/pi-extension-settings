@@ -40,7 +40,7 @@ import {
 import { type ControlBindings, DEFAULT_CONTROL_BINDINGS } from "../settings.js";
 import { matchesBinding } from "./keys.js";
 import type { SettingRow, ViewRow } from "./model.js";
-import { focusableIndices, parseListValue } from "./model.js";
+import { focusableIndices } from "./model.js";
 import type { EditState, UIState } from "./state.js";
 import {
   deleteBack,

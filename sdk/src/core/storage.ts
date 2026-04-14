@@ -56,15 +56,13 @@ function saveFile(data: StorageFile): void {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   try {
     let existing: Record<string, unknown> = {};
-    if (existsSync(path)) {
-      try {
-        existing = JSON.parse(readFileSync(path, "utf-8")) as Record<
-          string,
-          unknown
-        >;
-      } catch {
-        // ignore parse errors — overwrite with clean state
-      }
+    try {
+      existing = JSON.parse(readFileSync(path, "utf-8")) as Record<
+        string,
+        unknown
+      >;
+    } catch {
+      // file doesn't exist or unparseable — start fresh
     }
     existing[EXTENSIONS_SETTINGS_KEY] = data;
     writeFileSync(path, JSON.stringify(existing, null, 2), "utf-8");

@@ -238,6 +238,7 @@ function matchesGlob(pattern: string, filePath: string): boolean {
   //   *   → matches anything except a path separator
   //   .   → literal dot
   const regexStr = p
+    .replace(/[+?^${}()|[\]\\]/g, "\\$&")
     .replace(/\./g, "\\.")
     .replace(/\*\*/g, "§DOUBLE§")
     .replace(/\*/g, "[^/]*")

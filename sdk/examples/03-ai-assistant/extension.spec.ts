@@ -583,8 +583,8 @@ describe("AiAssistant — createAiAssistant()", () => {
       it("lowercases the protocol and hostname", () => {
         assistant.settings.set("endpoint", "HTTPS://API.OPENAI.COM/v1");
         const [, , written] = vi.mocked(setExtensionSetting).mock.calls[0]!;
-        expect((written as string).startsWith("https://api.openai.com")).toBe(
-          true,
+        expect(new URL(written as string).origin).toBe(
+          "https://api.openai.com",
         );
       });
 
@@ -594,7 +594,7 @@ describe("AiAssistant — createAiAssistant()", () => {
           received.push(v as string),
         );
         assistant.settings.set("endpoint", "HTTPS://API.OPENAI.COM/v1");
-        expect(received[0]).toMatch(/^https:\/\/api\.openai\.com/);
+        expect(received[0]).toMatch(/^https:\/\/api\.openai\.com(?:\/|$)/);
       });
     });
   });
