@@ -24,8 +24,10 @@ function replaceBannerAssets(content) {
 if (mode === "prepare:extension") {
   const readmePath = join(process.cwd(), "README.md");
   const backupPath = join(process.cwd(), ".README.md.publish-backup");
-  if (!existsSync(backupPath)) {
-    writeFileSync(backupPath, readFileSync(readmePath, "utf8"), "utf8");
+  try {
+    writeFileSync(backupPath, readFileSync(readmePath, "utf8"), { flag: "wx" });
+  } catch (e) {
+    if (e.code !== "EEXIST") throw e;
   }
   let readme = readFileSync(readmePath, "utf8");
   readme = replaceRelativeHtmlHref(readme, REPO_BLOB);
@@ -39,8 +41,10 @@ if (mode === "prepare:sdk") {
   const sourcePath = join(process.cwd(), "docs", "README.md");
   const outputPath = join(process.cwd(), "README.md");
   const backupPath = join(process.cwd(), ".README.md.publish-backup");
-  if (!existsSync(backupPath) && existsSync(outputPath)) {
-    writeFileSync(backupPath, readFileSync(outputPath, "utf8"), "utf8");
+  try {
+    writeFileSync(backupPath, readFileSync(outputPath, "utf8"), { flag: "wx" });
+  } catch (e) {
+    if (e.code !== "EEXIST" && e.code !== "ENOENT") throw e;
   }
   let readme = readFileSync(sourcePath, "utf8");
   readme = replaceRelativeMarkdownLinks(readme, `${REPO_BLOB}sdk/docs/`);
