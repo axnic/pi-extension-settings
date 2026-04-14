@@ -24,24 +24,25 @@ export class InfoBlock implements Block {
   ) {}
 
   render(width: number): string[] {
-    return [this.renderPagination(), "", ...this.renderTooltip(width)];
+    return [this.renderPagination(width), "", ...this.renderTooltip(width)];
   }
 
   // ─── Private ───────────────────────────────────────────────────────────────
 
-  private renderPagination(): string {
+  private renderPagination(width: number): string {
     const { rows, state, theme } = this;
     const visibleSettings = countVisibleSettings(rows);
     const totalSections = countSections(rows);
     const dim = (t: string) => theme.fg("dim", t);
 
-    if (state.scope.length > 0) {
-      return dim(`(${state.focusedIndex + 1}/${visibleSettings})`);
-    }
+    const text =
+      state.scope.length > 0
+        ? dim(`(${state.focusedIndex + 1}/${visibleSettings})`)
+        : dim(
+            `(${visibleSettings} of ${totalSections} section${totalSections === 1 ? "" : "s"})`,
+          );
 
-    return dim(
-      `(${visibleSettings} of ${totalSections} section${totalSections === 1 ? "" : "s"})`,
-    );
+    return truncateToWidth(text, width, "…");
   }
 
   /**

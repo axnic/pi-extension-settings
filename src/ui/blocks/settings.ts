@@ -150,7 +150,7 @@ export class SettingsBlock implements Block {
     // Scroll indicator (only when rows overflow the viewport)
     if (scrollOffset > 0 || scrollOffset + maxVisible < totalRows) {
       const pos = `${state.focusedIndex + 1}/${totalRows}`;
-      lines.push(theme.fg("dim", `  (${pos})`));
+      lines.push(truncateToWidth(theme.fg("dim", `  (${pos})`), width, "…"));
     }
 
     return lines;
@@ -302,15 +302,19 @@ export class SettingsBlock implements Block {
     const cursor = stylePrefix(row.prefix, isFocused, theme);
     const prefixWidth = visibleWidth(cursor);
 
+    // Clamp the label first so rows with keys exceeding LABEL_COL_MAX don't
+    // blow through the column budget before the value even starts.
+    const labelClamped = truncateToWidth(row.label, labelWidth, "…");
     const labelPadded =
-      row.label + " ".repeat(Math.max(0, labelWidth - visibleWidth(row.label)));
+      labelClamped +
+      " ".repeat(Math.max(0, labelWidth - visibleWidth(labelClamped)));
     const modified = row.isModified ? ` ${theme.fg("accent", "•")}` : "";
     const value = this.renderValue(row, isEditing, editValue);
 
-    const usedWidth =
-      prefixWidth + visibleWidth(labelPadded) + visibleWidth(LABEL_VALUE_SEP);
+    // labelPadded always occupies exactly labelWidth visible columns.
+    const usedWidth = prefixWidth + labelWidth + visibleWidth(LABEL_VALUE_SEP);
     const modifiedWidth = row.isModified ? 2 : 0;
-    const valueMaxWidth = Math.max(0, width - usedWidth - modifiedWidth - 2);
+    const valueMaxWidth = Math.max(0, width - usedWidth - modifiedWidth);
 
     const truncatedValue = truncateToWidth(value, valueMaxWidth, "…");
     return cursor + labelPadded + LABEL_VALUE_SEP + truncatedValue + modified;
@@ -332,7 +336,8 @@ export class SettingsBlock implements Block {
 
     const fields = Object.entries(row.fields);
 
-    if (fields.length === 0) return `${cursor + indent}(empty)`;
+    if (fields.length === 0)
+      return truncateToWidth(`${cursor + indent}(empty)`, width, "…");
 
     if (fields.length === 1) {
       const [_k, v] = fields[0]!;

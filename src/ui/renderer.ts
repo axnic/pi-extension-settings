@@ -53,7 +53,7 @@ export function renderPanel(
   const leftWidth = width;
 
   return [
-    theme.fg("dim", "─".repeat(width)),
+    theme.fg("dim", "─".repeat(Math.max(0, width))),
     ...new SearchBlock(state, theme).render(width),
     "",
     ...zipColumns(
@@ -89,6 +89,7 @@ function zipColumns(
   if (!rightBlock) return leftLines;
 
   const rightWidth = totalWidth - leftWidth - 1; // 1 for the gutter
+  if (rightWidth <= 0) return leftLines;
   const rightLines = rightBlock.render(rightWidth);
   const count = Math.max(leftLines.length, rightLines.length);
 
