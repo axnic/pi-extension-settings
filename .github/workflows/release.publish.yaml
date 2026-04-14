@@ -169,20 +169,31 @@ jobs:
           mkdir -p ~/.config/notation/localkeys
           printf '%s' "$NOTATION_SIGNING_KEY"  > ~/.config/notation/localkeys/ci.key
           printf '%s' "$NOTATION_SIGNING_CERT" > ~/.config/notation/localkeys/ci.crt
-          notation key add --default "ci" \
-            --key  ~/.config/notation/localkeys/ci.key \
-            --cert ~/.config/notation/localkeys/ci.crt
+          # notation key add --key/--cert flags were removed in v1.x; write
+          # signingkeys.json directly instead.
+          cat > ~/.config/notation/signingkeys.json << EOF
+          {
+            "version": "1.0",
+            "keys": [
+              {
+                "name": "ci",
+                "keyPath": "$HOME/.config/notation/localkeys/ci.key",
+                "certPath": "$HOME/.config/notation/localkeys/ci.crt"
+              }
+            ]
+          }
+          EOF
         env:
           NOTATION_SIGNING_KEY: ${{ secrets.NOTATION_SIGNING_KEY }}
           NOTATION_SIGNING_CERT: ${{ secrets.NOTATION_SIGNING_CERT }}
 
       - name: ✍️ Sign SBOMs and publish summary
         run: |
-          notation blob sign --signature-format cose \
+          notation blob sign --key ci --signature-format cose \
             --output sbom-extension.json.sig sbom-extension.json
-          notation blob sign --signature-format cose \
+          notation blob sign --key ci --signature-format cose \
             --output sbom-sdk.json.sig sbom-sdk.json
-          notation blob sign --signature-format cose \
+          notation blob sign --key ci --signature-format cose \
             --output pnpm-publish-summary.json.sig pnpm-publish-summary.json
 
       # ── Attach to GitHub Release ──────────────────────────────────────────
