@@ -189,7 +189,7 @@ export function buildChangeLine(prefix, scope, description, pr, authorName) {
   // contains backticks, otherwise single backticks.
   const needsDouble = description.includes("`");
   const tick = needsDouble ? "``" : "`";
-  const scopePart = scope ? ` **${scope}**:` : "";
+  const scopePart = scope ? ` ❲${scope}❳:` : "";
   const inner = `${prefix}${scopePart} ${description}`;
   const codeSpan = `${tick}${inner}${tick}`;
 

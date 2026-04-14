@@ -118,7 +118,7 @@ describe("buildChangeLine", () => {
       null,
       "Alice",
     );
-    expect(line).toBe("- `✔ **sdk**: Fix URL validator`");
+    expect(line).toBe("- `✔ ❲sdk❳: Fix URL validator`");
   });
 
   it("includes PR link and author login when provided", () => {
@@ -140,7 +140,7 @@ describe("buildChangeLine", () => {
       null,
       "Alice",
     );
-    expect(line).toMatch(/^- ``✦ \*\*sdk\*\*: Add `S\.struct\(\)` builder``$/);
+    expect(line).toMatch(/^- ``✦ ❲sdk❳: Add `S\.struct\(\)` builder``$/);
   });
 
   it("omits scope part when scope is null", () => {
