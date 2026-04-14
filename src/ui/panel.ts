@@ -62,8 +62,9 @@ export class SettingsPanel implements Component {
   render(width: number): string[] {
     // Rebuild rows every render to reflect latest storage state.
     this.rows = buildRows(this.registry, this.state);
+    const maxVisibleRows = this.settingsReader.maxVisibleRows;
     // Sync scroll offset before handing over to the renderer.
-    this.state = this.syncScrollOffset(this.state, this.rows);
+    this.state = this.syncScrollOffset(this.state, this.rows, maxVisibleRows);
 
     return renderPanel(
       this.rows,
@@ -72,6 +73,7 @@ export class SettingsPanel implements Component {
       this.getTheme(),
       width,
       this.settingsReader.controls,
+      maxVisibleRows,
     );
   }
 
@@ -160,9 +162,13 @@ export class SettingsPanel implements Component {
   }
 
   /** Sync scroll offset to keep the focused row in the viewport. */
-  private syncScrollOffset(state: UIState, rows: ViewRow[]): UIState {
+  private syncScrollOffset(
+    state: UIState,
+    rows: ViewRow[],
+    maxVisibleRows: number = MAX_VISIBLE_ROWS,
+  ): UIState {
     const totalRows = rows.length;
-    const maxVisible = Math.min(MAX_VISIBLE_ROWS, totalRows);
+    const maxVisible = Math.min(maxVisibleRows, totalRows);
     let scrollOffset = state.scrollOffset;
 
     if (state.focusedIndex < scrollOffset) {

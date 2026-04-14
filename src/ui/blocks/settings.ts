@@ -43,13 +43,13 @@ export class SettingsBlock implements Block {
     private readonly theme: Theme,
   ) {}
 
-  render(width: number): string[] {
+  render(width: number, maxVisibleRows: number = MAX_VISIBLE_ROWS): string[] {
     const { rows, state, theme } = this;
     const lines: string[] = [];
 
     const focusedRow = rows[state.focusedIndex];
     const totalRows = rows.length;
-    const maxVisible = Math.min(MAX_VISIBLE_ROWS, totalRows);
+    const maxVisible = Math.min(maxVisibleRows, totalRows);
     const scrollOffset = Math.max(
       0,
       Math.min(state.scrollOffset, Math.max(0, totalRows - maxVisible)),
