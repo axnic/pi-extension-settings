@@ -12,7 +12,6 @@
 #   • All signed artefacts attached to the GitHub Release
 #
 # Required secrets:
-#   • NPM_TOKEN              — granular npm token (read/write on @axnic scope)
 #   • NOTATION_SIGNING_KEY   — PEM-encoded private key (ECDSA P-256 recommended)
 #   • NOTATION_SIGNING_CERT  — matching PEM-encoded certificate
 #
@@ -156,8 +155,6 @@ jobs:
             --access public \
             --no-git-checks \
             --report-summary
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # ── Sign artefacts with Notation ─────────────────────────────────────
       - name: 🔧 Set up Notation
