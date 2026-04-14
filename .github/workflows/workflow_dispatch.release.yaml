@@ -237,7 +237,7 @@ jobs:
         if: inputs.notes == ''
         run: npm install -g @github/copilot
 
-      - name: 🤖 Enhance release notes via Copilot CLI
+      - name: 🧠 Enhance release notes via Copilot CLI
         if: inputs.notes == ''
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.GH_COPILOT_TOKEN }}
