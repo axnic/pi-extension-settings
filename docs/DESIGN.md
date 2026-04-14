@@ -6,28 +6,33 @@ This document describes the design and implementation of the `/extensions:settin
 
 ## Mockups
 
-### 1 — Panel normal (sub-folders)
+### 1 — Panel normal (sub-folders, with description panel)
 
 Tree characters (`├` `└` `│`) are always dim. `→` sits at the leftmost column. One space before the tree character at each level.
 
-```text
->
+The right description panel appears when the terminal is wide enough
+(right column ≥ 20 chars). It shows the focused row's `description`
+field (falling back to `tooltip`) with basic Markdown rendering.
+`Shift+↑` / `Shift+↓` scroll the description independently.
 
-[-] pi-welcome
- ├ Gradient start    ■ #ff930f  •
- ├ Gradient end      ■ #fff95b
- └ Tips              3 tips configured  •
-[-] pi-statusbar
- ├ Show model        true
- ├ Position          bottom
- ├ [-] Colors
- │  ├ Primary        ■ #3b82f6
- │  └ Accent         ■ #f59e0b  •
- └ [-] Layout
-→    ├ Height        3
-     └ Padding       2
-[+] pi-proxy  (4 settings)
-  (9/11 of 3 sections)
+```text
+>                                        │ HEIGHT
+                                         │
+[-] pi-welcome                           │ Height of the status bar in
+ ├ Gradient start    ■ #ff930f  •        │ terminal rows.
+ ├ Gradient end      ■ #fff95b           │
+ └ Tips              3 tips configured • │ Accepts integers from 1 to 5.
+[-] pi-statusbar                         │ The default is 3.
+ ├ Show model        true                │
+ ├ Position          bottom              │
+ ├ [-] Colors                            │
+ │  ├ Primary        ■ #3b82f6           │
+ │  └ Accent         ■ #f59e0b  •        │
+ └ [-] Layout                            │
+→    ├ Height        3                   │
+     └ Padding       2                   │
+[+] pi-proxy  (4 settings)              │
+  (9/11 of 3 sections)                   │
 
   Height of the status bar in terminal rows.
   Integer between 1 and 5.
@@ -488,6 +493,7 @@ All dim.
 - Tooltip: 3-line fixed block below the list, separated by a blank line.
 - Hint bar: last line, separated from the tooltip by a blank line.
 - Minimum usable width: 60 chars; values truncated with `…`.
+- **Description panel** (right column, ~1/3 width): shows the focused setting's `description` field (falls back to `tooltip`). Hidden when the right column would be narrower than 20 chars. `Shift+↑` / `Shift+↓` scroll the description independently of the settings list. Basic Markdown rendered: headings (`#`, `##`) → uppercase; bullets (`-`) → `•`; bold/italic markers stripped.
 
 ---
 
@@ -593,6 +599,8 @@ All scalar values are stored as strings. `list` and `dict` values are stored as 
 | `Enter` in inline edit (valid)       | Run `transform`, write, live save                 |
 | `Esc` in inline edit                 | Cancel, restore previous value                    |
 | `←` / `→`                            | Input bar cursor movement **only**                |
+| `Shift+↑` in navigation mode         | Scroll description panel up (when visible)        |
+| `Shift+↓` in navigation mode         | Scroll description panel down (when visible)      |
 | typing                               | Filter (search mode) / edit value (inline edit)   |
 
 ### Live Save
