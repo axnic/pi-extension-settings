@@ -69,7 +69,6 @@ mise run lint
 - [ ] Public SDK changes are reflected in `sdk/index.ts` (new exports added/removed)
 - [ ] `sdk/docs/` updated if public API changed (reference, hook docs, node-types, schema-builder)
 - [ ] `sdk/docs/README.md` hook counts updated if hooks were added/removed
-- [ ] `CHANGELOG.md` entry added (or N/A for internal changes)
 
 ### Commits
 

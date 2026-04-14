@@ -117,7 +117,6 @@ If the change touches the TUI panel, add manual steps:
 | Tests added            | Add a colocated `.spec.ts` file or extend an existing one |
 | `sdk/index.ts` updated | Export new symbols; remove deleted ones                   |
 | `sdk/docs/` updated    | Update reference tables, hook docs, and counts            |
-| `CHANGELOG.md` entry   | Add under `## [Unreleased]` in conventional format        |
 | Commits signed off     | `git commit -s` on every commit                           |
 
 ## Responding to review feedback
