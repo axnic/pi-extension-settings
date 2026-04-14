@@ -70,7 +70,6 @@ export class SettingsPanel implements Component {
     return renderPanel(
       this.rows,
       this.state,
-      this.registry,
       this.getTheme(),
       width,
       this.settingsReader.controls,

@@ -34,6 +34,8 @@ import { buildRows } from "./model.ts";
 import { renderPanel } from "./renderer.ts";
 import { createInitialState } from "./state.ts";
 
+// Note: registry is used only to build rows; renderPanel no longer needs it directly.
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const plainTheme = {
@@ -74,7 +76,6 @@ describe("renderPanel — layout composition", () => {
     const lines = renderPanel(
       rows,
       state,
-      registry,
       plainTheme,
       PANEL_WIDTH,
       stubControls,
@@ -99,7 +100,6 @@ describe("renderPanel — layout composition", () => {
     const lines = renderPanel(
       rows,
       state,
-      registry,
       plainTheme,
       PANEL_WIDTH,
       stubControls,
