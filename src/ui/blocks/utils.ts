@@ -6,7 +6,7 @@
  */
 
 import type { Theme } from "@mariozechner/pi-coding-agent";
-import { visibleWidth } from "@mariozechner/pi-tui";
+import { truncateToWidth, visibleWidth } from "@mariozechner/pi-tui";
 
 // ─── Tree prefix helpers ──────────────────────────────────────────────────────
 
@@ -50,6 +50,13 @@ export function stylePrefix(
  * Word-wrap plain (ANSI-free) text to fit within `maxWidth` visible columns.
  * The first line starts at column 0; every continuation line is prefixed with
  * `indent` (must be plain text so its visible width equals its byte length).
+ *
+ * IMPORTANT: `text` must be ANSI-free. Strings containing escape sequences
+ * can be split mid-sequence, producing broken/bleeding terminal output. Apply
+ * theme styling only after wrapping.
+ *
+ * Any single word wider than `maxWidth` (minus indent) is hard-truncated with
+ * "…" so every returned line is guaranteed to satisfy `visibleWidth ≤ maxWidth`.
  */
 export function wrapText(
   text: string,
@@ -69,8 +76,13 @@ export function wrapText(
       current = candidate;
     } else {
       if (current) lines.push(current);
-      // Start next line with indent; if a single word is still too wide, keep it anyway.
-      current = indent + word;
+      // Hard-truncate a single word that alone exceeds the budget so no line
+      // overflows, even with long URLs or hashes in tooltip/validation text.
+      const indented = indent + word;
+      current =
+        visibleWidth(indented) > maxWidth
+          ? truncateToWidth(indented, maxWidth, "…")
+          : indented;
     }
   }
 

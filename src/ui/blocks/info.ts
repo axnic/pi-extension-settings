@@ -10,6 +10,7 @@
  */
 
 import type { Theme, ThemeColor } from "@mariozechner/pi-coding-agent";
+import { truncateToWidth } from "@mariozechner/pi-tui";
 import { countSections, countVisibleSettings, type ViewRow } from "../model.js";
 import type { UIState } from "../state.js";
 import type { Block } from "./block.js";
@@ -65,33 +66,49 @@ export class InfoBlock implements Block {
     // Each pending line carries raw text, an optional color key, and an optional
     // continuation indent passed to wrapText so wrapped lines stay aligned.
     // Color is applied per wrapped line so ANSI codes are never split across lines.
-    type PendingLine = { text: string; colorKey?: ThemeColor; indent?: string };
+    //
+    // `truncate: true` skips wrapText and uses truncateToWidth instead — required
+    // for lines that already contain ANSI sequences (dim/bold spans), which wrapText
+    // cannot safely split (it is documented as ANSI-free).
+    type PendingLine = {
+      text: string;
+      colorKey?: ThemeColor;
+      indent?: string;
+      truncate?: boolean;
+    };
     const pending: PendingLine[] = [];
 
-    // Line 1: description — may contain partial dim() annotations (short, safe to wrap as-is)
-    let line1 = "";
+    // Line 1: description.
+    // extension-header and group lines embed dim() ANSI spans with spaces inside
+    // (e.g. "(12 settings)"), so they must be truncated rather than word-wrapped.
+    // Setting tooltips are plain strings supplied by the schema author — safe to wrap.
     switch (focusedRow.type) {
       case "extension-header": {
         const total = focusedRow.settingsCount;
-        line1 = `${dim("[extension]")} ${focusedRow.extensionName} ${dim(`(${total} setting${total === 1 ? ")" : "s)"}`)}`;
+        pending.push({
+          text: `${dim("[extension]")} ${focusedRow.extensionName} ${dim(`(${total} setting${total === 1 ? ")" : "s)"}`)}`,
+          truncate: true,
+        });
         break;
       }
       case "group": {
         const total = focusedRow.settingsCount;
-        line1 = `${focusedRow.tooltip ?? `${focusedRow.label} group`} ${dim(`(${total} setting${total === 1 ? ")" : "s)"}`)}`;
+        pending.push({
+          text: `${focusedRow.tooltip ?? `${focusedRow.label} group`} ${dim(`(${total} setting${total === 1 ? ")" : "s)"}`)}`,
+          truncate: true,
+        });
         break;
       }
       case "setting":
-        line1 = focusedRow.node.tooltip ?? "";
+        pending.push({ text: focusedRow.node.tooltip ?? "" });
         break;
       case "list-add":
-        line1 = "Add a new item to the list";
+        pending.push({ text: "Add a new item to the list" });
         break;
       case "list-item":
-        line1 = "List item";
+        pending.push({ text: "List item" });
         break;
     }
-    pending.push({ text: line1 });
 
     // Line 2+: validation result OR type hint
     if (state.editState && state.validation !== null) {
@@ -155,10 +172,14 @@ export class InfoBlock implements Block {
       });
     }
 
-    // Single wrap pass: each raw line is word-wrapped to width, then colored per line.
-    return pending.flatMap(({ text, colorKey, indent = "" }) => {
-      const lines = wrapText(text, width, indent);
-      return colorKey ? lines.map((l) => theme.fg(colorKey, l)) : lines;
-    });
+    // Final render pass: truncate ANSI-bearing lines, word-wrap plain lines.
+    return pending.flatMap(
+      ({ text, colorKey, indent = "", truncate = false }) => {
+        const lines = truncate
+          ? [truncateToWidth(text, width, "…")]
+          : wrapText(text, width, indent);
+        return colorKey ? lines.map((l) => theme.fg(colorKey, l)) : lines;
+      },
+    );
   }
 }

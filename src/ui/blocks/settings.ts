@@ -76,10 +76,10 @@ export class SettingsBlock implements Block {
 
       switch (row.type) {
         case "extension-header":
-          line = this.renderExtensionHeader(row, isFocused);
+          line = this.renderExtensionHeader(row, isFocused, width);
           break;
         case "group":
-          line = this.renderGroupHeader(row, isFocused);
+          line = this.renderGroupHeader(row, isFocused, width);
           break;
         case "setting":
           line = this.renderSettingRow(
@@ -101,7 +101,7 @@ export class SettingsBlock implements Block {
           line = this.renderSeparatorRow(row.prefix, width);
           break;
         case "list-add":
-          line = this.renderListAddRow(row, isFocused);
+          line = this.renderListAddRow(row, isFocused, width);
           break;
         default:
           line = "";
@@ -194,6 +194,7 @@ export class SettingsBlock implements Block {
   private renderExtensionHeader(
     row: ExtensionHeaderRow,
     isFocused: boolean,
+    width: number,
   ): string {
     const { theme } = this;
     const cursor = stylePrefix(row.prefix, isFocused, theme);
@@ -202,12 +203,16 @@ export class SettingsBlock implements Block {
 
     if (row.isCollapsed) {
       const count = theme.fg("dim", ` (${row.settingsCount} settings)`);
-      return `${cursor + marker} ${name}${count}`;
+      return truncateToWidth(`${cursor + marker} ${name}${count}`, width, "…");
     }
-    return `${cursor + marker} ${name}`;
+    return truncateToWidth(`${cursor + marker} ${name}`, width, "…");
   }
 
-  private renderGroupHeader(row: GroupRow, isFocused: boolean): string {
+  private renderGroupHeader(
+    row: GroupRow,
+    isFocused: boolean,
+    width: number,
+  ): string {
     const { theme } = this;
     const cursor = stylePrefix(row.prefix, isFocused, theme);
     const marker = theme.fg("accent", row.isCollapsed ? "[+]" : "[-]");
@@ -215,9 +220,9 @@ export class SettingsBlock implements Block {
 
     if (row.isCollapsed) {
       const count = theme.fg("dim", ` (${row.settingsCount} settings)`);
-      return `${cursor + marker} ${name}${count}`;
+      return truncateToWidth(`${cursor + marker} ${name}${count}`, width, "…");
     }
-    return `${cursor + marker} ${name}`;
+    return truncateToWidth(`${cursor + marker} ${name}`, width, "…");
   }
 
   /**
@@ -343,10 +348,18 @@ export class SettingsBlock implements Block {
     return ` ${indent}${theme.fg("dim", "─".repeat(sepWidth))}`;
   }
 
-  private renderListAddRow(row: ListAddRow, isFocused: boolean): string {
+  private renderListAddRow(
+    row: ListAddRow,
+    isFocused: boolean,
+    width: number,
+  ): string {
     const { theme } = this;
     const cursor = isFocused ? theme.fg("accent", "→") : " ";
     const indent = row.prefix.length > 0 ? row.prefix.slice(1) : "";
-    return cursor + indent + theme.fg("dim", `+ ${row.addLabel}`);
+    return truncateToWidth(
+      cursor + indent + theme.fg("dim", `+ ${row.addLabel}`),
+      width,
+      "…",
+    );
   }
 }
