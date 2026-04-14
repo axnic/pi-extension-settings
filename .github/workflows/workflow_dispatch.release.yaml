@@ -292,7 +292,7 @@ jobs:
 
           ${DRAFT}
 
-          Write the final improved release notes to release-notes.md"
+          You MUST write the final improved release notes to the file release-notes.md using the write tool. Do not just output the content — you must call the write tool to create the file."
 
           COPILOT_SUCCESS=false
           for attempt in 1 2 3; do

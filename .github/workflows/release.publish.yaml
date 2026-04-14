@@ -29,6 +29,13 @@ on:
 
 permissions: {}
 
+# Prevent double-publish when both `release.published` and `workflow_run`
+# fire for the same release (e.g. the release event arrives while the
+# workflow_run trigger also fires).
+concurrency:
+  group: npm-publish-${{ github.event.release.tag_name || github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
 jobs:
   # ── Validate ──────────────────────────────────────────────────────────────
   validate:
