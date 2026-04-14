@@ -55,23 +55,30 @@ export function stylePrefix(
  * can be split mid-sequence, producing broken/bleeding terminal output. Apply
  * theme styling only after wrapping.
  *
- * Any single word wider than `maxWidth` (minus indent) is hard-truncated with
- * "…" so every returned line is guaranteed to satisfy `visibleWidth ≤ maxWidth`.
+ * Leading whitespace on the first line is preserved (e.g. "  · reason" keeps
+ * its two-space bullet indent). Any single word wider than `maxWidth` is
+ * hard-truncated with "…" so every returned line satisfies visibleWidth ≤ maxWidth.
+ * When maxWidth ≤ 0 the result is a single empty string.
  */
 export function wrapText(
   text: string,
   maxWidth: number,
   indent: string,
 ): string[] {
-  if (maxWidth <= 0) return [text];
+  if (maxWidth <= 0) return [""];
   if (visibleWidth(text) <= maxWidth) return [text];
 
+  // Extract leading whitespace so the first line's bullet/indent is preserved
+  // even when splitting on spaces (which would otherwise collapse it).
+  const leading = text.match(/^\s*/)?.[0] ?? "";
+  const words = text.trimStart().split(" ").filter(Boolean);
+
   const lines: string[] = [];
-  const words = text.split(" ");
   let current = "";
 
   for (const word of words) {
-    const candidate = current ? `${current} ${word}` : word;
+    // First word: prepend the original leading whitespace directly (no extra space).
+    const candidate = current === "" ? leading + word : `${current} ${word}`;
     if (visibleWidth(candidate) <= maxWidth) {
       current = candidate;
     } else {
@@ -87,7 +94,7 @@ export function wrapText(
   }
 
   if (current) lines.push(current);
-  return lines.length > 0 ? lines : [text];
+  return lines.length > 0 ? lines : [""];
 }
 
 /**

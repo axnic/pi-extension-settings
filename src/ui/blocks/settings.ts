@@ -136,7 +136,11 @@ export class SettingsBlock implements Block {
             ? `[${value || " ".repeat(14)}]`
             : value;
           lines.push(
-            `     ${theme.fg("dim", `${fieldKey}:`)}  ${isFocusedField ? theme.bold(valueDisplay) : theme.fg("dim", valueDisplay)}`,
+            truncateToWidth(
+              `     ${theme.fg("dim", `${fieldKey}:`)}  ${isFocusedField ? theme.bold(valueDisplay) : theme.fg("dim", valueDisplay)}`,
+              width,
+              "…",
+            ),
           );
         }
         lines.push(this.renderSeparatorRow(row.prefix, width));
@@ -343,9 +347,17 @@ export class SettingsBlock implements Block {
 
   private renderSeparatorRow(prefix: string, width: number): string {
     const { theme } = this;
-    const sepWidth = Math.max(0, Math.min(width - 6, 40));
     const indent = prefix.length > 0 ? prefix.slice(1) : "";
-    return ` ${indent}${theme.fg("dim", "─".repeat(sepWidth))}`;
+    // Reserve 1 for the leading space + indent; cap so the line stays within width.
+    const sepWidth = Math.max(
+      0,
+      Math.min(width - 1 - visibleWidth(indent), 40),
+    );
+    return truncateToWidth(
+      ` ${indent}${theme.fg("dim", "─".repeat(sepWidth))}`,
+      width,
+      "…",
+    );
   }
 
   private renderListAddRow(

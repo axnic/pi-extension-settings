@@ -17,6 +17,7 @@
  */
 
 import type { Theme } from "@mariozechner/pi-coding-agent";
+import { visibleWidth } from "@mariozechner/pi-tui";
 import type { Registry } from "../core/registry.js";
 import type { ControlBindings } from "../settings.js";
 import type { Block } from "./blocks/block.js";
@@ -92,7 +93,10 @@ function zipColumns(
   const count = Math.max(leftLines.length, rightLines.length);
 
   return Array.from({ length: count }, (_, i) => {
-    const left = (leftLines[i] ?? "").padEnd(leftWidth);
-    return `${left} ${rightLines[i] ?? ""}`;
+    const leftLine = leftLines[i] ?? "";
+    // Pad based on visible width (ANSI-aware) so the right column stays aligned
+    // even when left lines contain escape sequences.
+    const padding = " ".repeat(Math.max(0, leftWidth - visibleWidth(leftLine)));
+    return `${leftLine}${padding} ${rightLines[i] ?? ""}`;
   });
 }
