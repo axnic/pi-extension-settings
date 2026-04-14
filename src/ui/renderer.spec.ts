@@ -1,8 +1,10 @@
 /**
- * renderer.spec.ts — Unit tests for tooltip width-clamping and word-wrapping in renderPanel.
+ * renderer.spec.ts — Integration smoke tests for renderPanel.
  *
- * Long tooltip strings must be word-wrapped so that every output line stays
- * within the panel width, preventing terminal overflow.
+ * These tests verify that the layout composer correctly wires the four blocks
+ * and produces a well-formed output (separator, input bar, rows, info, hint bar).
+ * Block-level behaviour (tooltip wrapping, hint truncation, etc.) is tested in
+ * the individual block spec files under src/ui/blocks/.
  */
 
 import { describe, expect, it, vi } from "vitest";
@@ -34,11 +36,6 @@ import { createInitialState } from "./state.ts";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * A minimal Theme stub that returns text unstyled. This keeps the test
- * free of ANSI escape sequences so visibleWidth() gives the plain character
- * count and string length comparisons are straightforward.
- */
 const plainTheme = {
   fg: (_color: string, text: string) => text,
   bold: (text: string) => text,
@@ -56,12 +53,10 @@ const stubControls: ControlBindings = {
 };
 
 const PANEL_WIDTH = 40;
-const LONG_TOOLTIP =
-  "This tooltip is intentionally very long and would overflow the terminal width if not truncated properly by the renderer.";
 
-function makeRegistryWithLongTooltip() {
+function makeRegistry() {
   const schema = S.settings({
-    mykey: S.text({ tooltip: LONG_TOOLTIP, default: "hello" }),
+    mykey: S.text({ tooltip: "A setting", default: "hello" }),
   });
   const registry = createRegistry();
   registry.set("test-ext", schema as Record<string, SettingNode>);
@@ -70,14 +65,12 @@ function makeRegistryWithLongTooltip() {
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe("renderPanel — tooltip wrapping", () => {
-  it("wraps a long tooltip across multiple lines, each within the panel width", () => {
-    const registry = makeRegistryWithLongTooltip();
+describe("renderPanel — layout composition", () => {
+  it("produces output with top separator, input bar, rows, and hint bar", () => {
+    const registry = makeRegistry();
     const state = createInitialState(false);
-    // Focus the setting row so renderTooltip picks up its tooltip text
-    state.focusedIndex = 1; // index 0 is ext-header, index 1 is the setting
-
     const rows = buildRows(registry, state);
+
     const lines = renderPanel(
       rows,
       state,
@@ -87,32 +80,22 @@ describe("renderPanel — tooltip wrapping", () => {
       stubControls,
     );
 
-    // Locate the tooltip region: find the first line that starts with the
-    // unique opening of LONG_TOOLTIP, then collect consecutive non-empty lines.
-    const startIdx = lines.findIndex((l) => l.startsWith("This tooltip"));
-    expect(startIdx).toBeGreaterThanOrEqual(0); // tooltip must appear in the panel
-    const tooltipLines: string[] = [];
-    for (let i = startIdx; i < lines.length && lines[i].trim() !== ""; i++) {
-      tooltipLines.push(lines[i]);
-    }
-    expect(tooltipLines.length).toBeGreaterThan(1); // long text must produce multiple lines
-    for (const line of tooltipLines) {
-      expect(visibleWidth(line)).toBeLessThanOrEqual(PANEL_WIDTH);
-    }
+    // Top separator line
+    expect(lines[0]).toMatch(/^─+$/);
+
+    // Input bar on line 1
+    expect(lines[1]).toMatch(/^>/);
+
+    // Last line is the hint bar (non-empty)
+    expect(lines[lines.length - 1].trim().length).toBeGreaterThan(0);
   });
 
-  it("does not truncate a tooltip that already fits within the panel width", () => {
-    const shortTooltip = "Short tip";
-    const schema = S.settings({
-      mykey: S.text({ tooltip: shortTooltip, default: "v" }),
-    });
-    const registry = createRegistry();
-    registry.set("test-ext", schema as Record<string, SettingNode>);
-
+  it("all output lines are within the panel width", () => {
+    const registry = makeRegistry();
     const state = createInitialState(false);
     state.focusedIndex = 1;
-
     const rows = buildRows(registry, state);
+
     const lines = renderPanel(
       rows,
       state,
@@ -122,7 +105,8 @@ describe("renderPanel — tooltip wrapping", () => {
       stubControls,
     );
 
-    const tooltipLine = lines.find((l) => l === shortTooltip);
-    expect(tooltipLine).toBeDefined();
+    for (const line of lines) {
+      expect(visibleWidth(line)).toBeLessThanOrEqual(PANEL_WIDTH);
+    }
   });
 });
