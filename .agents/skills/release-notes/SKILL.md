@@ -48,8 +48,7 @@ Thanks to all the contributors to this release:
 
 ---
 
-_These release notes were generated with the assistance of
-[GitHub Copilot](https://github.com/features/copilot)._
+<sup>Release notes enhanced by [GitHub Copilot](https://github.com/features/copilot)</sup>
 ```
 
 ## Prefix guide
