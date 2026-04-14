@@ -142,10 +142,14 @@ jobs:
           syft scan dir:sdk              -o cyclonedx-json=sbom-sdk.json
 
       # ── Publish ───────────────────────────────────────────────────────────
-      - name: 🔑 Configure npm registry
-        run: npm config set registry https://registry.npmjs.org/
-      - name: 🚫 Clear auth token for OIDC
-        run: echo "NODE_AUTH_TOKEN=" >> $GITHUB_ENV
+      # actions/setup-node writes a .npmrc that pnpm reads for registry and
+      # auth configuration. Without it, pnpm has no registry context and
+      # fails with ENEEDAUTH even when id-token: write is granted. No
+      # NODE_AUTH_TOKEN is set so the OIDC trusted-publishers flow handles auth.
+      - name: 🔧 Configure npm registry for pnpm
+        uses: actions/setup-node@v4
+        with:
+          registry-url: "https://registry.npmjs.org/"
 
       - name: 🚀 Publish all workspace packages
         run: |
