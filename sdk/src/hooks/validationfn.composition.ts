@@ -3,17 +3,26 @@
  *
  * @module
  */
-import type { TextValue, ValidationFn } from "../core/nodes";
+import type {
+  DictEntry,
+  ListItem,
+  NumValue,
+  TextValue,
+  ValidationFn,
+} from "../core/nodes";
+
+type AnyValue = TextValue | NumValue | ListItem | DictEntry;
 
 /**
  * Create a validator that passes only when ALL provided validators pass.
  * Returns the first failure encountered.
  *
  * @example v.all(v.notEmpty(), v.hexColor())("#fff") // { valid: true }
+ * @example v.all(v.integer(), v.range({ min: 1, max: 100 }))(5) // { valid: true }
  */
-export function all(
-  ...validators: ValidationFn<TextValue>[]
-): ValidationFn<TextValue> {
+export function all<T extends AnyValue>(
+  ...validators: ValidationFn<T>[]
+): ValidationFn<T> {
   return (value) => {
     for (const v of validators) {
       const result = v(value);
@@ -32,9 +41,9 @@ export function all(
  * @example v.any(v.hexColor(), v.htmlNamedColor())("???")
  *   // { valid: false, reason: ["must be #rgb or #rrggbb …", "not a recognised CSS named color …"] }
  */
-export function any(
-  ...validators: ValidationFn<TextValue>[]
-): ValidationFn<TextValue> {
+export function any<T extends AnyValue>(
+  ...validators: ValidationFn<T>[]
+): ValidationFn<T> {
   return (value) => {
     const reasons: string[] = [];
     for (const v of validators) {

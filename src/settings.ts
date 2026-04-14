@@ -38,6 +38,9 @@ export const DEFAULT_CONTROL_BINDINGS = {
 /** Default value for `behavior.start-in-search-mode`. */
 export const DEFAULT_START_IN_SEARCH_MODE = false;
 
+/** Default value for `behavior.max-visible-rows`. */
+export const DEFAULT_MAX_VISIBLE_ROWS = 14;
+
 /** Resolved keyboard bindings, normalised to lowercase trimmed strings. */
 export interface ControlBindings {
   resetToDefault: string;
@@ -64,6 +67,14 @@ export const schema = S.settings({
         tooltip:
           "Start in search mode — open with search focused so you can type to filter; otherwise start in navigation mode.",
         default: DEFAULT_START_IN_SEARCH_MODE,
+      }),
+      "max-visible-rows": S.number({
+        tooltip:
+          "Maximum number of setting rows visible at once in the panel viewport.",
+        description:
+          "Controls the viewport height of the settings panel.\n\nIncrease this value to see more settings without scrolling, or decrease it to keep the panel compact. The minimum value is 5.",
+        default: DEFAULT_MAX_VISIBLE_ROWS,
+        validation: v.all(v.integer(), v.range({ min: 5 })),
       }),
     },
   }),
@@ -141,6 +152,8 @@ function settleBinding(value: string, fallback: string): string {
 export interface SettingsReader {
   /** Whether the panel should open with the search bar focused. */
   readonly startInSearchMode: boolean;
+  /** Maximum number of setting rows visible at once in the panel viewport. */
+  readonly maxVisibleRows: number;
   /** Resolved keyboard bindings. */
   readonly controls: ControlBindings;
 }
@@ -159,6 +172,15 @@ export function createSettingsReader(
   return {
     get startInSearchMode(): boolean {
       return settings.get("behavior.start-in-search-mode");
+    },
+    get maxVisibleRows(): number {
+      const val = Number(
+        settings.get("behavior.max-visible-rows") ?? DEFAULT_MAX_VISIBLE_ROWS,
+      );
+      return Math.max(
+        5,
+        isNaN(val) ? DEFAULT_MAX_VISIBLE_ROWS : Math.floor(val),
+      );
     },
     get controls(): ControlBindings {
       return {

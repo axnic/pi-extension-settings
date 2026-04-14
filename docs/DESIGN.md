@@ -533,6 +533,21 @@ All scalar values are stored as strings. `list` and `dict` values are stored as 
 
 ---
 
+## Panel settings (`pi-extension-settings` own schema)
+
+| Setting                         | Type      | Default       | Constraint  | Description                                                           |
+| ------------------------------- | --------- | ------------- | ----------- | --------------------------------------------------------------------- |
+| `behavior.start-in-search-mode` | `boolean` | `false`       | —           | Open with the search bar focused.                                     |
+| `behavior.max-visible-rows`     | `number`  | `14`          | integer ≥ 5 | Maximum number of setting rows visible at once in the panel viewport. |
+| `controls.reset-to-default`     | `text`    | `r`           | keybinding  | Reset focused setting to its default value.                           |
+| `controls.collapse-expand`      | `text`    | `space`       | keybinding  | Toggle collapse/expand for the focused header.                        |
+| `controls.collapse-all`         | `text`    | `shift+space` | keybinding  | Collapse all visible extension and folder headers.                    |
+| `controls.reorder-item-up`      | `text`    | `shift+up`    | keybinding  | Move the focused list item one position up.                           |
+| `controls.reorder-item-down`    | `text`    | `shift+down`  | keybinding  | Move the focused list item one position down.                         |
+| `controls.delete-item`          | `text`    | `d`           | keybinding  | Delete the focused list item.                                         |
+
+---
+
 ## Behavior
 
 ### Opening
@@ -546,6 +561,7 @@ All scalar values are stored as strings. `list` and `dict` values are stored as 
 - Startup mode is configurable via `Behavior > Start in search mode`.
 - Entering a scope auto-expands that target section/folder.
 - Esc restores the previous collapse state level-by-level (nested scopes restore in reverse order).
+- The number of visible rows is configurable via `Behavior > Max visible rows` (default 14, min 5).
 
 ### Navigation
 

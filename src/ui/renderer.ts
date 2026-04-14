@@ -24,7 +24,7 @@ import type { Block } from "./blocks/block.js";
 import { InfoBlock } from "./blocks/info.js";
 import { NavigationBlock } from "./blocks/navigation.js";
 import { SearchBlock } from "./blocks/search.js";
-import { SettingsBlock } from "./blocks/settings.js";
+import { MAX_VISIBLE_ROWS, SettingsBlock } from "./blocks/settings.js";
 import type { ViewRow } from "./model.js";
 import type { UIState } from "./state.js";
 
@@ -46,10 +46,11 @@ export function renderPanel(
   theme: Theme,
   width: number,
   controls: ControlBindings,
+  maxVisibleRows: number = MAX_VISIBLE_ROWS,
 ): string[] {
   // leftWidth equals total width today.
   // When DescriptionBlock is introduced:
-  //   const leftWidth = Math.floor(width * 0.55);
+  //   const leftWidth = Math.floor(width * 2 / 3);
   const leftWidth = width;
 
   return [
@@ -58,13 +59,16 @@ export function renderPanel(
     "",
     ...zipColumns(
       [
-        ...new SettingsBlock(rows, state, theme).render(leftWidth),
+        ...new SettingsBlock(rows, state, theme).render(
+          leftWidth,
+          maxVisibleRows,
+        ),
         "",
         ...new InfoBlock(rows, state, theme).render(leftWidth),
       ],
       leftWidth,
       width,
-      // future: new DescriptionBlock(rows, state, theme)
+      // future: new DescriptionBlock(focusedRow, theme, state.descScrollOffset)
     ),
     "",
     ...new NavigationBlock(rows, state, theme, controls).render(width),
