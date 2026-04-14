@@ -385,9 +385,10 @@ function renderTooltip(
 
   const dim = (t: string) => theme.fg("dim", t);
 
-  // Each pending line carries raw text and an optional color key.
+  // Each pending line carries raw text, an optional color key, and an optional
+  // continuation indent passed to wrapText so wrapped lines stay aligned.
   // Color is applied per wrapped line so ANSI codes are never split across lines.
-  type PendingLine = { text: string; colorKey?: ThemeColor };
+  type PendingLine = { text: string; colorKey?: ThemeColor; indent?: string };
   const pending: PendingLine[] = [];
 
   // Line 1: description — may contain partial dim() annotations (short, safe to wrap as-is)
@@ -427,14 +428,20 @@ function renderTooltip(
       // Multiple failures from v.any(): header + one line per reason
       pending.push({ text: "✗ none of the validations passed:", colorKey });
       for (const r of reason) {
-        pending.push({ text: `  · ${r}`, colorKey });
+        // "  · " = 4 visible columns → indent wrapped continuation by 4 spaces
+        pending.push({ text: `  · ${r}`, colorKey, indent: "    " });
       }
     } else {
       // Single failure or success
       const message = Array.isArray(reason)
         ? (reason[0] ?? (valid ? "valid" : "invalid"))
         : (reason ?? (valid ? "valid" : "invalid"));
-      pending.push({ text: `${valid ? "✓" : "✗"} ${message}`, colorKey });
+      // "✓ " / "✗ " = 2 visible columns → indent continuation lines by 2 spaces
+      pending.push({
+        text: `${valid ? "✓" : "✗"} ${message}`,
+        colorKey,
+        indent: "  ",
+      });
     }
   } else if (focusedRow.type === "setting") {
     const node = focusedRow.node;
@@ -472,8 +479,8 @@ function renderTooltip(
   }
 
   // Single wrap pass: each raw line is word-wrapped to width, then colored per line.
-  return pending.flatMap(({ text, colorKey }) => {
-    const lines = wrapText(text, width, "");
+  return pending.flatMap(({ text, colorKey, indent = "" }) => {
+    const lines = wrapText(text, width, indent);
     return colorKey ? lines.map((l) => theme.fg(colorKey, l)) : lines;
   });
 }
@@ -516,7 +523,7 @@ function renderHintBar(
     if (state.suggestions.length > 0) {
       return hint([
         "<enter> to confirm",
-        "<esc> cancel suggestions",
+        "<esc> dismiss suggestions / exit edit",
         `<${controls.resetToDefault}> reset default`,
       ]);
     }

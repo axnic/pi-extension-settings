@@ -1,8 +1,8 @@
 /**
- * renderer.spec.ts — Unit tests for the tooltip truncation in renderPanel.
+ * renderer.spec.ts — Unit tests for tooltip width-clamping and word-wrapping in renderPanel.
  *
- * The tooltip line (line1) must be clamped to the panel width to prevent
- * terminal overflow when a setting's tooltip string is very long.
+ * Long tooltip strings must be word-wrapped so that every output line stays
+ * within the panel width, preventing terminal overflow.
  */
 
 import { describe, expect, it, vi } from "vitest";
@@ -87,10 +87,14 @@ describe("renderPanel — tooltip wrapping", () => {
       stubControls,
     );
 
-    // The first wrapped line starts with the beginning of LONG_TOOLTIP.
-    const tooltipLines = lines.filter(
-      (l) => l.startsWith("This tooltip") || LONG_TOOLTIP.includes(l.trim()),
-    );
+    // Locate the tooltip region: find the first line that starts with the
+    // unique opening of LONG_TOOLTIP, then collect consecutive non-empty lines.
+    const startIdx = lines.findIndex((l) => l.startsWith("This tooltip"));
+    expect(startIdx).toBeGreaterThanOrEqual(0); // tooltip must appear in the panel
+    const tooltipLines: string[] = [];
+    for (let i = startIdx; i < lines.length && lines[i].trim() !== ""; i++) {
+      tooltipLines.push(lines[i]);
+    }
     expect(tooltipLines.length).toBeGreaterThan(1); // long text must produce multiple lines
     for (const line of tooltipLines) {
       expect(visibleWidth(line)).toBeLessThanOrEqual(PANEL_WIDTH);
