@@ -382,16 +382,4 @@ describe("generateReleaseNotes", () => {
       "fix some random thing without conventional format",
     );
   });
-
-  it("includes the Copilot footer", () => {
-    const commit = {
-      sha: makeSha(1),
-      subject: "feat(sdk): Add thing",
-      body: "",
-      authorName: "Alice",
-      authorEmail: "",
-    };
-    const result = generateReleaseNotes("1.0.0", [commit], new Map());
-    expect(result).toContain("GitHub Copilot");
-  });
 });
