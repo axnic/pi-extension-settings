@@ -1,0 +1,25 @@
+# Dependabot — security-only updates (no routine version bumps).
+#
+# open-pull-requests-limit: 0 disables scheduled version-update PRs.
+# Dependabot still opens PRs automatically when a security advisory is
+# published for a dependency, regardless of this limit.
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: npm
+    directory: /sdk
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
