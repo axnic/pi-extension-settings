@@ -78,6 +78,14 @@ body:
     validations:
       required: true
 
+  - type: checkboxes
+    id: ai_generated
+    attributes:
+      label: Created by AI
+      description: Check this box if this issue was created or filled by an AI agent. If checked, briefly note the tool used and confirm a human review.
+      options:
+        - This issue was created or filled by an AI agent
+
   - type: textarea
     id: extra
     attributes:

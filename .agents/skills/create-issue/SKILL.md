@@ -61,6 +61,8 @@ Gather every required field before creating the issue. Apply this priority order
 
 Never fabricate a value. Never silently skip a required field.
 
+Note: Issue and PR templates include a "Created by" / AI attribution field. When the agent creates or fills an issue or PR on behalf of an AI, set that field to "AI" (or check the AI box) and add a short note naming the tool used and confirming a human review.
+
 ### Inference strategies
 
 | Field           | How to infer                                                     |
