@@ -11,7 +11,7 @@ import { v } from "pi-extension-settings/sdk/hooks";
 Assign to the `validation` field of a `Text`, `Number`, `List`, or `Dict` node:
 
 ```ts
-S.text({ tooltip: "API URL", default: "", validation: v.url() });
+S.text({ description: "API URL", default: "", validation: v.url() });
 ```
 
 ## Basic
@@ -245,7 +245,7 @@ Typically paired with `d.keybinding()` for consistent rendering:
 
 ```ts
 S.text({
-  tooltip: "Toggle panel",
+  description: "Toggle panel",
   default: "ctrl+k",
   validation: v.keybinding(),
   display: d.keybinding(),
@@ -258,7 +258,7 @@ A common pattern is to accept any color format:
 
 ```ts
 S.text({
-  tooltip: "Accent color",
+  description: "Accent color",
   default: "#ff6b6b",
   validation: v.any(
     v.hexColor(),

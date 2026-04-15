@@ -22,7 +22,7 @@ import type { CompleteFn } from "../core/nodes";
  *
  * @example
  * S.text({
- *   tooltip: "Config file path",
+ *   description: "Config file path",
  *   default: "",
  *   complete: c.filePath(),
  * })

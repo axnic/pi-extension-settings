@@ -43,11 +43,12 @@ import { v } from "pi-extension-settings/sdk/hooks";
 
 ```ts
 formatting: S.section({
-  tooltip: "Formatting rules",
-  description: "Low-level formatting options passed to the underlying engine.",
+  description: "Formatting rules",
+  documentation:
+    "Low-level formatting options passed to the underlying engine.",
   children: {
     indentStyle: S.enum({
-      tooltip: "Indent style",
+      description: "Indent style",
       default: "spaces",
       values: [
         { value: "spaces", label: "Spaces" },
@@ -55,12 +56,12 @@ formatting: S.section({
       ],
     }),
     indentWidth: S.number({
-      tooltip: "Indent width (spaces)",
+      description: "Indent width (spaces)",
       default: 2,
       validation: v.all(v.integer(), v.range({ min: 1, max: 8 })),
     }),
     lineWidth: S.number({
-      tooltip: "Print width (characters)",
+      description: "Print width (characters)",
       default: 80,
       validation: v.all(v.integer(), v.range({ min: 40, max: 200 })),
     }),
@@ -87,13 +88,13 @@ settings.get("formatting.lineWidth"); // 80 (number)
 
 ```ts
 ignore: S.list({
-  tooltip: "Ignored paths",
-  description: "Glob patterns for files and directories to skip.",
+  description: "Ignored paths",
+  documentation: "Glob patterns for files and directories to skip.",
   addLabel: "Add pattern",
   default: [{ pattern: "node_modules/**" }, { pattern: "dist/**" }],
   items: S.struct({
     properties: {
-      pattern: S.text({ tooltip: "Glob pattern", default: "" }),
+      pattern: S.text({ description: "Glob pattern", default: "" }),
     },
   }),
 });
@@ -114,7 +115,7 @@ const patterns = settings.get("ignore") as Array<{ pattern: string }>;
 
 ```ts
 S.number({
-  tooltip: "Indent width (spaces)",
+  description: "Indent width (spaces)",
   default: 2,
   validation: v.all(v.integer(), v.range({ min: 1, max: 8 })),
   // Accepts: 1, 2, 4, 8

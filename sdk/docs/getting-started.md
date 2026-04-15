@@ -62,8 +62,8 @@ Call `S.settings({...})` with a map of setting keys to node definitions. The fun
 const schema = S.settings({
   // A free-form URL with validation + normalization
   "api-url": S.text({
-    tooltip: "API base URL",
-    description: "Root URL used for every outbound HTTP request.",
+    description: "API base URL",
+    documentation: "Root URL used for every outbound HTTP request.",
     default: "https://api.example.com",
     validation: v.url(true),
     transform: t.normalizeUrl(),
@@ -71,7 +71,7 @@ const schema = S.settings({
 
   // A cycling enum with stable stored values and friendlier labels
   theme: S.enum({
-    tooltip: "Color theme",
+    description: "Color theme",
     default: "dark",
     values: [
       { value: "dark", label: "Dark" },
@@ -82,13 +82,13 @@ const schema = S.settings({
 
   // A simple on/off toggle
   enabled: S.boolean({
-    tooltip: "Enable extension",
+    description: "Enable extension",
     default: true,
   }),
 });
 ```
 
-> **Important:** Every node's `tooltip` must be **128 characters or fewer**. Use the optional `description` field for longer Markdown documentation. `S.settings()` throws `TooltipTooLongError` at construction time if this limit is exceeded.
+> **Important:** Every node's `description` must be **128 characters or fewer**. Use the optional `documentation` field for longer Markdown documentation. `S.settings()` throws `DescriptionTooLongError` at construction time if this limit is exceeded.
 
 ---
 
@@ -168,18 +168,18 @@ import { t, v } from "pi-extension-settings/sdk/hooks";
 
 const schema = S.settings({
   "api-url": S.text({
-    tooltip: "API base URL",
+    description: "API base URL",
     default: "https://api.example.com",
     validation: v.url(true),
     transform: t.normalizeUrl(),
   }),
   theme: S.enum({
-    tooltip: "Color theme",
+    description: "Color theme",
     default: "dark",
     values: ["dark", "light", "system"],
   }),
   enabled: S.boolean({
-    tooltip: "Enable extension",
+    description: "Enable extension",
     default: true,
   }),
 });
@@ -273,15 +273,15 @@ if (!settings.get("enabled")) return;
 ```ts
 const schema = S.settings({
   appearance: S.section({
-    tooltip: "Appearance",
+    description: "Appearance",
     children: {
       theme: S.enum({
-        tooltip: "Theme",
+        description: "Theme",
         default: "dark",
         values: ["dark", "light"],
       }),
       "font-size": S.number({
-        tooltip: "Font size (px)",
+        description: "Font size (px)",
         default: 14,
         validation: v.all(v.integer(), v.range({ min: 8, max: 72 })),
       }),
@@ -297,7 +297,7 @@ settings.get("appearance.font-size"); // 14
 
 ## Troubleshooting
 
-> **Warning:** **`TooltipTooLongError` at startup.** Your schema has a tooltip longer than 128 characters. Shorten it and move the extra copy into `description`, which has no length limit.
+> **Warning:** **`DescriptionTooLongError` at startup.** Your schema has a description longer than 128 characters. Shorten it and move the extra copy into `documentation`, which has no length limit.
 
 > **Warning:** **`EnumDefaultMismatchError` at startup.** An enum's `default` value is not present in its `values` array. This is checked for every enum in the tree, including those inside nested sections and list struct properties.
 

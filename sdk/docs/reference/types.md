@@ -169,8 +169,8 @@ All node interfaces extend `BaseSettingNode`.
 
 ```ts
 interface BaseSettingNode {
-  tooltip: string; // Required. Max 128 characters.
-  description?: string; // Optional. Full Markdown documentation.
+  description: string; // Required. Max 128 characters.
+  documentation?: string; // Optional. Full Markdown documentation.
 }
 ```
 
@@ -316,22 +316,22 @@ Extracts the flat runtime config type from a schema. `Section` nodes are transpa
 
 ```ts
 const schema = S.settings({
-  name: S.text({ tooltip: "Name", default: "" }),
-  enabled: S.boolean({ tooltip: "Enabled", default: true }),
+  name: S.text({ description: "Name", default: "" }),
+  enabled: S.boolean({ description: "Enabled", default: true }),
   appearance: S.section({
-    tooltip: "Appearance",
+    description: "Appearance",
     children: {
       theme: S.enum({
-        tooltip: "Theme",
+        description: "Theme",
         default: "dark",
         values: ["dark", "light"],
       }),
     },
   }),
   tags: S.list({
-    tooltip: "Tags",
+    description: "Tags",
     items: S.struct({
-      properties: { value: S.text({ tooltip: "Tag", default: "" }) },
+      properties: { value: S.text({ description: "Tag", default: "" }) },
     }),
   }),
 });

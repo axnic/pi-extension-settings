@@ -32,8 +32,8 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 export const schema = S.settings({
   /** Which formatter engine to use. */
   parser: S.enum({
-    tooltip: "Formatter engine",
-    description: "The underlying formatter that will process your files.",
+    description: "Formatter engine",
+    documentation: "The underlying formatter that will process your files.",
     default: "prettier",
     values: [
       { value: "prettier", label: "Prettier" },
@@ -44,23 +44,23 @@ export const schema = S.settings({
 
   /** Top-level toggle — disable everything without wiping settings. */
   enabled: S.boolean({
-    tooltip: "Enable formatter",
+    description: "Enable formatter",
     default: true,
   }),
 
   /** Save-hook toggle. */
   formatOnSave: S.boolean({
-    tooltip: "Format on save",
+    description: "Format on save",
     default: true,
   }),
 
   formatting: S.section({
-    tooltip: "Formatting rules",
-    description:
+    description: "Formatting rules",
+    documentation:
       "Low-level formatting options passed to the underlying engine.",
     children: {
       indentStyle: S.enum({
-        tooltip: "Indent style",
+        description: "Indent style",
         default: "spaces",
         values: [
           { value: "spaces", label: "Spaces" },
@@ -69,23 +69,23 @@ export const schema = S.settings({
       }),
 
       indentWidth: S.number({
-        tooltip: "Indent width (spaces)",
-        description:
+        description: "Indent width (spaces)",
+        documentation:
           "Number of spaces per indent level. Ignored when using tabs.",
         default: 2,
         validation: v.all(v.integer(), v.range({ min: 1, max: 8 })),
       }),
 
       lineWidth: S.number({
-        tooltip: "Print width (characters)",
-        description:
+        description: "Print width (characters)",
+        documentation:
           "Soft wrap column. Lines longer than this value will be wrapped.",
         default: 80,
         validation: v.all(v.integer(), v.range({ min: 40, max: 200 })),
       }),
 
       semicolons: S.enum({
-        tooltip: "Semicolons",
+        description: "Semicolons",
         default: "always",
         values: [
           { value: "always", label: "Always" },
@@ -95,14 +95,14 @@ export const schema = S.settings({
       }),
 
       singleQuote: S.boolean({
-        tooltip: "Single quotes",
-        description:
+        description: "Single quotes",
+        documentation:
           "Use single quotes instead of double quotes where possible.",
         default: false,
       }),
 
       trailingComma: S.enum({
-        tooltip: "Trailing commas",
+        description: "Trailing commas",
         default: "all",
         values: [
           { value: "none", label: "None" },
@@ -115,14 +115,14 @@ export const schema = S.settings({
 
   /** Glob patterns for paths the formatter should skip. */
   ignore: S.list({
-    tooltip: "Ignored paths",
-    description:
+    description: "Ignored paths",
+    documentation:
       "Glob patterns for files and directories to skip. Supports `*`, `**`, and `?`.",
     addLabel: "Add pattern",
     default: [{ pattern: "node_modules/**" }, { pattern: "dist/**" }],
     items: S.struct({
       properties: {
-        pattern: S.text({ tooltip: "Glob pattern", default: "" }),
+        pattern: S.text({ description: "Glob pattern", default: "" }),
       },
     }),
   }),

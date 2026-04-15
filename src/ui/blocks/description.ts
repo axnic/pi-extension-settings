@@ -2,7 +2,7 @@
  * description.ts — DescriptionBlock renders the focused row's description
  * in the right column of the settings panel.
  *
- * Shows `node.description` when available, falls back to `node.tooltip`.
+ * Shows `node.documentation` when available, falls back to `node.description`.
  * Basic Markdown tokens are handled for TUI display:
  *   # Heading  → uppercase line
  *   ## Heading → uppercase line
@@ -62,9 +62,9 @@ export class DescriptionBlock implements Block {
 
     switch (row.type) {
       case "setting":
-        return row.node.description ?? row.node.tooltip ?? "";
+        return row.node.documentation ?? row.node.description ?? "";
       case "group":
-        return row.tooltip ?? "";
+        return row.description ?? "";
       case "extension-header":
         return `Extension: ${row.extensionName}\n\n${row.settingsCount} setting${row.settingsCount === 1 ? "" : "s"} registered.`;
       case "list-item":

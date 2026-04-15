@@ -27,8 +27,8 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 export const schema = S.settings({
   // ── Top-level: API endpoint ─────────────────────────────────────────────────
   endpoint: S.text({
-    tooltip: "API endpoint URL",
-    description: [
+    description: "API endpoint URL",
+    documentation: [
       "## API Endpoint",
       "Base URL of the OpenAI-compatible API server.",
       "Examples: `https://api.openai.com/v1`, `http://localhost:11434/v1`",
@@ -40,17 +40,17 @@ export const schema = S.settings({
   }),
 
   apiKey: S.text({
-    tooltip: "API key (leave empty for local models)",
+    description: "API key (leave empty for local models)",
     default: "",
   }),
 
   // ── Section: model & sampling ───────────────────────────────────────────────
   model: S.section({
-    tooltip: "Model",
-    description: "Which model to use and how to sample from it.",
+    description: "Model",
+    documentation: "Which model to use and how to sample from it.",
     children: {
       name: S.enum({
-        tooltip: "Model name",
+        description: "Model name",
         default: "gpt-4o-mini",
         values: [
           { value: "gpt-4o", label: "GPT-4o" },
@@ -64,24 +64,24 @@ export const schema = S.settings({
 
       // Nested section — flattened to "model.sampling.*"
       sampling: S.section({
-        tooltip: "Sampling",
+        description: "Sampling",
         children: {
           temperature: S.number({
-            tooltip: "Temperature (0 – 2)",
-            description:
+            description: "Temperature (0 – 2)",
+            documentation:
               "Controls randomness. 0 = deterministic, 2 = very creative.",
             default: 0.7,
             validation: v.range({ min: 0, max: 2 }),
           }),
 
           maxTokens: S.number({
-            tooltip: "Max output tokens",
+            description: "Max output tokens",
             default: 2048,
             validation: v.all(v.integer(), v.range({ min: 1, max: 32768 })),
           }),
 
           topP: S.number({
-            tooltip: "Top-p (nucleus sampling, 0 – 1)",
+            description: "Top-p (nucleus sampling, 0 – 1)",
             default: 1,
             validation: v.range({ min: 0, max: 1 }),
           }),
@@ -92,11 +92,11 @@ export const schema = S.settings({
 
   // ── Section: prompt ─────────────────────────────────────────────────────────
   prompt: S.section({
-    tooltip: "Prompt",
+    description: "Prompt",
     children: {
       system: S.text({
-        tooltip: "System prompt",
-        description:
+        description: "System prompt",
+        documentation:
           "Injected as the first `system` message in every conversation.",
         default:
           "You are a helpful coding assistant embedded in a terminal IDE.",
@@ -104,7 +104,7 @@ export const schema = S.settings({
       }),
 
       locale: S.enum({
-        tooltip: "Response language",
+        description: "Response language",
         default: "en",
         values: [
           { value: "en", label: "English" },
@@ -119,26 +119,26 @@ export const schema = S.settings({
 
   // ── Section: context window ──────────────────────────────────────────────────
   context: S.section({
-    tooltip: "Context window",
+    description: "Context window",
     children: {
       maxTurns: S.number({
-        tooltip: "Max conversation turns kept in context",
+        description: "Max conversation turns kept in context",
         default: 10,
         validation: v.all(v.integer(), v.range({ min: 1, max: 100 })),
       }),
 
       pinned: S.list({
-        tooltip: "Pinned system messages",
-        description: [
+        description: "Pinned system messages",
+        documentation: [
           "Extra system messages always prepended to every request.",
           "Useful for project-specific instructions that persist across sessions.",
         ].join("\n"),
         addLabel: "Pin a message",
         items: S.struct({
           properties: {
-            label: S.text({ tooltip: "Short label", default: "" }),
-            content: S.text({ tooltip: "Message body", default: "" }),
-            enabled: S.boolean({ tooltip: "Active", default: true }),
+            label: S.text({ description: "Short label", default: "" }),
+            content: S.text({ description: "Message body", default: "" }),
+            enabled: S.boolean({ description: "Active", default: true }),
           },
         }),
       }),
@@ -147,21 +147,21 @@ export const schema = S.settings({
 
   // ── Extra HTTP headers (dict) ────────────────────────────────────────────────
   extraHeaders: S.dict({
-    tooltip: "Extra HTTP headers",
-    description:
+    description: "Extra HTTP headers",
+    documentation:
       "Arbitrary headers forwarded with every API request. Useful for proxies.",
     addLabel: "Add header",
   }),
 
   // ── Feature flags ────────────────────────────────────────────────────────────
   streamResponses: S.boolean({
-    tooltip: "Stream responses",
-    description: "Use server-sent events to stream tokens as they arrive.",
+    description: "Stream responses",
+    documentation: "Use server-sent events to stream tokens as they arrive.",
     default: true,
   }),
 
   logRequests: S.boolean({
-    tooltip: "Log requests to console",
+    description: "Log requests to console",
     default: false,
   }),
 });

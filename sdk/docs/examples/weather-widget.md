@@ -22,23 +22,23 @@ import { v } from "pi-extension-settings/sdk/hooks";
 ```ts
 export const schema = S.settings({
   apiKey: S.text({
-    tooltip: "OpenWeatherMap API key",
-    description:
+    description: "OpenWeatherMap API key",
+    documentation:
       "Free-tier key from openweathermap.org/api.\nWithout a valid key the widget shows a placeholder.",
     default: "",
     validation: v.regex(/^[a-f0-9]{32}$/, "must be a 32-character hex API key"),
   }),
 
   city: S.text({
-    tooltip: "City to display weather for",
-    description:
+    description: "City to display weather for",
+    documentation:
       "Accepts a city name (Paris), a City,CC pair (London,GB), or a zip code.",
     default: "Paris",
     validation: v.notEmpty(),
   }),
 
   units: S.enum({
-    tooltip: "Temperature unit",
+    description: "Temperature unit",
     default: "celsius",
     values: [
       { value: "celsius", label: "Celsius (°C)" },
@@ -48,12 +48,12 @@ export const schema = S.settings({
   }),
 
   showHumidity: S.boolean({
-    tooltip: "Show humidity percentage",
+    description: "Show humidity percentage",
     default: true,
   }),
 
   showWind: S.boolean({
-    tooltip: "Show wind speed",
+    description: "Show wind speed",
     default: false,
   }),
 });

@@ -10,7 +10,7 @@
  * import { S, ExtensionSettings } from "pi-extension-settings/sdk";
  *
  * const schema = S.settings({
- *   color: S.text({ tooltip: "Accent color", default: "#fff" }),
+ *   color: S.text({ description: "Accent color", default: "#fff" }),
  * });
  *
  * const settings = new ExtensionSettings(pi, "my-extension", schema);

@@ -63,19 +63,19 @@ import { createInitialState, extCollapseKey } from "./state.ts";
  */
 const fixtureSchema = S.settings({
   appearance: S.section({
-    tooltip: "Look and feel",
+    description: "Look and feel",
     children: {
-      color: S.text({ tooltip: "Primary color", default: "#fff" }),
-      "show-icons": S.boolean({ tooltip: "Toggle icons", default: true }),
+      color: S.text({ description: "Primary color", default: "#fff" }),
+      "show-icons": S.boolean({ description: "Toggle icons", default: true }),
     },
   }),
   servers: S.list({
-    tooltip: "Configured servers",
+    description: "Configured servers",
     default: [],
     items: S.struct({
       properties: {
-        host: S.text({ tooltip: "Hostname", default: "" }),
-        port: S.text({ tooltip: "Port", default: "22" }),
+        host: S.text({ description: "Hostname", default: "" }),
+        port: S.text({ description: "Port", default: "22" }),
       },
     }),
   }),
@@ -129,7 +129,7 @@ describe("buildRows — theme-free row model", () => {
     }
   });
 
-  it("filters rows by tooltip text in search mode", () => {
+  it("filters rows by description text in search mode", () => {
     const registry = makeRegistry();
     const state = createInitialState(false);
     state.inputValue = "color";

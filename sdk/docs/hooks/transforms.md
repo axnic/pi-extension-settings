@@ -11,7 +11,7 @@ import { t } from "pi-extension-settings/sdk/hooks";
 Assign to the `transform` field of a `Text` node (transforms are only available on `Text` nodes):
 
 ```ts
-S.text({ tooltip: "Username", default: "", transform: t.lowercase() });
+S.text({ description: "Username", default: "", transform: t.lowercase() });
 ```
 
 ## Composition
@@ -134,7 +134,7 @@ Typically paired with `v.filePath()` and `c.filePath()`:
 
 ```ts
 S.text({
-  tooltip: "Config file",
+  description: "Config file",
   default: "~/.config/app.json",
   validation: v.filePath(),
   transform: t.pipe(t.trim(), t.expandPath()),
@@ -196,7 +196,7 @@ Combine all three transforms to accept any supported color format and store it a
 
 ```ts
 S.text({
-  tooltip: "Accent color",
+  description: "Accent color",
   default: "#ff6b6b",
   validation: v.any(
     v.hexColor(),

@@ -5,9 +5,9 @@
  * extensions use the `S.*` builders from `core/schema.ts` to construct them.
  *
  * ## Field naming conventions
- * - `tooltip`     — required on every node; max 128 characters; brief, scannable
+ * - `description` — required on every node; max 128 characters; brief, scannable
  *                   label shown inline next to the control in the settings panel.
- * - `description` — optional; full Markdown documentation for the setting.
+ * - `documentation` — optional; full Markdown documentation for the setting.
  *                   Rendered in a sidebar or popover when space allows and only
  *                   when the user expands it — never truncated or clipped.
  *
@@ -143,24 +143,24 @@ export type ListDisplayFn<T extends ListItem> = (
 /**
  * Fields shared by every setting node and the `Struct` type.
  *
- * ### `tooltip` (required)
+ * ### `description` (required)
  * A short, scannable label — **max 128 characters** — displayed inline next
  * to the control in the settings panel. It must be self-explanatory without
  * any surrounding context: imagine a user skimming the panel at a glance.
  *
- * ### `description` (optional)
+ * ### `documentation` (optional)
  * Full Markdown documentation for the setting. Rendered in a sidebar or
  * expandable popover only when there is enough horizontal space, so it is safe
- * to be verbose. If omitted, the panel shows only the `tooltip`.
+ * to be verbose. If omitted, the panel shows only the `description`.
  *
  * @example
- * // Minimal — tooltip only
- * S.text({ tooltip: "Gradient start color", default: "#ff930f" })
+ * // Minimal — description only
+ * S.text({ description: "Gradient start color", default: "#ff930f" })
  *
  * // With extended documentation
  * S.text({
- *   tooltip: "Gradient start color",
- *   description: [
+ *   description: "Gradient start color",
+ *   documentation: [
  *     "## Gradient start color",
  *     "Accepts any valid CSS color string: hex (`#ff930f`), `rgb()`, `hsl()`, etc.",
  *     "The value is validated client-side before being saved.",
@@ -175,7 +175,7 @@ export interface BaseSettingNode {
    * Displayed next to the control in the settings panel at all times.
    * Must be self-explanatory without surrounding context.
    */
-  tooltip: string;
+  description: string;
 
   /**
    * Full Markdown documentation for the setting. **Optional.**
@@ -184,7 +184,7 @@ export interface BaseSettingNode {
    * May be as long as needed — it is never truncated; it is simply hidden
    * when the panel is too narrow or when the user hasn't expanded it.
    */
-  description?: string;
+  documentation?: string;
 }
 
 // ─── Struct (list item schema) ────────────────────────────────────────────────
@@ -200,11 +200,11 @@ export interface BaseSettingNode {
  *
  * @example
  * S.list({
- *   tooltip: "SSH keys",
+ *   description: "SSH keys",
  *   items: S.struct({
  *     properties: {
- *       host: S.text({ tooltip: "Hostname", default: "" }),
- *       key:  S.text({ tooltip: "Private key path", default: "" }),
+ *       host: S.text({ description: "Hostname", default: "" }),
+ *       key:  S.text({ description: "Private key path", default: "" }),
  *     },
  *   }),
  * })
@@ -223,8 +223,8 @@ export interface Struct {
  *
  * @example
  * S.text({
- *   tooltip: "API base URL",
- *   description: "The root URL used for all outbound API requests.",
+ *   description: "API base URL",
+ *   documentation: "The root URL used for all outbound API requests.",
  *   default: "https://api.example.com",
  *   validation: v.url(),
  * })
@@ -258,7 +258,7 @@ export interface Text extends BaseSettingNode {
  *
  * @example
  * S.number({
- *   tooltip: "Port number",
+ *   description: "Port number",
  *   default: 8080,
  *   validation: v.integer(1, 65535),
  * })
@@ -285,7 +285,7 @@ export interface Number extends BaseSettingNode {
  *
  * @example
  * S.boolean({
- *   tooltip: "Enable dark mode",
+ *   description: "Enable dark mode",
  *   default: true,
  * })
  */
@@ -302,7 +302,7 @@ export interface Boolean extends BaseSettingNode {
  *
  * @example
  * S.enum({
- *   tooltip: "Color theme",
+ *   description: "Color theme",
  *   default: "dark",
  *   values: ["dark", "light", "system"],
  * })
@@ -330,11 +330,11 @@ export interface Enum extends BaseSettingNode {
  *
  * @example
  * S.list({
- *   tooltip: "Allowed origins",
+ *   description: "Allowed origins",
  *   items: S.struct({
  *     properties: {
- *       url:    S.text({ tooltip: "URL", default: "" }),
- *       active: S.boolean({ tooltip: "Enabled", default: true }),
+ *       url:    S.text({ description: "URL", default: "" }),
+ *       active: S.boolean({ description: "Enabled", default: true }),
  *     },
  *   }),
  *   display: (item, theme) =>
@@ -367,8 +367,8 @@ export interface List<T extends ListItem = ListItem> extends BaseSettingNode {
  *
  * @example
  * S.dict({
- *   tooltip: "Environment variables",
- *   description: "Key/value pairs injected into the process environment at startup.",
+ *   description: "Environment variables",
+ *   documentation: "Key/value pairs injected into the process environment at startup.",
  * })
  */
 export interface Dict extends BaseSettingNode {
@@ -393,14 +393,14 @@ export interface Dict extends BaseSettingNode {
  * A named section that groups related settings under a collapsible header
  * in the settings panel.
  *
- * The `tooltip` field doubles as the section header label.
+ * The `description` field doubles as the section header label.
  *
  * @example
  * S.section({
- *   tooltip: "Appearance",
- *   description: "Controls the visual theme applied to the extension's UI.",
+ *   description: "Appearance",
+ *   documentation: "Controls the visual theme applied to the extension's UI.",
  *   children: {
- *     theme: S.enum({ tooltip: "Color theme", default: "dark", values: ["dark", "light"] }),
+ *     theme: S.enum({ description: "Color theme", default: "dark", values: ["dark", "light"] }),
  *   },
  * })
  */

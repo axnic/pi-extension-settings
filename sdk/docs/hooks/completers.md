@@ -11,7 +11,7 @@ import { c } from "pi-extension-settings/sdk/hooks";
 Assign to the `complete` field of a `Text` node:
 
 ```ts
-S.text({ tooltip: "Config path", default: "", complete: c.filePath() });
+S.text({ description: "Config path", default: "", complete: c.filePath() });
 ```
 
 ## Type signature
@@ -52,7 +52,7 @@ Typically combined with `t.expandPath()` and `d.path()`:
 
 ```ts
 S.text({
-  tooltip: "Config file",
+  description: "Config file",
   default: "~/.config/app.json",
   validation: v.filePath(),
   transform: t.pipe(t.trim(), t.expandPath()),
@@ -87,7 +87,7 @@ Useful for `Text` nodes that accept values from a known set but where `Enum` is 
 
 ```ts
 S.text({
-  tooltip: "Language",
+  description: "Language",
   default: "en",
   complete: c.staticList(["en", "fr", "de", "es", "ja", "zh"]),
 });
@@ -106,7 +106,7 @@ const myCompleter: CompleteFn = async (partial) => {
 };
 
 S.text({
-  tooltip: "Remote resource",
+  description: "Remote resource",
   default: "",
   complete: myCompleter,
 });

@@ -9,7 +9,7 @@
  * ```
  * PiSettingsError
  * ├── SchemaError                   – invalid schema definition
- * │   ├── TooltipTooLongError       – tooltip exceeds 128 characters
+ * │   ├── DescriptionTooLongError   – description exceeds 128 characters
  * │   └── EnumDefaultMismatchError  – default value not in declared enum values
  * └── SettingNotFoundError          – key not found in schema at runtime
  * ```
@@ -62,8 +62,8 @@ export class PiSettingsError extends Error {
  *
  * @example
  * ```ts
- * throw new SchemaError("tooltip is required", "appearance.theme");
- * // Error message: "[appearance.theme] tooltip is required"
+ * throw new SchemaError("description is required", "appearance.theme");
+ * // Error message: "[appearance.theme] description is required"
  * ```
  */
 export class SchemaError extends PiSettingsError {
@@ -79,34 +79,34 @@ export class SchemaError extends PiSettingsError {
 }
 
 /**
- * Thrown when a node's `tooltip` string exceeds the 128-character limit.
+ * Thrown when a node's `description` string exceeds the 128-character limit.
  *
- * Tooltips must be short and scannable — they are displayed inline next to the
- * setting in the panel. Use the optional `description` field on the node for
+ * Descriptions must be short and scannable — they are displayed inline next to the
+ * setting in the panel. Use the optional `documentation` field on the node for
  * longer, Markdown-formatted documentation.
  *
  * @example
  * ```ts
  * // Thrown automatically by S.text(), S.boolean(), S.section(), etc.
  * S.text({
- *   tooltip: "x".repeat(200), // ← throws TooltipTooLongError
+ *   description: "x".repeat(200), // ← throws DescriptionTooLongError
  *   default: "",
  * });
  * ```
  */
-export class TooltipTooLongError extends SchemaError {
-  /** Maximum allowed tooltip length. Always `128`. */
+export class DescriptionTooLongError extends SchemaError {
+  /** Maximum allowed description length. Always `128`. */
   static readonly MAX_LENGTH = 128;
 
-  /** Actual length of the offending tooltip string. */
+  /** Actual length of the offending description string. */
   readonly actual: number;
 
   constructor(nodeKey: string, actual: number) {
     super(
-      `tooltip must be ≤ ${TooltipTooLongError.MAX_LENGTH} characters (got ${actual})`,
+      `description must be ≤ ${DescriptionTooLongError.MAX_LENGTH} characters (got ${actual})`,
       nodeKey,
     );
-    this.name = "TooltipTooLongError";
+    this.name = "DescriptionTooLongError";
     this.actual = actual;
     Object.setPrototypeOf(this, new.target.prototype);
   }
@@ -124,7 +124,7 @@ export class TooltipTooLongError extends SchemaError {
  * ```ts
  * // Thrown automatically by S.enum()
  * S.enum({
- *   tooltip: "Color theme",
+ *   description: "Color theme",
  *   default: "blue",            // ← "blue" is not in ["dark", "light", "system"]
  *   values: ["dark", "light", "system"],
  * });

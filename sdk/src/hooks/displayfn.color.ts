@@ -33,7 +33,7 @@ import { ansiFg, anyToHex, parseHex } from "./utils/colorUtils";
  *
  * @example
  * S.text({
- *   tooltip: "Accent color",
+ *   description: "Accent color",
  *   default: "#ff930f",
  *   display: d.color(),
  * })
