@@ -10,7 +10,7 @@
  *   Enter on header   Enter scope
  *   Enter/Space on boolean  Toggle (live save)
  *   Enter/Space on enum     Cycle (live save)
- *   Enter on text           Open inline edit
+ *   Enter on text/number    Open inline edit
  *   Enter on list/dict      Expand/collapse
  *   Esc (edit, valid)       Cancel edit
  *   Enter (edit, valid)     Confirm + save
@@ -146,6 +146,13 @@ function collapseAllVisible(
 // ─── Validation ───────────────────────────────────────────────────────────────
 
 function runValidation(node: LeafNode, value: string): ValidationResult | null {
+  if (node._tag === "number") {
+    const n = Number(value);
+    if (!Number.isFinite(n)) {
+      return { valid: false, reason: "must be a finite number" };
+    }
+    return node.validation ? node.validation(n) : { valid: true };
+  }
   if (node._tag !== "text" || !node.validation) {
     return { valid: true };
   }
@@ -1001,7 +1008,7 @@ function handleEnterKey(
       return { state, close: false, dirty: true };
     }
 
-    if (node._tag === "text") {
+    if (node._tag === "text" || node._tag === "number") {
       // Start inline edit
       const editState: EditState = {
         extension: extensionName,
