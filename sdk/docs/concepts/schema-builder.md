@@ -30,7 +30,7 @@ Wraps a schema definition, runs runtime validation, and returns it with the corr
 
 ```ts
 const schema = S.settings({
-  color: S.text({ tooltip: "Accent color", default: "#ff6b6b" }),
+  color: S.text({ description: "Accent color", default: "#ff6b6b" }),
 });
 ```
 
@@ -38,10 +38,11 @@ const schema = S.settings({
 
 `S.settings()` walks the entire tree (including nested sections and list struct properties) and enforces two invariants:
 
-| Check                             | Error thrown                                                                  |
-| --------------------------------- | ----------------------------------------------------------------------------- |
-| `tooltip` length ≤ 128 characters | [`TooltipTooLongError`](../reference/errors.md#tooltiptoolongerror)           |
-| `Enum` default ∈ `values`         | [`EnumDefaultMismatchError`](../reference/errors.md#enumdefaultmismatcherror) |
+| Check                                  | Error thrown                                                                      |
+| -------------------------------------- | --------------------------------------------------------------------------------- |
+| `description` length ≤ 128 characters  | [`DescriptionTooLongError`](../reference/errors.md#descriptiontoolongerror)       |
+| `documentation` length ≥ 64 characters | [`DocumentationTooShortError`](../reference/errors.md#documentationtooshorterror) |
+| `Enum` default ∈ `values`              | [`EnumDefaultMismatchError`](../reference/errors.md#enumdefaultmismatcherror)     |
 
 > **Important:** These checks happen synchronously when you call `S.settings()` at module load time. Schema bugs fail fast, not silently at runtime.
 
@@ -50,7 +51,9 @@ const schema = S.settings({
 The return type carries every branch of the tree, which is what `InferConfig<T>` uses to produce the flat key → value map.
 
 ```ts
-const schema = S.settings({ color: S.text({ tooltip: "Color", default: "" }) });
+const schema = S.settings({
+  color: S.text({ description: "Color", default: "" }),
+});
 type Config = InferConfig<typeof schema>; // { color: string }
 ```
 
@@ -87,8 +90,8 @@ A free-form text input. Every specialized input (color picker, URL field, path b
 
 ```ts
 S.text({
-  tooltip: "API base URL",
-  description: "Root URL used for every outbound HTTP request.",
+  description: "API base URL",
+  documentation: "Root URL used for every outbound HTTP request.",
   default: "https://api.example.com",
   validation: v.url(true),
   transform: t.normalizeUrl(),
@@ -100,15 +103,15 @@ S.text({
 });
 ```
 
-| Field         | Type                   | Required | Description                              |
-| ------------- | ---------------------- | -------- | ---------------------------------------- |
-| `tooltip`     | `string`               | Yes      | Inline label (max 128 chars).            |
-| `description` | `string`               | No       | Full Markdown docs.                      |
-| `default`     | `string`               | Yes      | Value used when nothing is stored.       |
-| `validation`  | `ValidationFn<string>` | No       | Blocks save on failure.                  |
-| `transform`   | `TransformFn`          | No       | Mutates the value before storage.        |
-| `complete`    | `CompleteFn`           | No       | Async autocomplete suggestions.          |
-| `display`     | `DisplayFn<string>`    | No       | Converts stored value to display string. |
+| Field           | Type                   | Required | Description                              |
+| --------------- | ---------------------- | -------- | ---------------------------------------- |
+| `description`   | `string`               | Yes      | Inline label (max 128 chars).            |
+| `documentation` | `string`               | No       | Full Markdown docs.                      |
+| `default`       | `string`               | Yes      | Value used when nothing is stored.       |
+| `validation`    | `ValidationFn<string>` | No       | Blocks save on failure.                  |
+| `transform`     | `TransformFn`          | No       | Mutates the value before storage.        |
+| `complete`      | `CompleteFn`           | No       | Async autocomplete suggestions.          |
+| `display`       | `DisplayFn<string>`    | No       | Converts stored value to display string. |
 
 > **Tip:** `Text` is the **only** node type that supports the full hook stack (`validation`, `transform`, `complete`, `display`). Boolean and Enum support only `display`; List and Dict support `validation` and `display` (on their items/entries).
 
@@ -120,19 +123,19 @@ A numeric input that stores and returns a native JS `number`. Prefer this over `
 
 ```ts
 S.number({
-  tooltip: "Port number",
+  description: "Port number",
   default: 8080,
   validation: v.all(v.integer(), v.range({ min: 1, max: 65535 })),
 });
 ```
 
-| Field         | Type                   | Required | Description                              |
-| ------------- | ---------------------- | -------- | ---------------------------------------- |
-| `tooltip`     | `string`               | Yes      | Inline label (max 128 chars).            |
-| `description` | `string`               | No       | Full Markdown docs.                      |
-| `default`     | `number`               | Yes      | Value used when nothing is stored.       |
-| `validation`  | `ValidationFn<number>` | No       | Blocks save on failure.                  |
-| `display`     | `DisplayFn<number>`    | No       | Converts stored value to display string. |
+| Field           | Type                   | Required | Description                              |
+| --------------- | ---------------------- | -------- | ---------------------------------------- |
+| `description`   | `string`               | Yes      | Inline label (max 128 chars).            |
+| `documentation` | `string`               | No       | Full Markdown docs.                      |
+| `default`       | `number`               | Yes      | Value used when nothing is stored.       |
+| `validation`    | `ValidationFn<number>` | No       | Blocks save on failure.                  |
+| `display`       | `DisplayFn<number>`    | No       | Converts stored value to display string. |
 
 > **Note:** The numeric validators (`v.integer`, `v.positive`, `v.negative`, `v.range`) target `Number` nodes. The `v.percentage` validator also accepts `Text` nodes (0–100 range with optional `%`).
 
@@ -144,7 +147,7 @@ A toggle that flips between `true` and `false`.
 
 ```ts
 S.boolean({
-  tooltip: "Enable dark mode",
+  description: "Enable dark mode",
   default: true,
   display: (val, theme) =>
     val ? theme.fg("accent", "on") : theme.fg("dim", "off"),
@@ -164,7 +167,7 @@ A cycling selector that steps through a fixed, ordered set of choices. The user 
 
 ```ts
 S.enum({
-  tooltip: "Log level",
+  description: "Log level",
   default: "info",
   values: [
     { value: "debug", label: "Debug (verbose)" },
@@ -207,13 +210,13 @@ A growable list of structured objects. Each item has the shape defined by `items
 
 ```ts
 S.list({
-  tooltip: "Allowed origins",
+  description: "Allowed origins",
   addLabel: "Add origin",
   default: [{ url: "https://localhost:3000", active: true }],
   items: S.struct({
     properties: {
-      url: S.text({ tooltip: "URL", default: "" }),
-      active: S.boolean({ tooltip: "Enabled", default: true }),
+      url: S.text({ description: "URL", default: "" }),
+      active: S.boolean({ description: "Enabled", default: true }),
     },
   }),
   validation: (item) =>
@@ -239,8 +242,8 @@ A string → string dictionary of arbitrary key/value pairs.
 
 ```ts
 S.dict({
-  tooltip: "HTTP headers",
-  description: "Extra headers sent with every outbound request.",
+  description: "HTTP headers",
+  documentation: "Extra headers sent with every outbound request.",
   addLabel: "Add header",
   default: { "Content-Type": "application/json" },
   validation: (entry) =>
@@ -259,22 +262,22 @@ S.dict({
 
 ## `S.section(opts)`
 
-Groups related settings under a collapsible header. The `tooltip` field doubles as the section header label.
+Groups related settings under a collapsible header. The `description` field doubles as the section header label.
 
 ```ts
 S.section({
-  tooltip: "Appearance",
-  description: "Controls the visual theme applied to the extension.",
+  description: "Appearance",
+  documentation: "Controls the visual theme applied to the extension.",
   children: {
     theme: S.enum({
-      tooltip: "Color theme",
+      description: "Color theme",
       default: "dark",
       values: ["dark", "light"],
     }),
     advanced: S.section({
-      tooltip: "Advanced",
+      description: "Advanced",
       children: {
-        "line-height": S.text({ tooltip: "Line height", default: "1.5" }),
+        "line-height": S.text({ description: "Line height", default: "1.5" }),
       },
     }),
   },
@@ -303,14 +306,14 @@ Describes the shape of each item in a `List` node.
 ```ts
 S.struct({
   properties: {
-    host: S.text({ tooltip: "Hostname", default: "" }),
-    port: S.text({ tooltip: "Port", default: "22" }),
+    host: S.text({ description: "Hostname", default: "" }),
+    port: S.text({ description: "Port", default: "22" }),
     protocol: S.enum({
-      tooltip: "Protocol",
+      description: "Protocol",
       default: "ssh",
       values: ["ssh", "sftp"],
     }),
-    enabled: S.boolean({ tooltip: "Active", default: true }),
+    enabled: S.boolean({ description: "Active", default: true }),
   },
 });
 ```
@@ -328,21 +331,21 @@ The TypeScript utility type that extracts the flat runtime config from a schema.
 
 ```ts
 const schema = S.settings({
-  "gradient-from": S.text({ tooltip: "Start color", default: "#ff930f" }),
+  "gradient-from": S.text({ description: "Start color", default: "#ff930f" }),
   appearance: S.section({
-    tooltip: "Appearance",
+    description: "Appearance",
     children: {
       theme: S.enum({
-        tooltip: "Theme",
+        description: "Theme",
         default: "dark",
         values: ["dark", "light"],
       }),
     },
   }),
   keys: S.list({
-    tooltip: "SSH keys",
+    description: "SSH keys",
     items: S.struct({
-      properties: { host: S.text({ tooltip: "Host", default: "" }) },
+      properties: { host: S.text({ description: "Host", default: "" }) },
     }),
   }),
 });
@@ -370,7 +373,7 @@ This inferred type flows through every method on `ExtensionSettings`:
 
 > **Caution:** **Forgetting to wrap the top-level schema in `S.settings()`.** Without it, runtime validation never runs. Schema bugs will surface much later and much more cryptically.
 
-> **Caution:** **Using a long tooltip as documentation.** The 128-character limit is enforced to keep the UI scannable. Use `description` for long Markdown content — it has no length limit.
+> **Caution:** **Using a long description as documentation.** The 128-character limit is enforced to keep the UI scannable. Use `documentation` for long Markdown content — it has no length limit.
 
 > **Caution:** **Nesting non-scalar nodes inside a `Struct`.** Struct properties must be `Text`, `Boolean`, or `Enum`. List items are rendered as table rows and cannot contain nested lists or sections.
 

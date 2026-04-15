@@ -11,7 +11,7 @@ import { d } from "pi-extension-settings/sdk/hooks";
 Assign to the `display` field of any leaf node:
 
 ```ts
-S.text({ tooltip: "Accent color", default: "#fff", display: d.color() });
+S.text({ description: "Accent color", default: "#fff", display: d.color() });
 ```
 
 ## Type signature
@@ -56,7 +56,7 @@ Typically paired with a color validator and `t.*ToHex()` transform:
 
 ```ts
 S.text({
-  tooltip: "Accent color",
+  description: "Accent color",
   default: "#ff6b6b",
   validation: v.any(v.hexColor(), v.rgbColor(), v.htmlNamedColor()),
   transform: t.pipe(t.rgbToHex(), t.htmlNamedToHex()),
@@ -94,7 +94,7 @@ const ENV_COLORS: Record<string, string> = {
 };
 
 S.enum({
-  tooltip: "Environment",
+  description: "Environment",
   default: "development",
   values: ["production", "staging", "development"],
   display: (val, theme) => d.badge(ENV_COLORS[val] ?? "#888")(val, theme),
@@ -121,7 +121,7 @@ Typically used with `c.filePath()` and `t.expandPath()`:
 
 ```ts
 S.text({
-  tooltip: "Config file",
+  description: "Config file",
   default: "~/.config/app.json",
   transform: t.pipe(t.trim(), t.expandPath()),
   complete: c.filePath(),
@@ -150,7 +150,7 @@ You can use it directly on `Dict` nodes, or use it as a starting point for a cus
 
 ```ts
 S.dict({
-  tooltip: "Environment variables",
+  description: "Environment variables",
   display: d.dictEntry(),
 });
 ```
@@ -175,7 +175,7 @@ Typically paired with `v.keybinding()`:
 
 ```ts
 S.text({
-  tooltip: "Toggle panel",
+  description: "Toggle panel",
   default: "ctrl+k",
   validation: v.keybinding(),
   display: d.keybinding(),
@@ -197,7 +197,7 @@ const myDisplay: DisplayFn<string> = (value, theme) => {
 };
 
 S.text({
-  tooltip: "Server URL",
+  description: "Server URL",
   default: "https://api.example.com",
   display: myDisplay,
 });

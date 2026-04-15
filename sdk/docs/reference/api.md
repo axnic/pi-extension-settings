@@ -210,13 +210,14 @@ Utility functions for inspecting nodes at runtime.
 
 ## Errors
 
-| Class                      | Extends           | Description                          |
-| -------------------------- | ----------------- | ------------------------------------ |
-| `PiSettingsError`          | `Error`           | Base class for all SDK errors.       |
-| `SchemaError`              | `PiSettingsError` | Invalid schema definition.           |
-| `TooltipTooLongError`      | `SchemaError`     | Tooltip exceeds 128 characters.      |
-| `EnumDefaultMismatchError` | `SchemaError`     | Enum default not in declared values. |
-| `SettingNotFoundError`     | `PiSettingsError` | Key not found in schema at runtime.  |
+| Class                        | Extends           | Description                                  |
+| ---------------------------- | ----------------- | -------------------------------------------- |
+| `PiSettingsError`            | `Error`           | Base class for all SDK errors.               |
+| `SchemaError`                | `PiSettingsError` | Invalid schema definition.                   |
+| `DescriptionTooLongError`    | `SchemaError`     | Description exceeds 128 characters.          |
+| `DocumentationTooShortError` | `SchemaError`     | Documentation is shorter than 64 characters. |
+| `EnumDefaultMismatchError`   | `SchemaError`     | Enum default not in declared values.         |
+| `SettingNotFoundError`       | `PiSettingsError` | Key not found in schema at runtime.          |
 
 See [Error Reference](./errors.md) for full documentation.
 

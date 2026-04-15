@@ -95,13 +95,13 @@ export class InfoBlock implements Block {
       case "group": {
         const total = focusedRow.settingsCount;
         pending.push({
-          text: `${focusedRow.tooltip ?? `${focusedRow.label} group`} ${dim(`(${total} setting${total === 1 ? ")" : "s)"}`)}`,
+          text: `${focusedRow.description ?? `${focusedRow.label} group`} ${dim(`(${total} setting${total === 1 ? ")" : "s)"}`)}`,
           truncate: true,
         });
         break;
       }
       case "setting":
-        pending.push({ text: focusedRow.node.tooltip ?? "" });
+        pending.push({ text: focusedRow.node.description ?? "" });
         break;
       case "list-add":
         pending.push({ text: "Add a new item to the list" });

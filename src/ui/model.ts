@@ -68,8 +68,8 @@ export interface GroupRow extends BaseRow {
    */
   groupKey: string;
   label: string;
-  /** Section tooltip; surfaced in the description area when this row is focused. */
-  tooltip?: string;
+  /** Section description; surfaced in the description area when this row is focused. */
+  description?: string;
   isCollapsed: boolean;
   settingsCount: number;
 }
@@ -83,8 +83,8 @@ export interface SettingRow extends BaseRow {
   label: string;
   /** The schema node for this setting — kept on the row so the renderer can apply hooks. */
   node: LeafNode;
-  /** Tooltip text from the schema node; surfaced in the description area. */
-  tooltip?: string;
+  /** Description text from the schema node; surfaced in the description area. */
+  description?: string;
   /** Raw stored value (string from storage, or serialised default). */
   rawValue: string;
   /**
@@ -306,7 +306,7 @@ function buildChildRows(
       // For search: check if any child matches.
       const matchesSearch =
         searchQuery === "" ||
-        node.tooltip.toLowerCase().includes(searchQuery) ||
+        node.description.toLowerCase().includes(searchQuery) ||
         anyChildMatchesSearch(node.children, searchQuery);
 
       if (searchQuery !== "" && !matchesSearch) continue;
@@ -320,7 +320,7 @@ function buildChildRows(
         extensionName,
         groupKey,
         label: key,
-        tooltip: node.tooltip,
+        description: node.description,
         isCollapsed: groupCollapsed,
         settingsCount: childCount,
       });
@@ -353,7 +353,7 @@ function buildChildRows(
       // Search filter.
       if (
         searchQuery !== "" &&
-        !leafNode.tooltip.toLowerCase().includes(searchQuery)
+        !leafNode.description.toLowerCase().includes(searchQuery)
       ) {
         continue;
       }
@@ -367,7 +367,7 @@ function buildChildRows(
         extensionName,
         settingKey: fullKey,
         label: key,
-        tooltip: leafNode.tooltip,
+        description: leafNode.description,
         node: leafNode,
         rawValue,
         displayValue,
@@ -401,7 +401,8 @@ function anyChildMatchesSearch(
     if (node._tag === "section") {
       if (anyChildMatchesSearch(node.children, query)) return true;
     } else {
-      if ((node as LeafNode).tooltip.toLowerCase().includes(query)) return true;
+      if ((node as LeafNode).description.toLowerCase().includes(query))
+        return true;
     }
   }
   return false;

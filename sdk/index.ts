@@ -9,11 +9,12 @@
  */
 
 export {
+  DescriptionTooLongError,
+  DocumentationTooShortError,
   EnumDefaultMismatchError,
   PiSettingsError,
   SchemaError,
   SettingNotFoundError,
-  TooltipTooLongError,
 } from "./src/core/errors";
 export type { SettingChangedPayload } from "./src/core/extension-settings";
 export { ExtensionSettings } from "./src/core/extension-settings";

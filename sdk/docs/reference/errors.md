@@ -8,7 +8,8 @@ The SDK throws typed errors so you can catch and handle them precisely. All SDK 
 Error
 └── PiSettingsError
     ├── SchemaError
-    │   ├── TooltipTooLongError
+    │   ├── DescriptionTooLongError
+    │   ├── DocumentationTooShortError
     │   └── EnumDefaultMismatchError
     └── SettingNotFoundError
 ```
@@ -58,38 +59,38 @@ class SchemaError extends PiSettingsError {
 
 ---
 
-## `TooltipTooLongError`
+## `DescriptionTooLongError`
 
-Thrown when a node's `tooltip` exceeds 128 characters.
+Thrown when a node's `description` exceeds 128 characters.
 
 ```ts
-class TooltipTooLongError extends SchemaError {
-  name: "TooltipTooLongError";
+class DescriptionTooLongError extends SchemaError {
+  name: "DescriptionTooLongError";
   static readonly MAX_LENGTH: 128;
-  readonly actual: number; // actual length of the tooltip
+  readonly actual: number; // actual length of the description
 }
 ```
 
 **When thrown:** At `S.settings()` call time. Checked recursively on every node including nested section children and list struct properties.
 
-**How to fix:** Shorten the tooltip to 128 characters or fewer. Use the `description` field for longer documentation.
+**How to fix:** Shorten the description to 128 characters or fewer. Use the `documentation` field for longer documentation.
 
 **Example:**
 
 ```ts
-// Throws TooltipTooLongError
+// Throws DescriptionTooLongError
 S.settings({
   color: S.text({
-    tooltip: "x".repeat(200), // ← too long
+    description: "x".repeat(200), // ← too long
     default: "",
   }),
 });
 
-// Fix: shorten the tooltip
+// Fix: shorten the description
 S.settings({
   color: S.text({
-    tooltip: "Accent color", // ✓ concise
-    description: "The full description can be as long as needed...",
+    description: "Accent color", // ✓ concise
+    documentation: "The full description can be as long as needed...",
     default: "",
   }),
 });
@@ -98,16 +99,83 @@ S.settings({
 **Catch pattern:**
 
 ```ts
-import { TooltipTooLongError } from "pi-extension-settings/sdk";
+import { DescriptionTooLongError } from "pi-extension-settings/sdk";
 
 try {
   const schema = S.settings({
     /* ... */
   });
 } catch (err) {
-  if (err instanceof TooltipTooLongError) {
+  if (err instanceof DescriptionTooLongError) {
     console.error(
-      `Tooltip too long at "${err.nodeKey}": ${err.actual} chars (max ${TooltipTooLongError.MAX_LENGTH})`,
+      `Description too long at "${err.nodeKey}": ${err.actual} chars (max ${DescriptionTooLongError.MAX_LENGTH})`,
+    );
+  }
+}
+```
+
+---
+
+## `DocumentationTooShortError`
+
+Thrown when a node's `documentation` field is shorter than 64 characters.
+
+```ts
+class DocumentationTooShortError extends SchemaError {
+  name: "DocumentationTooShortError";
+  static readonly MIN_LENGTH: 64;
+  readonly actual: number; // actual length of the documentation string
+}
+```
+
+**When thrown:** At `S.settings()` call time, only when `documentation` is present and too short. Omitting the field entirely is always valid.
+
+**How to fix:** Either remove the `documentation` field, or expand it to at least 64 characters.
+
+**Example:**
+
+```ts
+// Throws DocumentationTooShortError
+S.settings({
+  color: S.text({
+    description: "Accent color",
+    documentation: "Too short.", // ← only 10 chars
+    default: "",
+  }),
+});
+
+// Fix option 1: omit documentation entirely
+S.settings({
+  color: S.text({
+    description: "Accent color",
+    default: "",
+  }),
+});
+
+// Fix option 2: write ≥ 64 chars of documentation
+S.settings({
+  color: S.text({
+    description: "Accent color",
+    documentation:
+      "The accent color is applied to interactive elements such as buttons and links.",
+    default: "",
+  }),
+});
+```
+
+**Catch pattern:**
+
+```ts
+import { DocumentationTooShortError } from "pi-extension-settings/sdk";
+
+try {
+  const schema = S.settings({
+    /* ... */
+  });
+} catch (err) {
+  if (err instanceof DocumentationTooShortError) {
+    console.error(
+      `Documentation too short at "${err.nodeKey}": ${err.actual} chars (min ${DocumentationTooShortError.MIN_LENGTH})`,
     );
   }
 }
@@ -137,7 +205,7 @@ class EnumDefaultMismatchError extends SchemaError {
 // Throws EnumDefaultMismatchError
 S.settings({
   theme: S.enum({
-    tooltip: "Color theme",
+    description: "Color theme",
     default: "blue", // ← "blue" not in values
     values: ["dark", "light", "system"],
   }),
@@ -146,7 +214,7 @@ S.settings({
 // Fix: use a declared value as default
 S.settings({
   theme: S.enum({
-    tooltip: "Color theme",
+    description: "Color theme",
     default: "dark", // ✓ matches
     values: ["dark", "light", "system"],
   }),
@@ -217,7 +285,8 @@ try {
 ```ts
 import {
   PiSettingsError,
-  TooltipTooLongError,
+  DescriptionTooLongError,
+  DocumentationTooShortError,
   EnumDefaultMismatchError,
   SettingNotFoundError,
 } from "pi-extension-settings/sdk";
@@ -229,8 +298,14 @@ try {
   const settings = new ExtensionSettings(pi, "my-ext", schema);
   settings.get("some-key");
 } catch (err) {
-  if (err instanceof TooltipTooLongError) {
-    console.error(`[${err.nodeKey}] Tooltip too long (${err.actual} chars)`);
+  if (err instanceof DescriptionTooLongError) {
+    console.error(
+      `[${err.nodeKey}] Description too long (${err.actual} chars)`,
+    );
+  } else if (err instanceof DocumentationTooShortError) {
+    console.error(
+      `[${err.nodeKey}] Documentation too short (${err.actual} chars, min ${DocumentationTooShortError.MIN_LENGTH})`,
+    );
   } else if (err instanceof EnumDefaultMismatchError) {
     console.error(
       `[${err.nodeKey}] Default "${err.defaultValue}" not in [${err.allowedValues.join(", ")}]`,

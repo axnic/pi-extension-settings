@@ -42,12 +42,12 @@ flowchart TD
 
 Every node shares two base fields:
 
-| Field         | Type     | Required | Description                                                |
-| ------------- | -------- | -------- | ---------------------------------------------------------- |
-| `tooltip`     | `string` | Yes      | Short inline label next to the control. **Max 128 chars.** |
-| `description` | `string` | No       | Full Markdown documentation. No length limit.              |
+| Field           | Type     | Required | Description                                                |
+| --------------- | -------- | -------- | ---------------------------------------------------------- |
+| `description`   | `string` | Yes      | Short inline label next to the control. **Max 128 chars.** |
+| `documentation` | `string` | No       | Full Markdown documentation. No length limit.              |
 
-> **Important:** The 128-character tooltip limit is enforced by `S.settings()` at construction time. Exceeding it throws `TooltipTooLongError`. Use `description` for longer content — it is rendered in an expandable sidebar only when the user opens it.
+> **Important:** The 128-character description limit is enforced by `S.settings()` at construction time. Exceeding it throws `DescriptionTooLongError`. Use `documentation` for longer content — it is rendered in an expandable sidebar only when the user opens it. If you provide a `documentation` value, it must be at least 64 characters (shorter values throw `DocumentationTooShortError`; omit the field instead).
 
 ---
 
@@ -61,7 +61,7 @@ A free-form string input. The foundation for every specialized input in the SDK 
 
 ```ts
 S.text({
-  tooltip: "API key",
+  description: "API key",
   default: "",
   validation: v.notEmpty(),
   transform: t.trim(),
@@ -85,14 +85,14 @@ S.text({
 ```ts
 // ✓ Preferred — get() returns a number directly
 S.number({
-  tooltip: "Port number",
+  description: "Port number",
   default: 8080,
   validation: v.all(v.integer(), v.range({ min: 1, max: 65535 })),
 });
 
 // Still valid when the value is also used as text (e.g. a version string)
 S.text({
-  tooltip: "Port number (string)",
+  description: "Port number (string)",
   default: "8080",
   validation: v.regex(/^\d+$/, "must be a number"),
 });
@@ -103,7 +103,7 @@ S.text({
 
 ```ts
 S.text({
-  tooltip: "Config file",
+  description: "Config file",
   default: "~/.config/app.json",
   validation: v.filePath(),
   transform: t.pipe(t.trim(), t.expandPath()),
@@ -116,7 +116,7 @@ S.text({
 
 ```ts
 S.text({
-  tooltip: "Accent color",
+  description: "Accent color",
   default: "#ff6b6b",
   validation: v.any(v.hexColor(), v.rgbColor(), v.htmlNamedColor()),
   transform: t.pipe(t.trim(), t.rgbToHex(), t.htmlNamedToHex()),
@@ -132,7 +132,7 @@ A numeric input that stores and returns a native JS `number`. Prefer this over `
 
 ```ts
 S.number({
-  tooltip: "Port number",
+  description: "Port number",
   default: 8080,
   validation: v.all(v.integer(), v.range({ min: 1, max: 65535 })),
 });
@@ -156,7 +156,7 @@ A toggle that flips between `true` and `false`.
 
 ```ts
 S.boolean({
-  tooltip: "Enable dark mode",
+  description: "Enable dark mode",
   default: true,
   display: (val, theme) =>
     val ? theme.fg("accent", "enabled") : theme.fg("dim", "disabled"),
@@ -178,7 +178,7 @@ A cycling selector that steps through a fixed, ordered list of choices. Clicking
 
 ```ts
 S.enum({
-  tooltip: "Log level",
+  description: "Log level",
   default: "info",
   values: [
     { value: "debug", label: "Debug (verbose)" },
@@ -223,13 +223,13 @@ A growable list of structured objects. Each item conforms to the shape described
 
 ```ts
 S.list({
-  tooltip: "Allowed origins",
+  description: "Allowed origins",
   addLabel: "Add origin",
   default: [{ url: "https://localhost:3000", active: true }],
   items: S.struct({
     properties: {
-      url: S.text({ tooltip: "URL", default: "" }),
-      active: S.boolean({ tooltip: "Enabled", default: true }),
+      url: S.text({ description: "URL", default: "" }),
+      active: S.boolean({ description: "Enabled", default: true }),
     },
   }),
   validation: (item) =>
@@ -259,8 +259,8 @@ A string → string dictionary of arbitrary key/value pairs. The user can add, e
 
 ```ts
 S.dict({
-  tooltip: "HTTP headers",
-  description: "Extra headers sent with every outbound request.",
+  description: "HTTP headers",
+  documentation: "Extra headers sent with every outbound request.",
   addLabel: "Add header",
   default: { "Content-Type": "application/json" },
   validation: (entry) =>
@@ -288,22 +288,22 @@ S.dict({
 
 ## `Section`
 
-Groups related settings under a collapsible header. The `tooltip` becomes the section header label. Sections can be nested to any depth.
+Groups related settings under a collapsible header. The `description` becomes the section header label. Sections can be nested to any depth.
 
 ```ts
 S.section({
-  tooltip: "Appearance",
-  description: "Controls the visual theme applied to the extension.",
+  description: "Appearance",
+  documentation: "Controls the visual theme applied to the extension.",
   children: {
     theme: S.enum({
-      tooltip: "Color theme",
+      description: "Color theme",
       default: "dark",
       values: ["dark", "light"],
     }),
     advanced: S.section({
-      tooltip: "Advanced",
+      description: "Advanced",
       children: {
-        "line-height": S.text({ tooltip: "Line height", default: "1.5" }),
+        "line-height": S.text({ description: "Line height", default: "1.5" }),
       },
     }),
   },
@@ -336,14 +336,14 @@ settings.get("appearance.advanced.line-height"); // "1.5"
 ```ts
 S.struct({
   properties: {
-    host: S.text({ tooltip: "Hostname", default: "" }),
-    port: S.text({ tooltip: "Port", default: "22" }),
+    host: S.text({ description: "Hostname", default: "" }),
+    port: S.text({ description: "Port", default: "22" }),
     protocol: S.enum({
-      tooltip: "Protocol",
+      description: "Protocol",
       default: "ssh",
       values: ["ssh", "sftp"],
     }),
-    enabled: S.boolean({ tooltip: "Active", default: true }),
+    enabled: S.boolean({ description: "Active", default: true }),
   },
 });
 ```

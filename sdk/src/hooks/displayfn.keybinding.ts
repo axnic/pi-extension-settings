@@ -21,7 +21,7 @@ import type { DisplayFn, TextValue } from "../core/nodes";
  *
  * @example
  * S.text({
- *   tooltip: "Toggle panel",
+ *   description: "Toggle panel",
  *   default: "ctrl+k",
  *   validation: v.keybinding(),
  *   display:    d.keybinding(),

@@ -44,7 +44,7 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { S, ExtensionSettings } from "pi-extension-settings/sdk";
 
 const schema = S.settings({
-  color: S.text({ tooltip: "Accent color", default: "#ff6b6b" }),
+  color: S.text({ description: "Accent color", default: "#ff6b6b" }),
 });
 
 export function activate(pi: ExtensionAPI) {
@@ -196,13 +196,13 @@ When your schema uses `S.section({...})`, leaves inside it are addressed with do
 ```ts
 const schema = S.settings({
   model: S.section({
-    tooltip: "Model",
+    description: "Model",
     children: {
       sampling: S.section({
-        tooltip: "Sampling",
+        description: "Sampling",
         children: {
-          temperature: S.text({ tooltip: "Temperature", default: "0.7" }),
-          maxTokens: S.text({ tooltip: "Max tokens", default: "2048" }),
+          temperature: S.text({ description: "Temperature", default: "0.7" }),
+          maxTokens: S.text({ description: "Max tokens", default: "2048" }),
         },
       }),
     },

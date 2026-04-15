@@ -20,7 +20,7 @@
  * import { v, t, c, d } from "./hooks/index";
  *
  * S.text({
- *   tooltip: "Config file",
+ *   description: "Config file",
  *   default: "",
  *   validation: v.all(v.notEmpty(), v.filePath()),
  *   transform:  t.pipe(t.trim(), t.expandPath()),

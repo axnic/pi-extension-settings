@@ -10,11 +10,11 @@
 
 // ─── Custom errors ────────────────────────────────────────────────────────────
 export {
+  DescriptionTooLongError,
   EnumDefaultMismatchError,
   PiSettingsError,
   SchemaError,
   SettingNotFoundError,
-  TooltipTooLongError,
 } from "./errors";
 // ─── ExtensionSettings class ──────────────────────────────────────────────────
 export { ExtensionSettings } from "./extension-settings";

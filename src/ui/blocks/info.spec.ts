@@ -39,12 +39,12 @@ const plainTheme = {
 } as unknown as Theme;
 
 const PANEL_WIDTH = 40;
-const LONG_TOOLTIP =
-  "This tooltip is intentionally very long and would overflow the terminal width if not truncated properly by the renderer.";
+const LONG_DESCRIPTION =
+  "This description is intentionally very long and would overflow the terminal width if not truncated properly by the renderer.";
 
-function makeRegistry(tooltip: string) {
+function makeRegistry(description: string) {
   const schema = S.settings({
-    mykey: S.text({ tooltip, default: "hello" }),
+    mykey: S.text({ description, default: "hello" }),
   });
   const registry = createRegistry();
   registry.set("test-ext", schema as Record<string, SettingNode>);
@@ -53,48 +53,50 @@ function makeRegistry(tooltip: string) {
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
-describe("InfoBlock — tooltip word-wrapping", () => {
-  it("wraps a long tooltip across multiple lines, each within the panel width", () => {
-    const registry = makeRegistry(LONG_TOOLTIP);
+describe("InfoBlock — description word-wrapping", () => {
+  it("wraps a long description across multiple lines, each within the panel width", () => {
+    const registry = makeRegistry(LONG_DESCRIPTION);
     const state = createInitialState(false);
     state.focusedIndex = 1; // index 0 is ext-header, index 1 is the setting
 
     const rows = buildRows(registry, state);
     const lines = new InfoBlock(rows, state, plainTheme).render(PANEL_WIDTH);
 
-    // Locate the tooltip region: find the first line that starts with the
-    // unique opening of LONG_TOOLTIP, then collect consecutive non-empty lines.
-    const startIdx = lines.findIndex((l) => l.startsWith("This tooltip"));
+    // Locate the description region: find the first line that starts with the
+    // unique opening of LONG_DESCRIPTION, then collect consecutive non-empty lines.
+    const startIdx = lines.findIndex((l) => l.startsWith("This description"));
     expect(startIdx).toBeGreaterThanOrEqual(0);
 
-    const tooltipLines: string[] = [];
+    const descriptionLines: string[] = [];
     for (let i = startIdx; i < lines.length && lines[i].trim() !== ""; i++) {
-      tooltipLines.push(lines[i]);
+      descriptionLines.push(lines[i]);
     }
 
-    expect(tooltipLines.length).toBeGreaterThan(1);
-    for (const line of tooltipLines) {
+    expect(descriptionLines.length).toBeGreaterThan(1);
+    for (const line of descriptionLines) {
       expect(visibleWidth(line)).toBeLessThanOrEqual(PANEL_WIDTH);
     }
   });
 
-  it("does not wrap a tooltip that already fits within the panel width", () => {
-    const shortTooltip = "Short tip";
-    const registry = makeRegistry(shortTooltip);
+  it("does not wrap a description that already fits within the panel width", () => {
+    const shortDescription = "Short tip";
+    const registry = makeRegistry(shortDescription);
     const state = createInitialState(false);
     state.focusedIndex = 1;
 
     const rows = buildRows(registry, state);
     const lines = new InfoBlock(rows, state, plainTheme).render(PANEL_WIDTH);
 
-    const tooltipLine = lines.find((l) => l === shortTooltip);
-    expect(tooltipLine).toBeDefined();
+    const descriptionLine = lines.find((l) => l === shortDescription);
+    expect(descriptionLine).toBeDefined();
   });
 });
 
 describe("InfoBlock — pagination", () => {
   it("shows global section count when not scoped", () => {
-    const schema = S.settings({ key: S.text({ tooltip: "a", default: "" }) });
+    const schema = S.settings({
+      key: S.text({ description: "a", default: "" }),
+    });
     const registry = createRegistry();
     registry.set("ext-a", schema as Record<string, SettingNode>);
     registry.set("ext-b", schema as Record<string, SettingNode>);
@@ -107,7 +109,9 @@ describe("InfoBlock — pagination", () => {
   });
 
   it("shows position counter when scoped", () => {
-    const schema = S.settings({ key: S.text({ tooltip: "a", default: "" }) });
+    const schema = S.settings({
+      key: S.text({ description: "a", default: "" }),
+    });
     const registry = createRegistry();
     registry.set("my-ext", schema as Record<string, SettingNode>);
 

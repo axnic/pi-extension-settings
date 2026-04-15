@@ -47,7 +47,7 @@ import { v, t, d } from "pi-extension-settings/sdk/hooks";
 
 ```ts
 endpoint: S.text({
-  tooltip: "API endpoint URL",
+  description: "API endpoint URL",
   default: "https://api.openai.com/v1",
   validation: v.url(), // must be a valid http/https URL
   transform: t.normalizeUrl(), // lowercase hostname, ensure trailing /
@@ -57,7 +57,7 @@ endpoint: S.text({
 
 ```ts
 temperature: S.number({
-  tooltip: "Temperature (0 – 2)",
+  description: "Temperature (0 – 2)",
   default: 0.7,
   validation: v.range({ min: 0, max: 2 }), // float in [0, 2]
 });
@@ -65,7 +65,7 @@ temperature: S.number({
 
 ```ts
 system: S.text({
-  tooltip: "System prompt",
+  description: "System prompt",
   default: "You are a helpful coding assistant.",
   transform: t.trim(), // strip accidental leading/trailing whitespace
 });
@@ -79,15 +79,15 @@ Sections can be nested to any depth. `InferConfig` flattens the hierarchy using 
 
 ```ts
 model: S.section({
-  tooltip: "Model",
+  description: "Model",
   children: {
-    name: S.enum({ tooltip: "Model name", default: "gpt-4o-mini", values: [...] }),
+    name: S.enum({ description: "Model name", default: "gpt-4o-mini", values: [...] }),
     sampling: S.section({
-      tooltip: "Sampling",
+      description: "Sampling",
       children: {
-        temperature: S.number({ tooltip: "Temperature", default: 0.7, validation: v.range({ min: 0, max: 2 }) }),
-        maxTokens:   S.number({ tooltip: "Max output tokens", default: 2048, validation: v.all(v.integer(), v.range({ min: 1, max: 32768 })) }),
-        topP:        S.number({ tooltip: "Top-p", default: 1, validation: v.range({ min: 0, max: 1 }) }),
+        temperature: S.number({ description: "Temperature", default: 0.7, validation: v.range({ min: 0, max: 2 }) }),
+        maxTokens:   S.number({ description: "Max output tokens", default: 2048, validation: v.all(v.integer(), v.range({ min: 1, max: 32768 })) }),
+        topP:        S.number({ description: "Top-p", default: 1, validation: v.range({ min: 0, max: 1 }) }),
       },
     }),
   },
@@ -142,8 +142,8 @@ type AiConfig = {
 
 ```ts
 extraHeaders: S.dict({
-  tooltip: "Extra HTTP headers",
-  description: "Arbitrary headers forwarded with every API request.",
+  description: "Extra HTTP headers",
+  documentation: "Arbitrary headers forwarded with every API request.",
   addLabel: "Add header",
   // default: {} (implicit)
 });

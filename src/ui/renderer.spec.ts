@@ -58,7 +58,7 @@ const PANEL_WIDTH = 40;
 
 function makeRegistry() {
   const schema = S.settings({
-    mykey: S.text({ tooltip: "A setting", default: "hello" }),
+    mykey: S.text({ description: "A setting", default: "hello" }),
   });
   const registry = createRegistry();
   registry.set("test-ext", schema as Record<string, SettingNode>);

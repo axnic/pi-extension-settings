@@ -60,18 +60,18 @@ export interface ControlBindings {
  */
 export const schema = S.settings({
   behavior: S.section({
-    tooltip:
+    description:
       "Behavior — controls how the settings panel opens and behaves (search vs navigation).",
     children: {
       "start-in-search-mode": S.boolean({
-        tooltip:
+        description:
           "Start in search mode — open with search focused so you can type to filter; otherwise start in navigation mode.",
         default: DEFAULT_START_IN_SEARCH_MODE,
       }),
       "max-visible-rows": S.number({
-        tooltip:
-          "Maximum number of setting rows visible at once in the panel viewport.",
         description:
+          "Maximum number of setting rows visible at once in the panel viewport.",
+        documentation:
           "Controls the viewport height of the settings panel.\n\nIncrease this value to see more settings without scrolling, or decrease it to keep the panel compact. The minimum value is 5.",
         default: DEFAULT_MAX_VISIBLE_ROWS,
         validation: v.all(v.integer(), v.range({ min: 5 })),
@@ -79,18 +79,18 @@ export const schema = S.settings({
     },
   }),
   controls: S.section({
-    tooltip:
+    description:
       "Controls — keyboard shortcuts for navigating and manipulating items (collapse, reorder, reset, delete).",
     children: {
       "reset-to-default": S.text({
-        tooltip: "Reset focused setting to its default value.",
+        description: "Reset focused setting to its default value.",
         default: DEFAULT_CONTROL_BINDINGS.resetToDefault,
         validation: v.keybinding(),
         transform: t.pipe(t.trim(), t.lowercase()),
         display: d.keybinding(),
       }),
       "collapse-expand": S.text({
-        tooltip:
+        description:
           "Toggle collapse/expand for the focused header to hide or show its settings.",
         default: DEFAULT_CONTROL_BINDINGS.collapseExpand,
         validation: v.keybinding(),
@@ -98,7 +98,7 @@ export const schema = S.settings({
         display: d.keybinding(),
       }),
       "collapse-all": S.text({
-        tooltip:
+        description:
           "Collapse all visible extension and folder headers to reduce clutter.",
         default: DEFAULT_CONTROL_BINDINGS.collapseAll,
         validation: v.keybinding(),
@@ -106,14 +106,15 @@ export const schema = S.settings({
         display: d.keybinding(),
       }),
       "reorder-item-up": S.text({
-        tooltip: "Move the focused list item one position up within its list.",
+        description:
+          "Move the focused list item one position up within its list.",
         default: DEFAULT_CONTROL_BINDINGS.reorderItemUp,
         validation: v.keybinding(),
         transform: t.pipe(t.trim(), t.lowercase()),
         display: d.keybinding(),
       }),
       "reorder-item-down": S.text({
-        tooltip:
+        description:
           "Move the focused list item one position down within its list.",
         default: DEFAULT_CONTROL_BINDINGS.reorderItemDown,
         validation: v.keybinding(),
@@ -121,7 +122,7 @@ export const schema = S.settings({
         display: d.keybinding(),
       }),
       "delete-item": S.text({
-        tooltip:
+        description:
           "Delete the focused list item. Use with care; deletions may be irreversible.",
         default: DEFAULT_CONTROL_BINDINGS.deleteItem,
         validation: v.keybinding(),

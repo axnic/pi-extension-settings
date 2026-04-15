@@ -14,7 +14,7 @@
  *
  * ## Runtime validation
  * `S.settings(...)` walks the full schema tree and enforces:
- * - `tooltip` ≤ 128 characters on every node (throws `TooltipTooLongError`).
+ * - `description` ≤ 128 characters on every node (throws `DescriptionTooLongError`).
  * - `Enum` default value is present in the declared `values` array
  *   (throws `EnumDefaultMismatchError`).
  *
@@ -22,28 +22,28 @@
  * ```ts
  * const schema = S.settings({
  *   "gradient-from": S.text({
- *     tooltip: "Gradient start color",
- *     description: "Accepts any valid CSS color — hex, rgb(), hsl(), …",
+ *     description: "Gradient start color",
+ *     documentation: "Accepts any valid CSS color — hex, rgb(), hsl(), …",
  *     default: "#ff930f",
  *     validation: v.hexColor(),
  *     display: d.color(),
  *   }),
  *   appearance: S.section({
- *     tooltip: "Appearance",
+ *     description: "Appearance",
  *     children: {
  *       theme: S.enum({
- *         tooltip: "Color theme",
+ *         description: "Color theme",
  *         default: "dark",
  *         values: ["dark", "light", "system"],
  *       }),
  *     },
  *   }),
  *   keys: S.list({
- *     tooltip: "SSH keys",
+ *     description: "SSH keys",
  *     items: S.struct({
  *       properties: {
- *         host: S.text({ tooltip: "Hostname", default: "" }),
- *         path: S.text({ tooltip: "Key path", default: "" }),
+ *         host: S.text({ description: "Hostname", default: "" }),
+ *         path: S.text({ description: "Key path", default: "" }),
  *       },
  *     }),
  *   }),
@@ -54,7 +54,11 @@
  * @module
  */
 
-import { EnumDefaultMismatchError, TooltipTooLongError } from "./errors";
+import {
+  DescriptionTooLongError,
+  DocumentationTooShortError,
+  EnumDefaultMismatchError,
+} from "./errors";
 import type {
   Boolean as BooleanNode,
   BoolValue,
@@ -151,14 +155,15 @@ export type InferConfig<T extends Record<string, SettingNode>> =
 // ─── Runtime validation ───────────────────────────────────────────────────────
 
 /**
- * Validate the `tooltip` length and, for `Enum` nodes, confirm that the
+ * Validate the `description` length and, for `Enum` nodes, confirm that the
  * `default` value is present in `values`. Recurses into `Section` children
  * and `List` struct properties.
  *
  * Called automatically by `settings()`.
  *
- * @throws {TooltipTooLongError}        if any node's tooltip exceeds 128 characters.
- * @throws {EnumDefaultMismatchError}   if an Enum's default is not in its values.
+ * @throws {DescriptionTooLongError}     if any node's description exceeds 128 characters.
+ * @throws {DocumentationTooShortError}  if any node's documentation is shorter than 64 characters.
+ * @throws {EnumDefaultMismatchError}    if an Enum's default is not in its values.
  */
 function validateSchema(
   schema: Record<string, SettingNode>,
@@ -167,9 +172,17 @@ function validateSchema(
   for (const [key, node] of Object.entries(schema)) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
 
-    // ── Tooltip length ─────────────────────────────────────────────────────
-    if (node.tooltip.length > TooltipTooLongError.MAX_LENGTH) {
-      throw new TooltipTooLongError(fullKey, node.tooltip.length);
+    // ── Description length ─────────────────────────────────────────────────
+    if (node.description.length > DescriptionTooLongError.MAX_LENGTH) {
+      throw new DescriptionTooLongError(fullKey, node.description.length);
+    }
+
+    // ── Documentation minimum length ───────────────────────────────────────
+    if (
+      node.documentation !== undefined &&
+      node.documentation.length < DocumentationTooShortError.MIN_LENGTH
+    ) {
+      throw new DocumentationTooShortError(fullKey, node.documentation.length);
     }
 
     // ── Enum default consistency ───────────────────────────────────────────
@@ -192,8 +205,21 @@ function validateSchema(
       for (const [propKey, propNode] of Object.entries(node.items.properties)) {
         const propFullKey = `${fullKey}[].${propKey}`;
 
-        if (propNode.tooltip.length > TooltipTooLongError.MAX_LENGTH) {
-          throw new TooltipTooLongError(propFullKey, propNode.tooltip.length);
+        if (propNode.description.length > DescriptionTooLongError.MAX_LENGTH) {
+          throw new DescriptionTooLongError(
+            propFullKey,
+            propNode.description.length,
+          );
+        }
+
+        if (
+          propNode.documentation !== undefined &&
+          propNode.documentation.length < DocumentationTooShortError.MIN_LENGTH
+        ) {
+          throw new DocumentationTooShortError(
+            propFullKey,
+            propNode.documentation.length,
+          );
         }
 
         if (propNode._tag === "enum") {
@@ -219,12 +245,13 @@ function validateSchema(
  * Entry point — wraps a schema definition, runs compile-time type inference,
  * and validates the schema at runtime before returning it.
  *
- * @throws {TooltipTooLongError}       if any node's `tooltip` exceeds 128 characters.
- * @throws {EnumDefaultMismatchError}  if any `Enum` node's `default` is not in its `values`.
+ * @throws {DescriptionTooLongError}       if any node's `description` exceeds 128 characters.
+ * @throws {DocumentationTooShortError}    if any node's `documentation` is shorter than 64 characters.
+ * @throws {EnumDefaultMismatchError}      if any `Enum` node's `default` is not in its `values`.
  *
  * @example
  * const schema = S.settings({
- *   color: S.text({ tooltip: "Accent color", default: "#fff" }),
+ *   color: S.text({ description: "Accent color", default: "#fff" }),
  * });
  */
 function settings<T extends Record<string, SettingNode>>(def: T): T {
@@ -242,8 +269,8 @@ function settings<T extends Record<string, SettingNode>>(def: T): T {
  *
  * @example
  * S.text({
- *   tooltip: "API base URL",
- *   description: "Root URL used for all outbound HTTP requests.",
+ *   description: "API base URL",
+ *   documentation: "Root URL used for all outbound HTTP requests.",
  *   default: "https://api.example.com",
  *   validation: v.url(),
  * })
@@ -263,14 +290,14 @@ function text(opts: Omit<Text, "_tag">): Text {
  *
  * @example
  * S.number({
- *   tooltip: "Port number",
+ *   description: "Port number",
  *   default: 8080,
  *   validation: v.integer(1, 65535),
  * })
  *
  * @example
  * S.number({
- *   tooltip: "Temperature (0 – 2)",
+ *   description: "Temperature (0 – 2)",
  *   default: 0.7,
  *   validation: v.float(0, 2),
  * })
@@ -286,7 +313,7 @@ function number(opts: Omit<NumberNode, "_tag">): NumberNode {
  *
  * @example
  * S.boolean({
- *   tooltip: "Enable dark mode",
+ *   description: "Enable dark mode",
  *   default: true,
  * })
  */
@@ -306,7 +333,7 @@ function boolean(opts: Omit<BooleanNode, "_tag">): BooleanNode {
  *
  * @example
  * S.enum({
- *   tooltip: "Color theme",
+ *   description: "Color theme",
  *   default: "dark",
  *   values: [
  *     { value: "dark",   label: "Dark" },
@@ -331,11 +358,11 @@ function enumSetting(opts: Omit<Enum, "_tag">): Enum {
  *
  * @example
  * S.list({
- *   tooltip: "SSH keys",
+ *   description: "SSH keys",
  *   items: S.struct({
  *     properties: {
- *       host: S.text({ tooltip: "Hostname", default: "" }),
- *       path: S.text({ tooltip: "Private key path", default: "" }),
+ *       host: S.text({ description: "Hostname", default: "" }),
+ *       path: S.text({ description: "Private key path", default: "" }),
  *     },
  *   }),
  *   display: (item, theme) => `${theme.fg("dim", "→")} ${item.host}`,
@@ -353,8 +380,8 @@ function list(opts: Omit<List, "_tag"> & { default?: ListItem[] }): List {
  *
  * @example
  * S.dict({
- *   tooltip: "Environment variables",
- *   description: "Injected into the process environment at startup.",
+ *   description: "Environment variables",
+ *   documentation: "Injected into the process environment at startup.",
  * })
  */
 function dict(
@@ -367,7 +394,7 @@ function dict(
  * Creates a section node that groups related settings under a collapsible
  * header in the settings panel.
  *
- * The `tooltip` field doubles as the section header label.
+ * The `description` field doubles as the section header label.
  * Sections may be nested; children are flattened with dot-separated keys by
  * the `InferConfig` utility type.
  *
@@ -375,10 +402,10 @@ function dict(
  *
  * @example
  * S.section({
- *   tooltip: "Appearance",
- *   description: "Controls the visual theme applied to the extension's UI.",
+ *   description: "Appearance",
+ *   documentation: "Controls the visual theme applied to the extension's UI.",
  *   children: {
- *     theme: S.enum({ tooltip: "Color theme", default: "dark", values: ["dark", "light"] }),
+ *     theme: S.enum({ description: "Color theme", default: "dark", values: ["dark", "light"] }),
  *   },
  * })
  */
@@ -403,8 +430,8 @@ function section<C extends Record<string, SettingNode>>(
  * @example
  * S.struct({
  *   properties: {
- *     host: S.text({ tooltip: "Hostname",         default: "" }),
- *     port: S.text({ tooltip: "Port number",      default: "22" }),
+ *     host: S.text({ description: "Hostname",         default: "" }),
+ *     port: S.text({ description: "Port number",      default: "22" }),
  *   },
  * })
  */
@@ -420,7 +447,7 @@ function struct(opts: Omit<Struct, "_tag">): Struct {
  * Import and use as:
  * ```ts
  * import { S } from "pi-extension-settings/sdk";
- * const schema = S.settings({ color: S.text({ tooltip: "…", default: "" }) });
+ * const schema = S.settings({ color: S.text({ description: "…", default: "" }) });
  * ```
  */
 export const S = {

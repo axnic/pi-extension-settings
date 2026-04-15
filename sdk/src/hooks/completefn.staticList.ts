@@ -18,7 +18,7 @@ import type { CompleteFn } from "../core/nodes";
  *
  * @example
  * S.enum({
- *   tooltip: "Color theme",
+ *   description: "Color theme",
  *   default: "dark",
  *   values: ["dark", "light", "system"],
  *   complete: c.staticList(["dark", "light", "system"]),
