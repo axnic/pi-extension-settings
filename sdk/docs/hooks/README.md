@@ -28,7 +28,7 @@ import { v, t, c, d } from "pi-extension-settings/sdk/hooks";
 
 ```ts
 S.text({
-  tooltip: "Config file",
+  description: "Config file",
   default: "",
   validation: v.all(v.notEmpty(), v.filePath()),
   transform: t.pipe(t.trim(), t.expandPath()),
@@ -98,7 +98,7 @@ transform: t.pipe(t.rgbToHex(), t.hsvToHex(), t.htmlNamedToHex());
 
 ```ts
 S.text({
-  tooltip: "Accent color",
+  description: "Accent color",
   default: "#ff6b6b",
   validation: v.any(
     v.hexColor(),
@@ -115,7 +115,7 @@ S.text({
 
 ```ts
 S.text({
-  tooltip: "Config file",
+  description: "Config file",
   default: "~/.config/app.json",
   validation: v.all(v.notEmpty(), v.filePath(true)),
   transform: t.pipe(t.trim(), t.expandPath()),
@@ -128,7 +128,7 @@ S.text({
 
 ```ts
 S.number({
-  tooltip: "Max connections",
+  description: "Max connections",
   default: 10,
   validation: v.all(v.integer(), v.range({ min: 1, max: 1000 })),
 });
@@ -138,7 +138,7 @@ S.number({
 
 ```ts
 S.text({
-  tooltip: "Webhook URL",
+  description: "Webhook URL",
   default: "",
   validation: v.url(true),
   transform: t.normalizeUrl(),

@@ -38,10 +38,11 @@ const schema = S.settings({
 
 `S.settings()` walks the entire tree (including nested sections and list struct properties) and enforces two invariants:
 
-| Check                                 | Error thrown                                                                  |
-| ------------------------------------- | ----------------------------------------------------------------------------- |
-| `description` length ≤ 128 characters | [`DescriptionTooLongError`](../reference/errors.md#descriptiontoolongerror)   |
-| `Enum` default ∈ `values`             | [`EnumDefaultMismatchError`](../reference/errors.md#enumdefaultmismatcherror) |
+| Check                                  | Error thrown                                                                      |
+| -------------------------------------- | --------------------------------------------------------------------------------- |
+| `description` length ≤ 128 characters  | [`DescriptionTooLongError`](../reference/errors.md#descriptiontoolongerror)       |
+| `documentation` length ≥ 64 characters | [`DocumentationTooShortError`](../reference/errors.md#documentationtooshorterror) |
+| `Enum` default ∈ `values`              | [`EnumDefaultMismatchError`](../reference/errors.md#enumdefaultmismatcherror)     |
 
 > **Important:** These checks happen synchronously when you call `S.settings()` at module load time. Schema bugs fail fast, not silently at runtime.
 

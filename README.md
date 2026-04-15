@@ -157,18 +157,18 @@ import { ExtensionSettings, S, v, t } from "pi-extension-settings/sdk";
 
 const schema = S.settings({
   "api-url": S.text({
-    tooltip: "API base URL",
+    description: "API base URL",
     default: "https://api.example.com",
     validation: v.url(true),
     transform: t.normalizeUrl(),
   }),
   theme: S.enum({
-    tooltip: "Color theme",
+    description: "Color theme",
     default: "dark",
     values: ["dark", "light", "system"],
   }),
   enabled: S.boolean({
-    tooltip: "Enable extension",
+    description: "Enable extension",
     default: true,
   }),
 });
@@ -198,7 +198,7 @@ The settings panel UI is generated from your schema automatically — no UI code
 
 > **Do not store secrets** — `~/.pi/agent/settings.json` is plain text. Use environment variables or a system keychain for API keys and tokens.
 
-> **Keep tooltips short** — the 128-character limit is enforced at schema construction time (`S.settings()` throws immediately). Use the `description` field for longer Markdown documentation.
+> **Keep descriptions short** — the 128-character limit on `description` is enforced at schema construction time (`S.settings()` throws `DescriptionTooLongError` immediately). If you provide a `documentation` field, it must be at least 64 characters (throws `DocumentationTooShortError`); for anything shorter, omit it and rely on the inline `description` alone.
 
 ### Further reading
 

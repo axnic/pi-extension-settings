@@ -33,7 +33,8 @@ export const schema = S.settings({
   /** Which formatter engine to use. */
   parser: S.enum({
     description: "Formatter engine",
-    documentation: "The underlying formatter that will process your files.",
+    documentation:
+      "The underlying formatter that will process your files. Prettier focuses on consistency; Biome is faster for large TypeScript projects.",
     default: "prettier",
     values: [
       { value: "prettier", label: "Prettier" },
@@ -57,7 +58,7 @@ export const schema = S.settings({
   formatting: S.section({
     description: "Formatting rules",
     documentation:
-      "Low-level formatting options passed to the underlying engine.",
+      "Low-level formatting options passed to the underlying engine. These settings mirror the formatter's configuration file.",
     children: {
       indentStyle: S.enum({
         description: "Indent style",
@@ -71,7 +72,7 @@ export const schema = S.settings({
       indentWidth: S.number({
         description: "Indent width (spaces)",
         documentation:
-          "Number of spaces per indent level. Ignored when using tabs.",
+          "Number of spaces per indent level when using space-based indentation. Ignored when indent style is set to tabs.",
         default: 2,
         validation: v.all(v.integer(), v.range({ min: 1, max: 8 })),
       }),
@@ -79,7 +80,7 @@ export const schema = S.settings({
       lineWidth: S.number({
         description: "Print width (characters)",
         documentation:
-          "Soft wrap column. Lines longer than this value will be wrapped.",
+          "Soft wrap column — lines longer than this value will be wrapped by the formatter. Typical values are 80, 100, or 120.",
         default: 80,
         validation: v.all(v.integer(), v.range({ min: 40, max: 200 })),
       }),
@@ -97,7 +98,7 @@ export const schema = S.settings({
       singleQuote: S.boolean({
         description: "Single quotes",
         documentation:
-          "Use single quotes instead of double quotes where possible.",
+          "Use single quotes instead of double quotes where possible. Equivalent to the --single-quote flag in Prettier.",
         default: false,
       }),
 

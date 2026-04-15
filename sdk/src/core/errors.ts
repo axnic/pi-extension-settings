@@ -8,10 +8,11 @@
  * ## Error hierarchy
  * ```
  * PiSettingsError
- * ├── SchemaError                   – invalid schema definition
- * │   ├── DescriptionTooLongError   – description exceeds 128 characters
- * │   └── EnumDefaultMismatchError  – default value not in declared enum values
- * └── SettingNotFoundError          – key not found in schema at runtime
+ * ├── SchemaError                       – invalid schema definition
+ * │   ├── DescriptionTooLongError       – description exceeds 128 characters
+ * │   ├── DocumentationTooShortError    – documentation is shorter than 64 characters
+ * │   └── EnumDefaultMismatchError      – default value not in declared enum values
+ * └── SettingNotFoundError              – key not found in schema at runtime
  * ```
  *
  * @example
@@ -107,6 +108,49 @@ export class DescriptionTooLongError extends SchemaError {
       nodeKey,
     );
     this.name = "DescriptionTooLongError";
+    this.actual = actual;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+/**
+ * Thrown when a node's `documentation` string is shorter than the 64-character
+ * minimum.
+ *
+ * Very short documentation strings add no value over the inline `description`.
+ * Either omit the field entirely (documentation is optional) or provide a
+ * meaningful explanation of at least 64 characters.
+ *
+ * @example
+ * ```ts
+ * // Thrown automatically by S.text(), S.boolean(), S.section(), etc.
+ * S.text({
+ *   description: "API base URL",
+ *   documentation: "Too short.", // ← throws DocumentationTooShortError
+ *   default: "",
+ * });
+ *
+ * // Valid — omit documentation entirely, or write ≥ 64 chars:
+ * S.text({
+ *   description: "API base URL",
+ *   documentation: "Root URL used for all outbound HTTP requests. Must include the protocol (https://).",
+ *   default: "",
+ * });
+ * ```
+ */
+export class DocumentationTooShortError extends SchemaError {
+  /** Minimum allowed documentation length. Always `64`. */
+  static readonly MIN_LENGTH = 64;
+
+  /** Actual length of the offending documentation string. */
+  readonly actual: number;
+
+  constructor(nodeKey: string, actual: number) {
+    super(
+      `documentation must be ≥ ${DocumentationTooShortError.MIN_LENGTH} characters (got ${actual})`,
+      nodeKey,
+    );
+    this.name = "DocumentationTooShortError";
     this.actual = actual;
     Object.setPrototypeOf(this, new.target.prototype);
   }

@@ -47,7 +47,8 @@ export const schema = S.settings({
   // ── Section: model & sampling ───────────────────────────────────────────────
   model: S.section({
     description: "Model",
-    documentation: "Which model to use and how to sample from it.",
+    documentation:
+      "Which model to use and how to configure sampling parameters such as temperature and max tokens.",
     children: {
       name: S.enum({
         description: "Model name",
@@ -69,7 +70,7 @@ export const schema = S.settings({
           temperature: S.number({
             description: "Temperature (0 – 2)",
             documentation:
-              "Controls randomness. 0 = deterministic, 2 = very creative.",
+              "Controls randomness in the output. 0 = fully deterministic, 2 = very creative. Most use-cases work best between 0.5 and 1.0.",
             default: 0.7,
             validation: v.range({ min: 0, max: 2 }),
           }),
@@ -97,7 +98,7 @@ export const schema = S.settings({
       system: S.text({
         description: "System prompt",
         documentation:
-          "Injected as the first `system` message in every conversation.",
+          "Injected as the first `system` message in every conversation. Sets the assistant's role, constraints, and default behaviour.",
         default:
           "You are a helpful coding assistant embedded in a terminal IDE.",
         transform: t.trim(),
@@ -156,7 +157,8 @@ export const schema = S.settings({
   // ── Feature flags ────────────────────────────────────────────────────────────
   streamResponses: S.boolean({
     description: "Stream responses",
-    documentation: "Use server-sent events to stream tokens as they arrive.",
+    documentation:
+      "Use server-sent events (SSE) to stream tokens as they arrive, reducing perceived latency for long responses.",
     default: true,
   }),
 

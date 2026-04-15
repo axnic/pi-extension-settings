@@ -9,6 +9,7 @@ Error
 └── PiSettingsError
     ├── SchemaError
     │   ├── DescriptionTooLongError
+    │   ├── DocumentationTooShortError
     │   └── EnumDefaultMismatchError
     └── SettingNotFoundError
 ```
@@ -108,6 +109,73 @@ try {
   if (err instanceof DescriptionTooLongError) {
     console.error(
       `Description too long at "${err.nodeKey}": ${err.actual} chars (max ${DescriptionTooLongError.MAX_LENGTH})`,
+    );
+  }
+}
+```
+
+---
+
+## `DocumentationTooShortError`
+
+Thrown when a node's `documentation` field is shorter than 64 characters.
+
+```ts
+class DocumentationTooShortError extends SchemaError {
+  name: "DocumentationTooShortError";
+  static readonly MIN_LENGTH: 64;
+  readonly actual: number; // actual length of the documentation string
+}
+```
+
+**When thrown:** At `S.settings()` call time, only when `documentation` is present and too short. Omitting the field entirely is always valid.
+
+**How to fix:** Either remove the `documentation` field, or expand it to at least 64 characters.
+
+**Example:**
+
+```ts
+// Throws DocumentationTooShortError
+S.settings({
+  color: S.text({
+    description: "Accent color",
+    documentation: "Too short.", // ← only 10 chars
+    default: "",
+  }),
+});
+
+// Fix option 1: omit documentation entirely
+S.settings({
+  color: S.text({
+    description: "Accent color",
+    default: "",
+  }),
+});
+
+// Fix option 2: write ≥ 64 chars of documentation
+S.settings({
+  color: S.text({
+    description: "Accent color",
+    documentation:
+      "The accent color is applied to interactive elements such as buttons and links.",
+    default: "",
+  }),
+});
+```
+
+**Catch pattern:**
+
+```ts
+import { DocumentationTooShortError } from "pi-extension-settings/sdk";
+
+try {
+  const schema = S.settings({
+    /* ... */
+  });
+} catch (err) {
+  if (err instanceof DocumentationTooShortError) {
+    console.error(
+      `Documentation too short at "${err.nodeKey}": ${err.actual} chars (min ${DocumentationTooShortError.MIN_LENGTH})`,
     );
   }
 }
@@ -218,6 +286,7 @@ try {
 import {
   PiSettingsError,
   DescriptionTooLongError,
+  DocumentationTooShortError,
   EnumDefaultMismatchError,
   SettingNotFoundError,
 } from "pi-extension-settings/sdk";
@@ -232,6 +301,10 @@ try {
   if (err instanceof DescriptionTooLongError) {
     console.error(
       `[${err.nodeKey}] Description too long (${err.actual} chars)`,
+    );
+  } else if (err instanceof DocumentationTooShortError) {
+    console.error(
+      `[${err.nodeKey}] Documentation too short (${err.actual} chars, min ${DocumentationTooShortError.MIN_LENGTH})`,
     );
   } else if (err instanceof EnumDefaultMismatchError) {
     console.error(

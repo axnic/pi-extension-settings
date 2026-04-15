@@ -47,7 +47,7 @@ Every node shares two base fields:
 | `description`   | `string` | Yes      | Short inline label next to the control. **Max 128 chars.** |
 | `documentation` | `string` | No       | Full Markdown documentation. No length limit.              |
 
-> **Important:** The 128-character description limit is enforced by `S.settings()` at construction time. Exceeding it throws `DescriptionTooLongError`. Use `documentation` for longer content — it is rendered in an expandable sidebar only when the user opens it.
+> **Important:** The 128-character description limit is enforced by `S.settings()` at construction time. Exceeding it throws `DescriptionTooLongError`. Use `documentation` for longer content — it is rendered in an expandable sidebar only when the user opens it. If you provide a `documentation` value, it must be at least 64 characters (shorter values throw `DocumentationTooShortError`; omit the field instead).
 
 ---
 

@@ -54,7 +54,11 @@
  * @module
  */
 
-import { DescriptionTooLongError, EnumDefaultMismatchError } from "./errors";
+import {
+  DescriptionTooLongError,
+  DocumentationTooShortError,
+  EnumDefaultMismatchError,
+} from "./errors";
 import type {
   Boolean as BooleanNode,
   BoolValue,
@@ -157,8 +161,9 @@ export type InferConfig<T extends Record<string, SettingNode>> =
  *
  * Called automatically by `settings()`.
  *
- * @throws {DescriptionTooLongError}        if any node's description exceeds 128 characters.
- * @throws {EnumDefaultMismatchError}   if an Enum's default is not in its values.
+ * @throws {DescriptionTooLongError}     if any node's description exceeds 128 characters.
+ * @throws {DocumentationTooShortError}  if any node's documentation is shorter than 64 characters.
+ * @throws {EnumDefaultMismatchError}    if an Enum's default is not in its values.
  */
 function validateSchema(
   schema: Record<string, SettingNode>,
@@ -170,6 +175,14 @@ function validateSchema(
     // ── Description length ─────────────────────────────────────────────────
     if (node.description.length > DescriptionTooLongError.MAX_LENGTH) {
       throw new DescriptionTooLongError(fullKey, node.description.length);
+    }
+
+    // ── Documentation minimum length ───────────────────────────────────────
+    if (
+      node.documentation !== undefined &&
+      node.documentation.length < DocumentationTooShortError.MIN_LENGTH
+    ) {
+      throw new DocumentationTooShortError(fullKey, node.documentation.length);
     }
 
     // ── Enum default consistency ───────────────────────────────────────────
@@ -199,6 +212,16 @@ function validateSchema(
           );
         }
 
+        if (
+          propNode.documentation !== undefined &&
+          propNode.documentation.length < DocumentationTooShortError.MIN_LENGTH
+        ) {
+          throw new DocumentationTooShortError(
+            propFullKey,
+            propNode.documentation.length,
+          );
+        }
+
         if (propNode._tag === "enum") {
           const allowed = propNode.values.map((v) =>
             typeof v === "string" ? v : v.value,
@@ -223,7 +246,8 @@ function validateSchema(
  * and validates the schema at runtime before returning it.
  *
  * @throws {DescriptionTooLongError}       if any node's `description` exceeds 128 characters.
- * @throws {EnumDefaultMismatchError}  if any `Enum` node's `default` is not in its `values`.
+ * @throws {DocumentationTooShortError}    if any node's `documentation` is shorter than 64 characters.
+ * @throws {EnumDefaultMismatchError}      if any `Enum` node's `default` is not in its `values`.
  *
  * @example
  * const schema = S.settings({

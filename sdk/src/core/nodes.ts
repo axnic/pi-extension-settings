@@ -141,7 +141,7 @@ export type ListDisplayFn<T extends ListItem> = (
 // ─── Base node ────────────────────────────────────────────────────────────────
 
 /**
- * Fields shared by every setting node and the `Struct` type.
+ * Fields shared by every setting node.
  *
  * ### `description` (required)
  * A short, scannable label — **max 128 characters** — displayed inline next

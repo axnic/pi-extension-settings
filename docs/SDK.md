@@ -32,7 +32,7 @@ import {
 
 const schema = S.settings({
   "api-url": S.text({
-    tooltip: "API URL",
+    description: "API URL",
     description: "Base URL for the backend API.",
     default: "https://api.example.com",
     validation: v.url(),
@@ -40,13 +40,13 @@ const schema = S.settings({
   }),
 
   enabled: S.boolean({
-    tooltip: "Enabled",
+    description: "Enabled",
     description: "Enable or disable the extension.",
     default: true,
   }),
 
   mode: S.enum({
-    tooltip: "Mode",
+    description: "Mode",
     default: "balanced",
     values: ["minimal", "balanced", "full"],
   }),
@@ -140,11 +140,11 @@ Import:
 import { S } from "../pi-extension-settings/sdk/index.js";
 ```
 
-All builders require a `tooltip` field (max 128 characters) — the inline label shown next to the control in the settings panel. An optional `description` field accepts full Markdown for the detail pane.
+All builders require a `description` field (max 128 characters) — the inline label shown next to the control in the settings panel. An optional `documentation` field accepts full Markdown for the detail pane (minimum 64 characters if provided).
 
 ### `S.settings(def)`
 
-Top-level entry point. Validates the schema at runtime and returns it (for TypeScript to infer the schema type). Throws `TooltipTooLongError` if any `tooltip` exceeds 128 characters, or `EnumDefaultMismatchError` if an enum default is not in `values`.
+Top-level entry point. Validates the schema at runtime and returns it (for TypeScript to infer the schema type). Throws `DescriptionTooLongError` if any `description` exceeds 128 characters, `DocumentationTooShortError` if any `documentation` is shorter than 64 characters, or `EnumDefaultMismatchError` if an enum default is not in `values`.
 
 ```ts
 const schema = S.settings({
@@ -159,8 +159,8 @@ The base type. All specialisations (color, path, URL, …) are text fields with 
 
 ```ts
 S.text({
-  tooltip: string;          // inline label (max 128 chars)
-  description?: string;     // full Markdown documentation
+  description: string;          // inline label (max 128 chars)
+  documentation?: string;     // full Markdown documentation
   default: string;          // value when nothing is saved
   validation?: ValidationFn; // run as user types (150ms debounce)
   transform?: TransformFn;   // run on confirm, before save
@@ -173,7 +173,7 @@ S.text({
 
 ```ts
 S.text({
-  tooltip: "Primary color",
+  description: "Primary color",
   default: "#3b82f6",
   validation: v.hexColor(),
   display: d.color(),
@@ -184,7 +184,7 @@ S.text({
 
 ```ts
 S.text({
-  tooltip: "Config path",
+  description: "Config path",
   default: "~/.pi/agent/my-extension.json",
   transform: t.expandPath(),
   display: d.path(),
@@ -198,8 +198,8 @@ A numeric input that stores and returns a native JS `number`. Prefer this over `
 
 ```ts
 S.number({
-  tooltip: string;
-  description?: string;
+  description: string;
+  documentation?: string;
   default: number;
   validation?: ValidationFn<number>;
   display?: DisplayFn<number>;
@@ -210,7 +210,7 @@ S.number({
 
 ```ts
 S.number({
-  tooltip: "Port",
+  description: "Port",
   default: 8080,
   validation: v.all(v.integer(), v.range({ min: 1, max: 65535 })),
 });
@@ -220,8 +220,8 @@ S.number({
 
 ```ts
 S.boolean({
-  tooltip: string;
-  description?: string;
+  description: string;
+  documentation?: string;
   default: boolean;
   display?: DisplayFn<boolean>;
 })
@@ -233,8 +233,8 @@ S.boolean({
 
 ```ts
 S.enum({
-  tooltip: string;
-  description?: string;
+  description: string;
+  documentation?: string;
   default: string;
   values: Array<string | { value: string; label: string }>;
   display?: DisplayFn<string>;
@@ -248,7 +248,7 @@ All options are shown inline: `[selected]  dim-option  dim-option`.
 
 ```ts
 S.enum({
-  tooltip: "Log level",
+  description: "Log level",
   default: "info",
   values: [
     { value: "error", label: "Error only" },
@@ -265,8 +265,8 @@ A list of structured objects. Each item has the shape described by `items` (a `S
 
 ```ts
 S.list({
-  tooltip: string;
-  description?: string;
+  description: string;
+  documentation?: string;
   addLabel?: string;    // text for the "+ Add …" row (default "Add item")
   default?: ListItem[];
   items: Struct;        // created with S.struct({ properties: {...} })
@@ -294,17 +294,17 @@ S.list({
 
 ```ts
 S.list({
-  tooltip: "Tips",
+  description: "Tips",
   addLabel: "Add another tip",
   default: [{ command: "/", description: "browse commands" }],
   items: S.struct({
     properties: {
       command: S.text({
-        tooltip: "command",
+        description: "command",
         default: "",
         validation: v.notEmpty(),
       }),
-      description: S.text({ tooltip: "description", default: "" }),
+      description: S.text({ description: "description", default: "" }),
     },
   }),
 });
@@ -316,8 +316,8 @@ A string→string dictionary.
 
 ```ts
 S.dict({
-  tooltip: string;
-  description?: string;
+  description: string;
+  documentation?: string;
   addLabel?: string;    // default "Add entry"
   default?: Record<string, string>;
   validation?: ValidationFn<DictEntry>;
@@ -331,7 +331,7 @@ Displayed as `key  value` pairs. Same interaction as `list`.
 
 ```ts
 S.dict({
-  tooltip: "Bindings",
+  description: "Bindings",
   addLabel: "Add binding",
   default: { "ctrl+k": "/clear", "ctrl+r": "/reset" },
 });
@@ -343,8 +343,8 @@ Groups related settings into a collapsible sub-folder in the panel.
 
 ```ts
 S.section({
-  tooltip: string;        // used as the section header label
-  description?: string;
+  description: string;        // used as the section header label
+  documentation?: string;
   children: Record<string, SettingNode>;
 })
 ```
@@ -353,15 +353,15 @@ Section keys are flattened with dot notation in both the inferred type and `sett
 
 ```ts
 S.section({
-  tooltip: "Appearance",
+  description: "Appearance",
   children: {
     theme: S.enum({
-      tooltip: "Theme",
+      description: "Theme",
       default: "dark",
       values: ["dark", "light", "system"],
     }),
     "font-size": S.number({
-      tooltip: "Font size",
+      description: "Font size",
       default: 14,
       validation: v.all(v.integer(), v.range({ min: 8, max: 32 })),
     }),
@@ -389,8 +389,8 @@ S.struct({
 ```ts
 S.struct({
   properties: {
-    host: S.text({ tooltip: "Hostname", default: "" }),
-    port: S.text({ tooltip: "Port", default: "22" }),
+    host: S.text({ description: "Hostname", default: "" }),
+    port: S.text({ description: "Port", default: "22" }),
   },
 });
 ```
@@ -422,7 +422,7 @@ function renderDashboard(config: MyConfig) {
 
 ## Validators (`v.*`)
 
-Validators run as the user types (in the inline edit mode). The first failing validator blocks `Enter` and shows `✗ reason` in the tooltip. When all validators pass, `✓ reason` is shown.
+Validators run as the user types (in the inline edit mode). The first failing validator blocks `Enter` and shows `✗ reason` inline. When all validators pass, `✓ reason` is shown.
 
 ```ts
 import { v } from "../pi-extension-settings/sdk/src/hooks/index.js";
@@ -605,7 +605,7 @@ import {
 
 const schema = S.settings({
   endpoint: S.text({
-    tooltip: "Endpoint",
+    description: "Endpoint",
     description: "Base URL of the proxy server.",
     default: "https://api.mycompany.com",
     validation: v.url(true),
@@ -613,41 +613,41 @@ const schema = S.settings({
   }),
 
   port: S.number({
-    tooltip: "Port",
+    description: "Port",
     description: "Listener port.",
     default: 8080,
     validation: v.all(v.integer(), v.range({ min: 1, max: 65535 })),
   }),
 
   enabled: S.boolean({
-    tooltip: "Enabled",
+    description: "Enabled",
     description: "Enable the proxy.",
     default: true,
   }),
 
   "log-level": S.enum({
-    tooltip: "Log level",
+    description: "Log level",
     default: "warn",
     values: ["error", "warn", "info", "debug"],
   }),
 
   headers: S.dict({
-    tooltip: "Custom headers",
+    description: "Custom headers",
     addLabel: "Add header",
     default: { "X-Client": "pi" },
   }),
 
   colors: S.section({
-    tooltip: "Colors",
+    description: "Colors",
     children: {
       primary: S.text({
-        tooltip: "Primary",
+        description: "Primary",
         default: "#3b82f6",
         validation: v.hexColor(),
         display: d.color(),
       }),
       accent: S.text({
-        tooltip: "Accent",
+        description: "Accent",
         default: "#f59e0b",
         validation: v.hexColor(),
         display: d.color(),

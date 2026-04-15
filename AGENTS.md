@@ -120,9 +120,9 @@ Every `SettingNode` has a `_tag` field (`"text"`, `"number"`, `"boolean"`, `"enu
 
 The `.` character is reserved as a path separator. `settings.get("appearance.theme")` navigates `appearance` (Section) → `theme` (leaf). **Keys must never contain a literal `.`** — use kebab-case (`font-size`, `api-url`).
 
-### `tooltip` vs `description`
+### `description` vs `documentation`
 
-Every node requires `tooltip` (≤ 128 chars, enforced at schema construction time). The optional `description` field accepts Markdown and is shown in a collapsible sidebar.
+Every node requires `description` (≤ 128 chars, enforced at schema construction time by `DescriptionTooLongError`). The optional `documentation` field accepts Markdown and is shown in a collapsible sidebar — if provided it must be ≥ 64 chars (enforced by `DocumentationTooShortError`).
 
 ### Extension identifier
 

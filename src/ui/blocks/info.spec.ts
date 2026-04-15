@@ -42,9 +42,9 @@ const PANEL_WIDTH = 40;
 const LONG_DESCRIPTION =
   "This description is intentionally very long and would overflow the terminal width if not truncated properly by the renderer.";
 
-function makeRegistry(tooltip: string) {
+function makeRegistry(description: string) {
   const schema = S.settings({
-    mykey: S.text({ description: tooltip, default: "hello" }),
+    mykey: S.text({ description, default: "hello" }),
   });
   const registry = createRegistry();
   registry.set("test-ext", schema as Record<string, SettingNode>);
