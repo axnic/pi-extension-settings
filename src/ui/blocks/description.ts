@@ -44,10 +44,7 @@ export class DescriptionBlock implements Block {
     // Pad to at least one line so zipColumns doesn't produce an empty right column
     if (visible.length === 0) {
       return [
-        theme.fg(
-          "dim",
-          truncateToWidth("No description available", width, "…"),
-        ),
+        ` ${theme.fg("dim", truncateToWidth("No description available", width - 2, "…"))} `,
       ];
     }
     return visible;
@@ -83,12 +80,19 @@ export class DescriptionBlock implements Block {
    * as a heading, bullet, blank, or plain text and converted accordingly.
    */
   private renderContent(text: string, width: number, theme: Theme): string[] {
+    // Reserve 1-space padding on each side of the content.
+    const innerWidth = width - 2;
+    const pad = (s: string) => ` ${s} `;
+
     if (!text) {
       return [
-        theme.fg(
-          "dim",
-          truncateToWidth("No description available", width, "…"),
+        pad(
+          theme.fg(
+            "dim",
+            truncateToWidth("No description available", innerWidth, "…"),
+          ),
         ),
+        "",
       ];
     }
 
@@ -111,9 +115,9 @@ export class DescriptionBlock implements Block {
       const headingMatch = trimmed.match(/^#{1,2}\s+(.+)$/);
       if (headingMatch) {
         const title = headingMatch[1]!.toUpperCase();
-        const wrapped = wrapText(title, width, "  ");
+        const wrapped = wrapText(title, innerWidth, "  ");
         for (const l of wrapped) {
-          lines.push(theme.bold(truncateToWidth(l, width, "…")));
+          lines.push(pad(theme.bold(truncateToWidth(l, innerWidth, "…"))));
         }
         continue;
       }
@@ -122,17 +126,17 @@ export class DescriptionBlock implements Block {
       const bulletMatch = trimmed.match(/^-\s+(.+)$/);
       if (bulletMatch) {
         const item = `• ${bulletMatch[1]!}`;
-        const wrapped = wrapText(item, width, "  ");
+        const wrapped = wrapText(item, innerWidth, "  ");
         for (const l of wrapped) {
-          lines.push(truncateToWidth(l, width, "…"));
+          lines.push(pad(truncateToWidth(l, innerWidth, "…")));
         }
         continue;
       }
 
       // Plain text
-      const wrapped = wrapText(trimmed, width, "  ");
+      const wrapped = wrapText(trimmed, innerWidth, "  ");
       for (const l of wrapped) {
-        lines.push(truncateToWidth(l, width, "…"));
+        lines.push(pad(truncateToWidth(l, innerWidth, "…")));
       }
     }
 
@@ -141,14 +145,20 @@ export class DescriptionBlock implements Block {
       lines.pop();
     }
 
-    return lines.length > 0
-      ? lines
-      : [
-          theme.fg(
-            "dim",
-            truncateToWidth("No description available", width, "…"),
-          ),
-        ];
+    const content =
+      lines.length > 0
+        ? lines
+        : [
+            pad(
+              theme.fg(
+                "dim",
+                truncateToWidth("No description available", innerWidth, "…"),
+              ),
+            ),
+          ];
+
+    // Append blank line before the column separator for vertical breathing room.
+    return [...content, ""];
   }
 }
 
