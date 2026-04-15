@@ -147,7 +147,11 @@ function collapseAllVisible(
 
 function runValidation(node: LeafNode, value: string): ValidationResult | null {
   if (node._tag === "number") {
-    const n = Number(value);
+    const trimmed = value.trim();
+    if (trimmed === "") {
+      return { valid: false, reason: "must be a finite number" };
+    }
+    const n = Number(trimmed);
     if (!Number.isFinite(n)) {
       return { valid: false, reason: "must be a finite number" };
     }
