@@ -36,6 +36,8 @@ export class SettingsPanel implements Component {
   private readonly getTheme: () => Theme;
   private readonly settingsReader: SettingsReader;
   private done: ((result?: unknown) => void) | null = null;
+  /** Cached from last render: whether the description column is scrollable. */
+  private lastDescScrollable = false;
 
   constructor(
     registry: Registry,
@@ -68,6 +70,21 @@ export class SettingsPanel implements Component {
     // Sync scroll offset before handing over to the renderer.
     this.state = this.syncScrollOffset(this.state, this.rows, maxVisibleRows);
 
+    // Cache whether the description column is scrollable so handleInput can
+    // gate PageUp/PageDown without recomputing widths on every keypress.
+    const focusedRow = this.rows[this.state.focusedIndex];
+    const candidateLeft = Math.floor((width * 2) / 3);
+    const candidateRight = width - candidateLeft - 1;
+    const showDesc = candidateRight >= 20; // MIN_DESC_WIDTH
+    if (showDesc && focusedRow) {
+      // Approximate the left column height to determine whether doc overflows.
+      const approxLeftHeight = maxVisibleRows + 6; // settings + info area
+      const totalDescLines = descriptionLineCount(focusedRow, candidateRight);
+      this.lastDescScrollable = totalDescLines > approxLeftHeight;
+    } else {
+      this.lastDescScrollable = false;
+    }
+
     return renderPanel(
       this.rows,
       this.state,
@@ -87,7 +104,7 @@ export class SettingsPanel implements Component {
     ) {
       const controls = this.settingsReader.controls;
       const focusedRow = this.rows[this.state.focusedIndex];
-      if (rowHasDocumentation(focusedRow)) {
+      if (rowHasDocumentation(focusedRow) && this.lastDescScrollable) {
         if (matchesBinding(data, controls.scrollDescUp)) {
           this.state = {
             ...this.state,

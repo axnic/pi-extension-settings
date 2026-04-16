@@ -74,9 +74,7 @@ export const schema = S.settings({
       }),
       "max-visible-rows": S.number({
         description:
-          "Maximum number of setting rows visible at once in the panel viewport.",
-        documentation:
-          "Controls the viewport height of the settings panel.\n\nIncrease this value to see more settings without scrolling, or decrease it to keep the panel compact. The minimum value is 5.",
+          "Maximum number of setting rows visible at once. Increase to see more settings, decrease to keep the panel compact. Minimum is 5.",
         default: DEFAULT_MAX_VISIBLE_ROWS,
         validation: v.all(v.integer(), v.range({ min: 5 })),
       }),

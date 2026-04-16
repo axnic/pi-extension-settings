@@ -21,6 +21,8 @@ export class NavigationBlock implements Block {
     private readonly state: UIState,
     private readonly theme: Theme,
     private readonly controls: ControlBindings,
+    /** True only when the description content is taller than the visible area. */
+    private readonly descScrollable: boolean = true,
   ) {}
 
   render(width: number): string[] {
@@ -30,7 +32,7 @@ export class NavigationBlock implements Block {
   // ─── Private ───────────────────────────────────────────────────────────────
 
   private renderHintBar(width: number): string {
-    const { state, rows, theme, controls } = this;
+    const { state, rows, theme, controls, descScrollable } = this;
     const dim = (t: string) => theme.fg("dim", t);
     const hint = (items: string[]) => dim(renderNavigationHint(items, width));
 
@@ -85,9 +87,10 @@ export class NavigationBlock implements Block {
       focusedRow?.type === "extension-header" ||
       focusedRow?.type === "group"
     ) {
-      const scrollHint = rowHasDocumentation(focusedRow)
-        ? `<${controls.scrollDescUp}>/<${controls.scrollDescDown}> scroll doc`
-        : null;
+      const scrollHint =
+        rowHasDocumentation(focusedRow) && descScrollable
+          ? `<${controls.scrollDescUp}>/<${controls.scrollDescDown}> scroll doc`
+          : null;
       return hint([
         `<${controls.collapseExpand}> collapse/expand`,
         "<enter> to enter section",
@@ -112,9 +115,10 @@ export class NavigationBlock implements Block {
             return "<enter> to edit";
         }
       })();
-      const scrollHint = rowHasDocumentation(focusedRow)
-        ? `<${controls.scrollDescUp}>/<${controls.scrollDescDown}> scroll doc`
-        : null;
+      const scrollHint =
+        rowHasDocumentation(focusedRow) && descScrollable
+          ? `<${controls.scrollDescUp}>/<${controls.scrollDescDown}> scroll doc`
+          : null;
 
       return hint([
         actionHint,

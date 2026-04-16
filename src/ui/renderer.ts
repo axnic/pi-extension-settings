@@ -23,7 +23,11 @@
 import type { Theme } from "@mariozechner/pi-coding-agent";
 import { visibleWidth } from "@mariozechner/pi-tui";
 import type { ControlBindings } from "../settings.js";
-import { DescriptionBlock, MIN_DESC_WIDTH } from "./blocks/description.js";
+import {
+  DescriptionBlock,
+  descriptionLineCount,
+  MIN_DESC_WIDTH,
+} from "./blocks/description.js";
 import { InfoBlock } from "./blocks/info.js";
 import { NavigationBlock } from "./blocks/navigation.js";
 import { SearchBlock } from "./blocks/search.js";
@@ -69,13 +73,24 @@ export function renderPanel(
       )
     : undefined;
 
+  // The scroll hint and PageUp/PageDown are only useful when the description
+  // content is taller than the visible left-column area. Below that threshold
+  // the entire doc is already visible, so exposing the scroll controls would
+  // be confusing.
+  const descTotalLines = showDesc
+    ? descriptionLineCount(focusedRow, candidateRight)
+    : 0;
+  const descScrollable = descTotalLines > leftLines.length;
+
   return [
     theme.fg("dim", "─".repeat(Math.max(0, width))),
     ...new SearchBlock(state, theme).render(width),
     "",
     ...zipColumns(leftLines, leftWidth, rightLines, theme),
     "",
-    ...new NavigationBlock(rows, state, theme, controls).render(width),
+    ...new NavigationBlock(rows, state, theme, controls, descScrollable).render(
+      width,
+    ),
   ];
 }
 

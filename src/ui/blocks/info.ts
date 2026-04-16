@@ -14,6 +14,7 @@ import { truncateToWidth } from "@mariozechner/pi-tui";
 import { countSections, countVisibleSettings, type ViewRow } from "../model.js";
 import type { UIState } from "../state.js";
 import type { Block } from "./block.js";
+import { validateStoredValue } from "./settings.js";
 import { renderNavigationHint, wrapText } from "./utils.js";
 
 export class InfoBlock implements Block {
@@ -138,11 +139,42 @@ export class InfoBlock implements Block {
           indent: "  ",
         });
       }
-    } else if (focusedRow.type === "setting") {
+    } else if (focusedRow.type === "setting" && !state.editState) {
       const node = focusedRow.node;
-      if (node._tag === "text") {
+
+      // When not editing, run validation against the stored value and show an
+      // error if the value is currently invalid (e.g. after an external edit or
+      // a schema change that tightened a constraint).
+      const storedResult = validateStoredValue(focusedRow);
+      if (storedResult !== undefined && !storedResult.valid) {
+        const reason =
+          "reason" in storedResult ? storedResult.reason : undefined;
+        if (!storedResult.valid && Array.isArray(reason) && reason.length > 1) {
+          pending.push({
+            text: "✗ none of the validations passed:",
+            colorKey: "error",
+          });
+          for (const r of reason) {
+            pending.push({
+              text: `  · ${r}`,
+              colorKey: "error",
+              indent: "    ",
+            });
+          }
+        } else {
+          const message = Array.isArray(reason)
+            ? (reason[0] ?? "invalid")
+            : (reason ?? "invalid");
+          pending.push({
+            text: `✗ ${message}`,
+            colorKey: "error",
+            indent: "  ",
+          });
+        }
+      } else if (node._tag === "text") {
+        // Show autocomplete hint but no longer advertise "validated" —
+        // validity is shown in the label colour when invalid.
         const items = [];
-        if (node.validation) items.push("validated");
         if (node.complete) items.push("<tab> for suggestions");
         pending.push({
           text:
