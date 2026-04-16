@@ -55,7 +55,6 @@
   "devDependencies": {
     "@commitlint/cli": "catalog:",
     "@commitlint/types": "catalog:",
-    "@types/marked-terminal": "^6.1.1",
     "@types/node": "catalog:",
     "esbuild": "catalog:",
     "rimraf": "catalog:",

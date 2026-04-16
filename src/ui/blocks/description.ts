@@ -87,6 +87,17 @@ export class DescriptionBlock implements Block {
     return allLines.slice(safeOffset);
   }
 
+  /**
+   * Returns the total line count for this block at a given width, without
+   * touching the shared render cache. Used by descriptionLineCount() to avoid
+   * poisoning the cache with stub-themed (unstyled) content.
+   */
+  renderLineCount(width: number): number {
+    if (width < MIN_DESC_WIDTH) return 0;
+    const content = this.extractContent();
+    return this.renderContent(content, width, this.theme).length;
+  }
+
   // ─── Private ─────────────────────────────────────────────────────────────
 
   /** Extract the raw description text from the focused row. */
@@ -195,7 +206,9 @@ export function descriptionLineCount(
   focusedRow: ViewRow | undefined,
   width: number,
 ): number {
-  // Use a minimal theme stub just for counting (no ANSI styling needed)
+  // Use a minimal theme stub just for counting (no ANSI styling needed).
+  // We call renderLineCount() instead of render() so the stub-themed output
+  // never enters the shared docRenderCache and cannot poison real renders.
   const stub = {
     bold: (s: string) => s,
     italic: (s: string) => s,
@@ -203,5 +216,5 @@ export function descriptionLineCount(
     fg: (_c: string, s: string) => s,
   } as Theme;
   const block = new DescriptionBlock(focusedRow, stub, 0);
-  return block.render(width).length;
+  return block.renderLineCount(width);
 }
