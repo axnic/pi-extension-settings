@@ -1,6 +1,6 @@
 {
   "name": "@axnic/pi-extension-settings-sdk",
-  "version": "0.2.0-rc.2",
+  "version": "0.2.0-rc.3",
   "description": "Type-safe SDK for interacting with the pi-extension-settings panel (for extension authors).",
   "author": "axnic",
   "license": "Apache-2.0",
