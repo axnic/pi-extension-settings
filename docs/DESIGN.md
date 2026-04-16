@@ -493,7 +493,7 @@ All dim.
 - Tooltip: 3-line fixed block below the list, separated by a blank line.
 - Hint bar: last line, separated from the tooltip by a blank line.
 - Minimum usable width: 60 chars; values truncated with `…`.
-- **Description panel** (right column, ~1/3 width): shows the focused setting's `description` field (falls back to `tooltip`). Hidden when the right column would be narrower than 20 chars. `Shift+↑` / `Shift+↓` scroll the description independently of the settings list. Basic Markdown rendered: headings (`#`, `##`) → uppercase; bullets (`-`) → `•`; bold/italic markers stripped.
+- **Description panel** (right column, ~1/3 width): shows the focused setting's `documentation` field (falls back to `description`). Hidden when the right column would be narrower than 20 chars. `PageUp` / `PageDown` (configurable) scroll the description independently of the settings list; the scroll hint is only shown in the hint bar when the focused row actually has documentation.
 
 ---
 
@@ -551,6 +551,8 @@ All scalar values are stored as strings. `list` and `dict` values are stored as 
 | `controls.reorder-item-up`      | `text`    | `shift+up`    | keybinding  | Move the focused list item one position up.                           |
 | `controls.reorder-item-down`    | `text`    | `shift+down`  | keybinding  | Move the focused list item one position down.                         |
 | `controls.delete-item`          | `text`    | `d`           | keybinding  | Delete the focused list item.                                         |
+| `controls.scroll-desc-up`       | `text`    | `pageup`      | keybinding  | Scroll the description panel up one line (navigation mode).           |
+| `controls.scroll-desc-down`     | `text`    | `pagedown`    | keybinding  | Scroll the description panel down one line (navigation mode).         |
 
 ---
 
@@ -571,37 +573,37 @@ All scalar values are stored as strings. `list` and `dict` values are stored as 
 
 ### Navigation
 
-| Key                                  | Action                                            |
-| ------------------------------------ | ------------------------------------------------- |
-| `↑` / `↓`                            | Move focus between visible rows (navigation mode) |
-| `Esc` in search mode                 | Leave search mode                                 |
-| `/` in navigation mode               | Re-enter search mode (preserve query/cursor)      |
-| `Enter` in search mode               | No action                                         |
-| `Space` on a header / folder         | Toggle collapse/expand                            |
-| `Enter` on a section / folder header | Enter scope                                       |
-| `Esc` in navigation + scoped mode    | Exit one scope level                              |
-| `Esc` in navigation + global mode    | Close the panel                                   |
-| `Enter` / `Space` on `boolean`       | Toggle (live save)                                |
-| `Enter` / `Space` on `enum`          | Cycle to next option (live save)                  |
-| `Enter` on `text`                    | Open inline edit                                  |
-| `Enter` on `list` / `dict` row       | Expand / collapse                                 |
-| `↑` / `↓` inside expanded list       | Navigate items                                    |
-| `r` (default)                        | Reset focused setting to default (live save)      |
-| `Shift+Space` (default)              | Collapse all visible sections                     |
-| `Shift-↑` / `Shift-↓` on a list item | Reorder (live save, default binding)              |
-| `d` on a list item                   | Delete (live save, default binding)               |
-| `Enter` on `+ Add …`                 | Open new-item form                                |
-| `Tab` / `Shift-Tab` in add form      | Move between fields                               |
-| `Enter` on last add-form field       | Confirm new item (live save)                      |
-| `↑` / `↓` when autocomplete open     | Navigate suggestions                              |
-| `Tab` when autocomplete open         | Accept focused suggestion                         |
-| `Esc` when autocomplete open         | Dismiss suggestions (stay in edit)                |
-| `Enter` in inline edit (valid)       | Run `transform`, write, live save                 |
-| `Esc` in inline edit                 | Cancel, restore previous value                    |
-| `←` / `→`                            | Input bar cursor movement **only**                |
-| `Shift+↑` in navigation mode         | Scroll description panel up (when visible)        |
-| `Shift+↓` in navigation mode         | Scroll description panel down (when visible)      |
-| typing                               | Filter (search mode) / edit value (inline edit)   |
+| Key                                  | Action                                                                        |
+| ------------------------------------ | ----------------------------------------------------------------------------- |
+| `↑` / `↓`                            | Move focus between visible rows (navigation mode)                             |
+| `Esc` in search mode                 | Leave search mode                                                             |
+| `/` in navigation mode               | Re-enter search mode (preserve query/cursor)                                  |
+| `Enter` in search mode               | No action                                                                     |
+| `Space` on a header / folder         | Toggle collapse/expand                                                        |
+| `Enter` on a section / folder header | Enter scope                                                                   |
+| `Esc` in navigation + scoped mode    | Exit one scope level                                                          |
+| `Esc` in navigation + global mode    | Close the panel                                                               |
+| `Enter` / `Space` on `boolean`       | Toggle (live save)                                                            |
+| `Enter` / `Space` on `enum`          | Cycle to next option (live save)                                              |
+| `Enter` on `text`                    | Open inline edit                                                              |
+| `Enter` on `list` / `dict` row       | Expand / collapse                                                             |
+| `↑` / `↓` inside expanded list       | Navigate items                                                                |
+| `r` (default)                        | Reset focused setting to default (live save)                                  |
+| `Shift+Space` (default)              | Collapse all visible sections                                                 |
+| `Shift-↑` / `Shift-↓` on a list item | Reorder (live save, default binding)                                          |
+| `d` on a list item                   | Delete (live save, default binding)                                           |
+| `Enter` on `+ Add …`                 | Open new-item form                                                            |
+| `Tab` / `Shift-Tab` in add form      | Move between fields                                                           |
+| `Enter` on last add-form field       | Confirm new item (live save)                                                  |
+| `↑` / `↓` when autocomplete open     | Navigate suggestions                                                          |
+| `Tab` when autocomplete open         | Accept focused suggestion                                                     |
+| `Esc` when autocomplete open         | Dismiss suggestions (stay in edit)                                            |
+| `Enter` in inline edit (valid)       | Run `transform`, write, live save                                             |
+| `Esc` in inline edit                 | Cancel, restore previous value                                                |
+| `←` / `→`                            | Input bar cursor movement **only**                                            |
+| `PageUp` in navigation mode          | Scroll description panel up (default binding, only shown when row has docs)   |
+| `PageDown` in navigation mode        | Scroll description panel down (default binding, only shown when row has docs) |
+| typing                               | Filter (search mode) / edit value (inline edit)                               |
 
 ### Live Save
 

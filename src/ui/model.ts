@@ -132,6 +132,31 @@ export type ViewRow =
   | ListSeparatorRow
   | ListAddRow;
 
+/**
+ * Returns `true` when the focused row has meaningful documentation to show in
+ * the description panel — i.e., when displaying a scroll hint is warranted.
+ *
+ * - `extension-header`: always true (shows extension name + settings count).
+ * - `group` rows qualify when they have a non-empty `description`.
+ * - `setting`: true when the node has a non-empty `documentation` or `description`.
+ * - `list-item`, `list-add`, `list-separator`: false (no scrollable content).
+ */
+export function rowHasDocumentation(row: ViewRow | undefined): boolean {
+  if (!row) return false;
+  switch (row.type) {
+    case "extension-header":
+      return true;
+    case "group":
+      return Boolean(row.description?.trim());
+    case "setting":
+      return Boolean(
+        row.node.documentation?.trim() || row.node.description?.trim(),
+      );
+    default:
+      return false;
+  }
+}
+
 // ─── Parse helpers (shared between model + input + renderer) ──────────────────
 
 /**

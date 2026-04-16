@@ -38,19 +38,17 @@ export class DescriptionBlock implements Block {
     const content = this.extractContent();
     const allLines = this.renderContent(content, width, theme);
 
-    // Apply scroll offset
-    const visible = allLines.slice(descScrollOffset);
+    // Clamp scroll offset so it never exceeds the last line index.
+    // Without this, a terminal resize that produces fewer wrapped lines can
+    // leave the offset pointing beyond the content, yielding an empty slice
+    // and a misleading "No description available" message.
+    const safeOffset = Math.min(
+      descScrollOffset,
+      Math.max(0, allLines.length - 1),
+    );
 
-    // Pad to at least one line so zipColumns doesn't produce an empty right column
-    if (visible.length === 0) {
-      return [
-        theme.fg(
-          "dim",
-          truncateToWidth("No description available", width, "…"),
-        ),
-      ];
-    }
-    return visible;
+    // Apply scroll offset
+    return allLines.slice(safeOffset);
   }
 
   // ─── Private ─────────────────────────────────────────────────────────────
@@ -83,12 +81,19 @@ export class DescriptionBlock implements Block {
    * as a heading, bullet, blank, or plain text and converted accordingly.
    */
   private renderContent(text: string, width: number, theme: Theme): string[] {
+    // Reserve 1-space padding on each side of the content.
+    const innerWidth = width - 2;
+    const pad = (s: string) => ` ${s} `;
+
     if (!text) {
       return [
-        theme.fg(
-          "dim",
-          truncateToWidth("No description available", width, "…"),
+        pad(
+          theme.fg(
+            "dim",
+            truncateToWidth("No description available", innerWidth, "…"),
+          ),
         ),
+        "",
       ];
     }
 
@@ -111,9 +116,9 @@ export class DescriptionBlock implements Block {
       const headingMatch = trimmed.match(/^#{1,2}\s+(.+)$/);
       if (headingMatch) {
         const title = headingMatch[1]!.toUpperCase();
-        const wrapped = wrapText(title, width, "  ");
+        const wrapped = wrapText(title, innerWidth, "  ");
         for (const l of wrapped) {
-          lines.push(theme.bold(truncateToWidth(l, width, "…")));
+          lines.push(pad(theme.bold(truncateToWidth(l, innerWidth, "…"))));
         }
         continue;
       }
@@ -122,17 +127,17 @@ export class DescriptionBlock implements Block {
       const bulletMatch = trimmed.match(/^-\s+(.+)$/);
       if (bulletMatch) {
         const item = `• ${bulletMatch[1]!}`;
-        const wrapped = wrapText(item, width, "  ");
+        const wrapped = wrapText(item, innerWidth, "  ");
         for (const l of wrapped) {
-          lines.push(truncateToWidth(l, width, "…"));
+          lines.push(pad(truncateToWidth(l, innerWidth, "…")));
         }
         continue;
       }
 
       // Plain text
-      const wrapped = wrapText(trimmed, width, "  ");
+      const wrapped = wrapText(trimmed, innerWidth, "  ");
       for (const l of wrapped) {
-        lines.push(truncateToWidth(l, width, "…"));
+        lines.push(pad(truncateToWidth(l, innerWidth, "…")));
       }
     }
 
@@ -141,14 +146,20 @@ export class DescriptionBlock implements Block {
       lines.pop();
     }
 
-    return lines.length > 0
-      ? lines
-      : [
-          theme.fg(
-            "dim",
-            truncateToWidth("No description available", width, "…"),
-          ),
-        ];
+    const content =
+      lines.length > 0
+        ? lines
+        : [
+            pad(
+              theme.fg(
+                "dim",
+                truncateToWidth("No description available", innerWidth, "…"),
+              ),
+            ),
+          ];
+
+    // Append blank line before the column separator for vertical breathing room.
+    return [...content, ""];
   }
 }
 

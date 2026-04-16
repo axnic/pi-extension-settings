@@ -22,7 +22,8 @@ import type { Registry } from "../core/registry.js";
 import type { SettingsReader } from "../settings.js";
 import { descriptionLineCount } from "./blocks/description.js";
 import { handleInput as processKeyInput } from "./input.js";
-import { buildRows, type ViewRow } from "./model.js";
+import { matchesBinding } from "./keys.js";
+import { buildRows, rowHasDocumentation, type ViewRow } from "./model.js";
 import { MAX_VISIBLE_ROWS, renderPanel } from "./renderer.js";
 import type { AddFormState, UIState } from "./state.js";
 import { createInitialState } from "./state.js";
@@ -78,32 +79,37 @@ export class SettingsPanel implements Component {
   }
 
   handleInput(data: string): void {
-    // Scroll the description panel with Shift+Up / Shift+Down in navigation mode.
+    // Scroll the description panel with configurable Shift+Up / Shift+Down in navigation mode.
     if (
       !this.state.editState &&
       !this.state.addFormState &&
       !this.state.searchActive
     ) {
-      if (matchesKey(data, "shift+up")) {
-        this.state = {
-          ...this.state,
-          descScrollOffset: Math.max(0, this.state.descScrollOffset - 1),
-        };
-        return;
-      }
-      if (matchesKey(data, "shift+down")) {
-        const focusedRow = this.rows[this.state.focusedIndex];
-        const rightWidth = this.descColumnWidth();
-        const totalLines =
-          rightWidth > 0 ? descriptionLineCount(focusedRow, rightWidth) : 0;
-        this.state = {
-          ...this.state,
-          descScrollOffset: Math.min(
-            Math.max(0, totalLines - 1),
-            this.state.descScrollOffset + 1,
-          ),
-        };
-        return;
+      const controls = this.settingsReader.controls;
+      const focusedRow = this.rows[this.state.focusedIndex];
+      if (rowHasDocumentation(focusedRow)) {
+        if (matchesBinding(data, controls.scrollDescUp)) {
+          this.state = {
+            ...this.state,
+            descScrollOffset: Math.max(0, this.state.descScrollOffset - 1),
+          };
+          return;
+        }
+        if (matchesBinding(data, controls.scrollDescDown)) {
+          const rightWidth = this.descColumnWidth();
+          const totalLines =
+            rightWidth > 0 ? descriptionLineCount(focusedRow, rightWidth) : 0;
+          this.state = {
+            ...this.state,
+            descScrollOffset: Math.min(
+              // Subtract 2: one for the trailing blank padding line appended
+              // by DescriptionBlock, one to convert length to max index.
+              Math.max(0, totalLines - 2),
+              this.state.descScrollOffset + 1,
+            ),
+          };
+          return;
+        }
       }
     }
 

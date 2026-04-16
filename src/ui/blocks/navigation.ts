@@ -10,7 +10,7 @@
 
 import type { Theme } from "@mariozechner/pi-coding-agent";
 import type { ControlBindings } from "../../settings.js";
-import type { ViewRow } from "../model.js";
+import { rowHasDocumentation, type ViewRow } from "../model.js";
 import type { UIState } from "../state.js";
 import type { Block } from "./block.js";
 import { renderNavigationHint } from "./utils.js";
@@ -85,12 +85,16 @@ export class NavigationBlock implements Block {
       focusedRow?.type === "extension-header" ||
       focusedRow?.type === "group"
     ) {
+      const scrollHint = rowHasDocumentation(focusedRow)
+        ? `<${controls.scrollDescUp}>/<${controls.scrollDescDown}> scroll doc`
+        : null;
       return hint([
         `<${controls.collapseExpand}> collapse/expand`,
         "<enter> to enter section",
         "</> search",
         exitHint,
         `<${controls.collapseAll}> collapse all`,
+        ...(scrollHint ? [scrollHint] : []),
       ]);
     }
 
@@ -108,12 +112,17 @@ export class NavigationBlock implements Block {
             return "<enter> to edit";
         }
       })();
+      const scrollHint = rowHasDocumentation(focusedRow)
+        ? `<${controls.scrollDescUp}>/<${controls.scrollDescDown}> scroll doc`
+        : null;
+
       return hint([
         actionHint,
         `<${controls.resetToDefault}> reset default`,
         "</> search",
         exitHint,
         `<${controls.collapseAll}> collapse all`,
+        ...(scrollHint ? [scrollHint] : []),
       ]);
     }
 

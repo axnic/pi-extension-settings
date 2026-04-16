@@ -52,6 +52,8 @@ const stubControls: ControlBindings = {
   reorderItemUp: "K",
   reorderItemDown: "J",
   deleteItem: "d",
+  scrollDescUp: "pageup",
+  scrollDescDown: "pagedown",
 };
 
 const PANEL_WIDTH = 40;
