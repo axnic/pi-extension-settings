@@ -5,9 +5,9 @@
  * followed by exactly one non-modifier key.
  *
  * Accepted modifiers:  ctrl · alt · shift · meta · cmd · option
- * Accepted key names:  up · down · left · right · enter · escape · esc ·
- *                      tab · backspace · delete · home · end · space ·
- *                      a–z · 0–9 · f1–f12
+ * Accepted key names:  up · down · left · right · pageup · pagedown ·
+ *                      enter · escape · esc · tab · backspace · delete ·
+ *                      home · end · space · a–z · 0–9 · f1–f12
  *
  * @module
  */
@@ -23,6 +23,8 @@ const SPECIAL_KEYS = new Set([
   "down",
   "left",
   "right",
+  "pageup",
+  "pagedown",
   "enter",
   "escape",
   "esc",

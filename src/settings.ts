@@ -33,8 +33,8 @@ export const DEFAULT_CONTROL_BINDINGS = {
   reorderItemUp: "shift+up",
   reorderItemDown: "shift+down",
   deleteItem: "d",
-  scrollDescUp: "shift+up",
-  scrollDescDown: "shift+down",
+  scrollDescUp: "pageup",
+  scrollDescDown: "pagedown",
 } as const;
 
 /** Default value for `behavior.start-in-search-mode`. */
