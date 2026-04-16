@@ -68,9 +68,9 @@ export function renderPanel(
     ...new InfoBlock(rows, state, theme).render(leftWidth),
   ];
   const rightLines = showDesc
-    ? new DescriptionBlock(focusedRow, theme, state.descScrollOffset).render(
-        candidateRight,
-      )
+    ? new DescriptionBlock(focusedRow, theme, state.descScrollOffset)
+        .render(candidateRight)
+        .slice(0, leftLines.length)
     : undefined;
 
   // The scroll hint and PageUp/PageDown are only useful when the description
