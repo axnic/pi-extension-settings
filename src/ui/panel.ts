@@ -203,7 +203,7 @@ export class SettingsPanel implements Component {
    */
   private descColumnWidth(): number {
     const assumedTotal = 80;
-    const candidateLeft = Math.floor((assumedTotal * 2) / 3);
+    const candidateLeft = Math.floor(assumedTotal / 2);
     const candidateRight = assumedTotal - candidateLeft - 1;
     // Mirror the MIN_DESC_WIDTH threshold used in renderer.ts
     return candidateRight >= 20 ? candidateRight : 0;
@@ -214,11 +214,11 @@ export class SettingsPanel implements Component {
     extensionName: string,
     settingKey: string,
   ): List<ListItem> | null {
-    const nodes = this.registry.get(extensionName);
-    if (!nodes) return null;
+    const entry = this.registry.get(extensionName);
+    if (!entry) return null;
 
     const parts = settingKey.split(".");
-    let current: Record<string, SettingNode> = nodes;
+    let current: Record<string, SettingNode> = entry.nodes;
 
     for (let i = 0; i < parts.length - 1; i++) {
       const part = parts[i]!;

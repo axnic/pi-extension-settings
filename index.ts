@@ -48,7 +48,10 @@ export default function piExtensionSettings(pi: ExtensionAPI) {
   pi.events.on("pi-extension-settings:register", (rawData: unknown) => {
     const data = rawData as RegistrationPayload;
     if (!data?.extension || !data?.nodes) return;
-    registry.set(data.extension, data.nodes);
+    registry.set(data.extension, {
+      nodes: data.nodes,
+      documentation: data.documentation,
+    });
   });
 
   // ── Session lifecycle ──────────────────────────────────────────────────

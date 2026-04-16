@@ -47,7 +47,7 @@ function makeRegistry(description: string) {
     mykey: S.text({ description, default: "hello" }),
   });
   const registry = createRegistry();
-  registry.set("test-ext", schema as Record<string, SettingNode>);
+  registry.set("test-ext", { nodes: schema as Record<string, SettingNode> });
   return registry;
 }
 
@@ -98,8 +98,8 @@ describe("InfoBlock — pagination", () => {
       key: S.text({ description: "a", default: "" }),
     });
     const registry = createRegistry();
-    registry.set("ext-a", schema as Record<string, SettingNode>);
-    registry.set("ext-b", schema as Record<string, SettingNode>);
+    registry.set("ext-a", { nodes: schema as Record<string, SettingNode> });
+    registry.set("ext-b", { nodes: schema as Record<string, SettingNode> });
 
     const state = createInitialState(false);
     const rows = buildRows(registry, state);
@@ -113,7 +113,7 @@ describe("InfoBlock — pagination", () => {
       key: S.text({ description: "a", default: "" }),
     });
     const registry = createRegistry();
-    registry.set("my-ext", schema as Record<string, SettingNode>);
+    registry.set("my-ext", { nodes: schema as Record<string, SettingNode> });
 
     const state = createInitialState(false);
     state.scope = ["my-ext"];

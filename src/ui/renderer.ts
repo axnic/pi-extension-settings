@@ -54,9 +54,9 @@ export function renderPanel(
   controls: ControlBindings,
   maxVisibleRows: number = MAX_VISIBLE_ROWS,
 ): string[] {
-  // Compute column widths. The description panel takes ~1/3 on the right,
+  // Compute column widths. The description panel takes ~1/2 on the right,
   // but only when there is enough room (rightWidth >= MIN_DESC_WIDTH).
-  const candidateLeft = Math.floor((width * 2) / 3);
+  const candidateLeft = Math.floor(width / 2);
   const candidateRight = width - candidateLeft - 1; // 1 for gutter
   const showDesc = candidateRight >= MIN_DESC_WIDTH;
   const leftWidth = showDesc ? candidateLeft : width;

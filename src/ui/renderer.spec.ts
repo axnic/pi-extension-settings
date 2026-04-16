@@ -63,7 +63,7 @@ function makeRegistry() {
     mykey: S.text({ description: "A setting", default: "hello" }),
   });
   const registry = createRegistry();
-  registry.set("test-ext", schema as Record<string, SettingNode>);
+  registry.set("test-ext", { nodes: schema as Record<string, SettingNode> });
   return registry;
 }
 

@@ -56,6 +56,11 @@ export interface ExtensionHeaderRow extends BaseRow {
   extensionName: string;
   isCollapsed: boolean;
   settingsCount: number;
+  /**
+   * Optional Markdown documentation for the extension itself.
+   * Comes from the `documentation` argument passed to `ExtensionSettings`.
+   */
+  documentation?: string;
 }
 
 /** Header row for a `Section` node — collapsible group of children. */
@@ -68,8 +73,10 @@ export interface GroupRow extends BaseRow {
    */
   groupKey: string;
   label: string;
-  /** Section description; surfaced in the description area when this row is focused. */
+  /** Section description; used as the section label tooltip. */
   description?: string;
+  /** Optional Markdown documentation; shown in the description panel. */
+  documentation?: string;
   isCollapsed: boolean;
   settingsCount: number;
 }
@@ -136,22 +143,23 @@ export type ViewRow =
  * Returns `true` when the focused row has meaningful documentation to show in
  * the description panel — i.e., when displaying a scroll hint is warranted.
  *
- * - `extension-header`: always true (shows extension name + settings count).
- * - `group` rows qualify when they have a non-empty `description`.
- * - `setting`: true when the node has a non-empty `documentation` or `description`.
- * - `list-item`, `list-add`, `list-separator`: false (no scrollable content).
+ * Only `documentation` (extended Markdown) qualifies — the short `description`
+ * tooltip is deliberately excluded from the preview panel.
+ *
+ * - `extension-header`: true when the extension provided a `documentation` string.
+ * - `group` rows qualify when their `Section` node has a non-empty `documentation`.
+ * - `setting`: true when the node has a non-empty `documentation` field.
+ * - `list-item`, `list-add`, `list-separator`: false (no content to show).
  */
 export function rowHasDocumentation(row: ViewRow | undefined): boolean {
   if (!row) return false;
   switch (row.type) {
     case "extension-header":
-      return true;
+      return Boolean(row.documentation?.trim());
     case "group":
-      return Boolean(row.description?.trim());
+      return Boolean(row.documentation?.trim());
     case "setting":
-      return Boolean(
-        row.node.documentation?.trim() || row.node.description?.trim(),
-      );
+      return Boolean(row.node.documentation?.trim());
     default:
       return false;
   }
@@ -346,6 +354,7 @@ function buildChildRows(
         groupKey,
         label: key,
         description: node.description,
+        documentation: node.documentation,
         isCollapsed: groupCollapsed,
         settingsCount: childCount,
       });
@@ -549,7 +558,8 @@ export function buildRows(registry: Registry, state: UIState): ViewRow[] {
     a.localeCompare(b),
   );
 
-  for (const [extensionName, nodes] of sortedExtensions) {
+  for (const [extensionName, entry] of sortedExtensions) {
+    const { nodes, documentation: extDocumentation } = entry;
     // Scope filter: if scoped, skip other extensions.
     if (scope.length > 0 && scope[0] !== extensionName) continue;
 
@@ -573,6 +583,7 @@ export function buildRows(registry: Registry, state: UIState): ViewRow[] {
       extensionName,
       isCollapsed: extCollapsed,
       settingsCount: totalCount,
+      documentation: extDocumentation,
     });
 
     if (!extCollapsed || searchQuery !== "") {
