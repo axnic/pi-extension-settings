@@ -108,12 +108,17 @@ export class NavigationBlock implements Block {
             return "<enter> to edit";
         }
       })();
+      const scrollHint = focusedRow.node.documentation
+        ? `<${controls.scrollDescUp}>/<${controls.scrollDescDown}> scroll doc`
+        : null;
+
       return hint([
         actionHint,
         `<${controls.resetToDefault}> reset default`,
         "</> search",
         exitHint,
         `<${controls.collapseAll}> collapse all`,
+        ...(scrollHint ? [scrollHint] : []),
       ]);
     }
 

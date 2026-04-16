@@ -33,6 +33,8 @@ export const DEFAULT_CONTROL_BINDINGS = {
   reorderItemUp: "shift+up",
   reorderItemDown: "shift+down",
   deleteItem: "d",
+  scrollDescUp: "shift+up",
+  scrollDescDown: "shift+down",
 } as const;
 
 /** Default value for `behavior.start-in-search-mode`. */
@@ -49,6 +51,8 @@ export interface ControlBindings {
   reorderItemUp: string;
   reorderItemDown: string;
   deleteItem: string;
+  scrollDescUp: string;
+  scrollDescDown: string;
 }
 
 /**
@@ -125,6 +129,22 @@ export const schema = S.settings({
         description:
           "Delete the focused list item. Use with care; deletions may be irreversible.",
         default: DEFAULT_CONTROL_BINDINGS.deleteItem,
+        validation: v.keybinding(),
+        transform: t.pipe(t.trim(), t.lowercase()),
+        display: d.keybinding(),
+      }),
+      "scroll-desc-up": S.text({
+        description:
+          "Scroll the description panel up by one line while in navigation mode.",
+        default: DEFAULT_CONTROL_BINDINGS.scrollDescUp,
+        validation: v.keybinding(),
+        transform: t.pipe(t.trim(), t.lowercase()),
+        display: d.keybinding(),
+      }),
+      "scroll-desc-down": S.text({
+        description:
+          "Scroll the description panel down by one line while in navigation mode.",
+        default: DEFAULT_CONTROL_BINDINGS.scrollDescDown,
         validation: v.keybinding(),
         transform: t.pipe(t.trim(), t.lowercase()),
         display: d.keybinding(),
@@ -208,6 +228,14 @@ export function createSettingsReader(
         deleteItem: settleBinding(
           settings.get("controls.delete-item"),
           DEFAULT_CONTROL_BINDINGS.deleteItem,
+        ),
+        scrollDescUp: settleBinding(
+          settings.get("controls.scroll-desc-up"),
+          DEFAULT_CONTROL_BINDINGS.scrollDescUp,
+        ),
+        scrollDescDown: settleBinding(
+          settings.get("controls.scroll-desc-down"),
+          DEFAULT_CONTROL_BINDINGS.scrollDescDown,
         ),
       };
     },
