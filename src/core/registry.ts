@@ -13,13 +13,29 @@ export interface RegistrationPayload {
   extension: string;
   /** The full settings schema: a Record<string, SettingNode>. */
   nodes: Record<string, SettingNode>;
+  /**
+   * Optional Markdown documentation for the extension itself.
+   * Shown in the description panel when the extension header row is focused.
+   */
+  documentation?: string;
+}
+
+/** A single registered extension entry stored in the registry. */
+export interface RegistryEntry {
+  /** The full settings schema. */
+  nodes: Record<string, SettingNode>;
+  /**
+   * Optional Markdown documentation for the extension itself.
+   * Shown in the description panel when the extension header row is focused.
+   */
+  documentation?: string;
 }
 
 /**
- * The registry maps extension names to their SettingNode schema.
+ * The registry maps extension names to their schema + optional documentation.
  * Populated once per session (after session_start with reason "startup" or "reload").
  */
-export type Registry = Map<string, Record<string, SettingNode>>;
+export type Registry = Map<string, RegistryEntry>;
 
 /**
  * Create a fresh, empty registry.

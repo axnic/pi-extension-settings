@@ -28,14 +28,16 @@ new ExtensionSettings<S>(
   pi: ExtensionAPI,
   extension: string,
   schema: S,
+  documentation?: string,
 )
 ```
 
-| Parameter   | Type           | Description                                                                                         |
-| ----------- | -------------- | --------------------------------------------------------------------------------------------------- |
-| `pi`        | `ExtensionAPI` | The pi extension API object passed to your `activate()` function.                                   |
-| `extension` | `string`       | Unique identifier for your extension. Used as the storage namespace and the panel registration key. |
-| `schema`    | `S`            | The object returned by `S.settings({...})`.                                                         |
+| Parameter       | Type           | Description                                                                                                           |
+| --------------- | -------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `pi`            | `ExtensionAPI` | The pi extension API object passed to your `activate()` function.                                                     |
+| `extension`     | `string`       | Unique identifier for your extension. Used as the storage namespace and the panel registration key.                   |
+| `schema`        | `S`            | The object returned by `S.settings({...})`.                                                                           |
+| `documentation` | `string?`      | Optional Markdown docs for the extension itself, shown in the description panel when the extension header is focused. |
 
 **Example:**
 
@@ -48,7 +50,22 @@ const schema = S.settings({
 });
 
 export function activate(pi: ExtensionAPI) {
-  const settings = new ExtensionSettings(pi, "my-extension", schema);
+  const settings = new ExtensionSettings(
+    pi,
+    "my-extension",
+    schema,
+    // Optional Markdown documentation shown in the settings panel when the
+    // extension header row is focused. Good for explaining what each setting
+    // controls, describing defaults, or linking to further resources.
+    `# My Extension
+
+Adds extra tools for your workflow.
+
+## Settings
+
+- **color** — Hex color string used as the accent color. Defaults to \`#ff6b6b\`.
+    `,
+  );
 }
 ```
 
@@ -64,12 +81,12 @@ sequenceDiagram
     participant ES as ExtensionSettings
     participant P as pi events
 
-    C->>ES: new ExtensionSettings(pi, id, schema)
+    C->>ES: new ExtensionSettings(pi, id, schema, docs?)
     ES->>P: listen for "pi-extension-settings:ready"
     ES->>P: listen for "pi-extension-settings:{id}:changed"
     Note over P: pi session starts
     P-->>ES: "pi-extension-settings:ready"
-    ES->>P: emit "pi-extension-settings:register" {id, schema}
+    ES->>P: emit "pi-extension-settings:register" {id, schema, docs?}
     Note over P: user edits a setting
     P-->>ES: "pi-extension-settings:{id}:changed" {key}
     ES-->>C: read value from storage, fire onChange listeners

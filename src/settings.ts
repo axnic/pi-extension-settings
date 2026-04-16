@@ -56,7 +56,70 @@ export interface ControlBindings {
 }
 
 /**
- * The settings extension's own schema.
+ * Markdown documentation shown in the description panel when the extension
+ * header row is focused in `/extensions:settings`.
+ */
+export const EXTENSION_DOCUMENTATION = `# pi-extension-settings
+
+Provides a unified TUI settings panel for pi extensions.
+Extensions register their settings schema via an event protocol; the panel
+lists every registered extension and lets you browse and edit all settings
+in one place.
+
+---
+
+## Opening the panel
+
+Run the slash command:
+
+\`\`\`
+/extensions:settings
+\`\`\`
+
+---
+
+## Navigation
+
+| Key | Action |
+|-----|--------|
+| \`↑\` / \`↓\` | Move focus up / down |
+| \`Enter\` | Edit the focused setting |
+| \`Esc\` | Cancel editing / close panel |
+| \`/\` | Toggle search mode |
+| \`Space\` | Collapse / expand section |
+| \`Shift+Space\` | Collapse all sections |
+| \`PageUp\` / \`PageDown\` | Scroll description panel |
+
+---
+
+## Behavior settings
+
+- **start-in-search-mode** — when \`true\`, the panel opens with the search bar
+  focused so you can immediately type to filter settings.
+- **max-visible-rows** — controls how many rows the panel shows at once
+  (minimum 5).
+
+---
+
+## Controls settings
+
+All keybindings are configurable. Set any binding to a single key or a
+modifier combination (e.g. \`shift+up\`, \`ctrl+r\`). The stored value is
+always normalised to lowercase.
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| reset-to-default | \`r\` | Reset focused setting to its schema default |
+| collapse-expand | \`Space\` | Toggle collapse / expand for focused header |
+| collapse-all | \`Shift+Space\` | Collapse all headers |
+| reorder-item-up | \`Shift+↑\` | Move focused list item up |
+| reorder-item-down | \`Shift+↓\` | Move focused list item down |
+| delete-item | \`d\` | Delete focused list item |
+| scroll-desc-up | \`PageUp\` | Scroll description panel up |
+| scroll-desc-down | \`PageDown\` | Scroll description panel down |
+`;
+
+/** The settings extension's own schema.
  *
  * Each keybinding has a `transform: t.pipe(t.trim(), t.lowercase())` so the
  * stored value is always normalised — no extra normalisation is required at

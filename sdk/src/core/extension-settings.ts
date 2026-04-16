@@ -99,6 +99,39 @@ function collectKeys(
  * `pi-extension-settings` and exposes typed `get` / `set` / `onChange` / `getAll`.
  *
  * @typeParam S - The schema object type, inferred from the `S.settings(...)` call.
+ *
+ * @example
+ * ```ts
+ * import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+ * import { S, ExtensionSettings } from "pi-extension-settings/sdk";
+ *
+ * const schema = S.settings({
+ *   theme: S.enum({
+ *     description: "UI color theme",
+ *     default: "dark",
+ *     values: ["dark", "light"],
+ *   }),
+ * });
+ *
+ * export function activate(pi: ExtensionAPI) {
+ *   const settings = new ExtensionSettings(
+ *     pi,
+ *     "my-extension",
+ *     schema,
+ *     // Optional: Markdown documentation shown in the settings panel
+ *     // when the extension header is focused. Good place to document
+ *     // configuration options, defaults, and links to further resources.
+ *     `# My Extension
+ *
+ * Provides extra tools for your workflow.
+ *
+ * ## Settings
+ *
+ * - **theme** — \`"dark"\` (default) or \`"light"\`.
+ *     `,
+ *   );
+ * }
+ * ```
  */
 export class ExtensionSettings<S extends Record<string, SettingNode>> {
   private readonly extension: string;
@@ -108,7 +141,23 @@ export class ExtensionSettings<S extends Record<string, SettingNode>> {
     Array<(value: unknown) => void>
   >();
 
-  constructor(pi: ExtensionAPI, extension: string, schema: S) {
+  constructor(
+    pi: ExtensionAPI,
+    extension: string,
+    schema: S,
+    /**
+     * Optional Markdown documentation for the extension itself.
+     *
+     * When provided, the settings panel renders this content in the right-hand
+     * description column whenever the extension header row is focused. Use it
+     * to document the purpose of your extension, explain configuration options,
+     * or link to further resources.
+     *
+     * Supports the same Markdown subset as per-setting `documentation` fields
+     * (headings, bold, italic, code spans, links, block quotes).
+     */
+    documentation?: string,
+  ) {
     this.extension = extension;
     this.schema = schema;
 
@@ -118,6 +167,7 @@ export class ExtensionSettings<S extends Record<string, SettingNode>> {
       pi.events.emit("pi-extension-settings:register", {
         extension,
         nodes: schema,
+        documentation,
       });
     });
 

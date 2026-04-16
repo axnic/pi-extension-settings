@@ -83,7 +83,9 @@ const fixtureSchema = S.settings({
 
 function makeRegistry() {
   const registry = createRegistry();
-  registry.set("pi-test", fixtureSchema as Record<string, SettingNode>);
+  registry.set("pi-test", {
+    nodes: fixtureSchema as Record<string, SettingNode>,
+  });
   return registry;
 }
 

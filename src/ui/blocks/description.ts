@@ -1,12 +1,15 @@
 /**
- * description.ts — DescriptionBlock renders the focused row's description
- * in the right column of the settings panel.
+ * description.ts — DescriptionBlock renders the focused row's Markdown
+ * documentation in the right column of the settings panel.
  *
- * Shows `node.documentation` when available, falls back to `node.description`.
- * Markdown in the `documentation` field is converted to ANSI-formatted terminal
- * output via `marked` + `marked-terminal`, using pi theme colours for visual
- * consistency. Rendered output is cached per row id + width to avoid
- * re-rendering on every panel redraw.
+ * Shows `node.documentation` when available; returns an empty string otherwise.
+ * The `description` (short tooltip) is intentionally excluded — the preview
+ * panel is reserved for extended Markdown content only.
+ *
+ * Markdown is converted to ANSI-formatted terminal output via `marked` +
+ * `marked-terminal`, using pi theme colours for visual consistency.
+ * Rendered output is cached per row id + width to avoid re-rendering on
+ * every panel redraw.
  *
  * Content is word-wrapped to the available width (less 2 chars for 1-space
  * horizontal padding on each side) and scrolled via `descScrollOffset`.
@@ -100,22 +103,18 @@ export class DescriptionBlock implements Block {
 
   // ─── Private ─────────────────────────────────────────────────────────────
 
-  /** Extract the raw description text from the focused row. */
+  /** Extract the raw documentation text from the focused row. */
   private extractContent(): string {
     const row = this.focusedRow;
     if (!row) return "";
 
     switch (row.type) {
       case "setting":
-        return row.node.documentation ?? row.node.description ?? "";
+        return row.node.documentation ?? "";
       case "group":
-        return row.description ?? "";
+        return row.documentation ?? "";
       case "extension-header":
-        return `Extension: ${row.extensionName}\n\n${row.settingsCount} setting${row.settingsCount === 1 ? "" : "s"} registered.`;
-      case "list-item":
-        return "List item";
-      case "list-add":
-        return "Add a new item to the list.";
+        return row.documentation ?? "";
       default:
         return "";
     }
@@ -147,15 +146,10 @@ export class DescriptionBlock implements Block {
 
     let lines: string[];
     if (!text) {
-      lines = [
-        pad(
-          theme.fg(
-            "dim",
-            truncateToWidth("No description available", innerWidth, "…"),
-          ),
-        ),
-        "",
-      ];
+      // No documentation for this row — return a single blank line so the
+      // right column is empty rather than showing a "No description available"
+      // placeholder that would appear for every row without extended docs.
+      lines = ["", ""];
     } else {
       const instance = buildMarkedInstance(theme, innerWidth);
       const rendered = instance.parse(text) as string;
@@ -180,14 +174,7 @@ export class DescriptionBlock implements Block {
       });
 
       if (lines.length === 0) {
-        lines = [
-          pad(
-            theme.fg(
-              "dim",
-              truncateToWidth("No description available", innerWidth, "…"),
-            ),
-          ),
-        ];
+        lines = ["", ""];
       }
 
       // Append blank line before the column separator for vertical breathing room.
