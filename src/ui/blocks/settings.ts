@@ -8,7 +8,7 @@
 
 import type { Theme } from "@mariozechner/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@mariozechner/pi-tui";
-import type { Enum } from "../../../sdk/index.js";
+import type { Enum, ValidationResult } from "../../../sdk/index.js";
 import { enumLabel, enumValues } from "../../../sdk/src/core/nodes.js";
 import {
   type ExtensionHeaderRow,
@@ -27,6 +27,29 @@ import { stylePrefix } from "./utils.js";
 
 /** Maximum number of rows shown in the viewport at once. */
 export const MAX_VISIBLE_ROWS = 14;
+
+// ─── Validation helpers ───────────────────────────────────────────────────────
+
+/**
+ * Run the node's validation hook against its current stored value (synchronously).
+ *
+ * Returns `undefined` when the node has no validation hook, or when the value
+ * cannot be converted to the expected type (e.g., a non-numeric string for a
+ * number node). Only `text` and `number` nodes carry inline validation.
+ */
+export function validateStoredValue(
+  row: SettingRow,
+): ValidationResult | undefined {
+  const node = row.node;
+  if (node._tag === "text" && node.validation) {
+    return node.validation(row.rawValue);
+  }
+  if (node._tag === "number" && node.validation) {
+    const n = Number(row.rawValue);
+    if (!isNaN(n)) return node.validation(n);
+  }
+  return undefined;
+}
 
 /** Maximum width of the label column (padded to align values). */
 const LABEL_COL_MAX = 32;
@@ -311,13 +334,21 @@ export class SettingsBlock implements Block {
     const modified = row.isModified ? ` ${theme.fg("accent", "•")}` : "";
     const value = this.renderValue(row, isEditing, editValue);
 
+    // Color the label red when the stored value is currently invalid (e.g. after
+    // an external edit or schema change), so the user can spot problems at a glance.
+    const storedResult = isEditing ? undefined : validateStoredValue(row);
+    const isStoredInvalid = storedResult !== undefined && !storedResult.valid;
+    const styledLabel = isStoredInvalid
+      ? theme.fg("error", labelPadded)
+      : labelPadded;
+
     // labelPadded always occupies exactly labelWidth visible columns.
     const usedWidth = prefixWidth + labelWidth + visibleWidth(LABEL_VALUE_SEP);
     const modifiedWidth = row.isModified ? 2 : 0;
     const valueMaxWidth = Math.max(0, width - usedWidth - modifiedWidth);
 
     const truncatedValue = truncateToWidth(value, valueMaxWidth, "…");
-    return cursor + labelPadded + LABEL_VALUE_SEP + truncatedValue + modified;
+    return cursor + styledLabel + LABEL_VALUE_SEP + truncatedValue + modified;
   }
 
   private renderListItemRow(
