@@ -23,6 +23,7 @@ import type { RegistrationPayload } from "./src/core/registry.js";
 import { createRegistry } from "./src/core/registry.js";
 import {
   createSettingsReader,
+  EXTENSION_DOCUMENTATION as SETTINGS_EXTENSION_DOCUMENTATION,
   EXTENSION_NAME as SETTINGS_EXTENSION_NAME,
   schema as settingsSchema,
 } from "./src/settings.js";
@@ -39,6 +40,7 @@ export default function piExtensionSettings(pi: ExtensionAPI) {
     pi,
     SETTINGS_EXTENSION_NAME,
     settingsSchema,
+    SETTINGS_EXTENSION_DOCUMENTATION,
   );
   const settingsReader = createSettingsReader(selfSettings);
 
