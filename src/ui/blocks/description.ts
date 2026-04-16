@@ -38,16 +38,17 @@ export class DescriptionBlock implements Block {
     const content = this.extractContent();
     const allLines = this.renderContent(content, width, theme);
 
-    // Apply scroll offset
-    const visible = allLines.slice(descScrollOffset);
+    // Clamp scroll offset so it never exceeds the last line index.
+    // Without this, a terminal resize that produces fewer wrapped lines can
+    // leave the offset pointing beyond the content, yielding an empty slice
+    // and a misleading "No description available" message.
+    const safeOffset = Math.min(
+      descScrollOffset,
+      Math.max(0, allLines.length - 1),
+    );
 
-    // Pad to at least one line so zipColumns doesn't produce an empty right column
-    if (visible.length === 0) {
-      return [
-        ` ${theme.fg("dim", truncateToWidth("No description available", width - 2, "…"))} `,
-      ];
-    }
-    return visible;
+    // Apply scroll offset
+    return allLines.slice(safeOffset);
   }
 
   // ─── Private ─────────────────────────────────────────────────────────────
