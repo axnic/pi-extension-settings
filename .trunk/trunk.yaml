@@ -55,8 +55,16 @@ actions:
       run: node_modules/.bin/commitlint --edit ${1}
       triggers:
         - git_hooks: [commit-msg]
+    - id: tsc-noEmit
+      display_name: TypeScript type-check
+      description: Run tsc --noEmit to catch type errors across the extension before pushing
+      runtime: node
+      run: node_modules/.bin/tsc --noEmit -p tsconfig.json
+      triggers:
+        - git_hooks: [pre-push]
   enabled:
     - commitlint
+    - tsc-noEmit
     - trunk-announce
     - trunk-check-pre-push
     - trunk-fmt-pre-commit

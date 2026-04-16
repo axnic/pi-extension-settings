@@ -3,26 +3,59 @@
  * in the right column of the settings panel.
  *
  * Shows `node.documentation` when available, falls back to `node.description`.
- * Basic Markdown tokens are handled for TUI display:
- *   # Heading  → uppercase line
- *   ## Heading → uppercase line
- *   - item     → • item
- *   **text**   → strip markers (bold not supported in TUI)
- *   *text*     → strip markers (italic not supported in TUI)
- *   blank line → preserved as empty line
+ * Markdown in the `documentation` field is converted to ANSI-formatted terminal
+ * output via `marked` + `marked-terminal`, using pi theme colours for visual
+ * consistency. Rendered output is cached per row id + width to avoid
+ * re-rendering on every panel redraw.
  *
- * Content is word-wrapped to the available width and scrolled via
- * `descScrollOffset`.
+ * Content is word-wrapped to the available width (less 2 chars for 1-space
+ * horizontal padding on each side) and scrolled via `descScrollOffset`.
  */
 
 import type { Theme } from "@mariozechner/pi-coding-agent";
-import { truncateToWidth } from "@mariozechner/pi-tui";
+import { truncateToWidth, visibleWidth } from "@mariozechner/pi-tui";
+import { Marked } from "marked";
+import { markedTerminal } from "marked-terminal";
 import type { ViewRow } from "../model.js";
 import type { Block } from "./block.js";
-import { wrapText } from "./utils.js";
 
 /** Minimum right-column width needed to show the description panel. */
 export const MIN_DESC_WIDTH = 20;
+
+/** Module-level cache: maps "rowId:width" → rendered (padded) lines. */
+const docRenderCache = new Map<string, string[]>();
+
+/**
+ * Build a fresh marked instance configured with pi theme colours.
+ * A new instance is created per render because marked instances are stateful
+ * after `.use()`; per-row caching in `renderContent` avoids the cost in practice.
+ */
+function buildMarkedInstance(theme: Theme, innerWidth: number): Marked {
+  const identity = (text: string) => text;
+  const instance = new Marked();
+  instance.use(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (markedTerminal as any)({
+      reflowText: true,
+      width: innerWidth,
+      showSectionPrefix: false,
+      tab: 2,
+      firstHeading: (text: string) =>
+        theme.fg("mdHeading", theme.bold(theme.underline(text))),
+      heading: (text: string) => theme.fg("mdHeading", theme.bold(text)),
+      strong: (text: string) => theme.bold(text),
+      em: (text: string) => theme.italic(text),
+      codespan: (text: string) => theme.fg("mdCode", text),
+      code: (text: string) => theme.fg("mdCodeBlock", text),
+      link: (text: string) => theme.fg("mdLink", text),
+      href: (text: string) => theme.fg("mdLinkUrl", theme.underline(text)),
+      blockquote: (text: string) => theme.fg("mdQuote", text),
+      hr: (text: string) => theme.fg("dim", text),
+      paragraph: identity,
+    }),
+  );
+  return instance;
+}
 
 export class DescriptionBlock implements Block {
   constructor(
@@ -36,7 +69,10 @@ export class DescriptionBlock implements Block {
 
     const { theme, descScrollOffset } = this;
     const content = this.extractContent();
-    const allLines = this.renderContent(content, width, theme);
+    const cacheKey = this.focusedRow
+      ? `${this.focusedRow.id}:${width}`
+      : undefined;
+    const allLines = this.renderContent(content, width, theme, cacheKey);
 
     // Clamp scroll offset so it never exceeds the last line index.
     // Without this, a terminal resize that produces fewer wrapped lines can
@@ -49,6 +85,17 @@ export class DescriptionBlock implements Block {
 
     // Apply scroll offset
     return allLines.slice(safeOffset);
+  }
+
+  /**
+   * Returns the total line count for this block at a given width, without
+   * touching the shared render cache. Used by descriptionLineCount() to avoid
+   * poisoning the cache with stub-themed (unstyled) content.
+   */
+  renderLineCount(width: number): number {
+    if (width < MIN_DESC_WIDTH) return 0;
+    const content = this.extractContent();
+    return this.renderContent(content, width, this.theme).length;
   }
 
   // ─── Private ─────────────────────────────────────────────────────────────
@@ -75,18 +122,32 @@ export class DescriptionBlock implements Block {
   }
 
   /**
-   * Convert raw Markdown-ish text into styled, word-wrapped TUI lines.
+   * Convert Markdown text to ANSI-styled, word-wrapped TUI lines with
+   * 1-space horizontal padding on each side.
    *
-   * Processes one source paragraph at a time. Each source line is classified
-   * as a heading, bullet, blank, or plain text and converted accordingly.
+   * Uses `marked` + `marked-terminal` for rendering, with pi theme colours
+   * applied to headings, bold, italic, code spans, links, etc.
+   *
+   * Results are cached under `cacheKey` (when provided) so re-renders during
+   * rapid key navigation avoid redundant Markdown processing.
    */
-  private renderContent(text: string, width: number, theme: Theme): string[] {
+  private renderContent(
+    text: string,
+    width: number,
+    theme: Theme,
+    cacheKey?: string,
+  ): string[] {
+    if (cacheKey && docRenderCache.has(cacheKey)) {
+      return docRenderCache.get(cacheKey)!;
+    }
+
     // Reserve 1-space padding on each side of the content.
     const innerWidth = width - 2;
     const pad = (s: string) => ` ${s} `;
 
+    let lines: string[];
     if (!text) {
-      return [
+      lines = [
         pad(
           theme.fg(
             "dim",
@@ -95,71 +156,48 @@ export class DescriptionBlock implements Block {
         ),
         "",
       ];
-    }
+    } else {
+      const instance = buildMarkedInstance(theme, innerWidth);
+      const rendered = instance.parse(text) as string;
 
-    // Strip **bold** and *italic* markers (TUI can't render them)
-    const stripped = text
-      .replace(/\*\*([^*]+)\*\*/g, "$1")
-      .replace(/\*([^*]+)\*/g, "$1");
-
-    const lines: string[] = [];
-    for (const rawLine of stripped.split("\n")) {
-      const trimmed = rawLine.trim();
-
-      // Blank line
-      if (trimmed === "") {
-        lines.push("");
-        continue;
+      // Split into lines, strip trailing blank lines, then apply padding.
+      const rawLines = rendered.split("\n");
+      while (
+        rawLines.length > 0 &&
+        rawLines[rawLines.length - 1]!.trim() === ""
+      ) {
+        rawLines.pop();
       }
 
-      // Heading: # or ##
-      const headingMatch = trimmed.match(/^#{1,2}\s+(.+)$/);
-      if (headingMatch) {
-        const title = headingMatch[1]!.toUpperCase();
-        const wrapped = wrapText(title, innerWidth, "  ");
-        for (const l of wrapped) {
-          lines.push(pad(theme.bold(truncateToWidth(l, innerWidth, "…"))));
-        }
-        continue;
-      }
+      lines = rawLines.map((line) => {
+        if (line.trim() === "") return "";
+        // Safety-clamp: truncate visible content to innerWidth before padding.
+        const clamped =
+          visibleWidth(line) > innerWidth
+            ? truncateToWidth(line, innerWidth, "…")
+            : line;
+        return pad(clamped);
+      });
 
-      // Bullet: - item
-      const bulletMatch = trimmed.match(/^-\s+(.+)$/);
-      if (bulletMatch) {
-        const item = `• ${bulletMatch[1]!}`;
-        const wrapped = wrapText(item, innerWidth, "  ");
-        for (const l of wrapped) {
-          lines.push(pad(truncateToWidth(l, innerWidth, "…")));
-        }
-        continue;
-      }
-
-      // Plain text
-      const wrapped = wrapText(trimmed, innerWidth, "  ");
-      for (const l of wrapped) {
-        lines.push(pad(truncateToWidth(l, innerWidth, "…")));
-      }
-    }
-
-    // Trim trailing blank lines
-    while (lines.length > 0 && lines[lines.length - 1] === "") {
-      lines.pop();
-    }
-
-    const content =
-      lines.length > 0
-        ? lines
-        : [
-            pad(
-              theme.fg(
-                "dim",
-                truncateToWidth("No description available", innerWidth, "…"),
-              ),
+      if (lines.length === 0) {
+        lines = [
+          pad(
+            theme.fg(
+              "dim",
+              truncateToWidth("No description available", innerWidth, "…"),
             ),
-          ];
+          ),
+        ];
+      }
 
-    // Append blank line before the column separator for vertical breathing room.
-    return [...content, ""];
+      // Append blank line before the column separator for vertical breathing room.
+      lines.push("");
+    }
+
+    if (cacheKey) {
+      docRenderCache.set(cacheKey, lines);
+    }
+    return lines;
   }
 }
 
@@ -168,11 +206,15 @@ export function descriptionLineCount(
   focusedRow: ViewRow | undefined,
   width: number,
 ): number {
-  // Use a minimal theme stub just for counting (no ANSI styling needed)
+  // Use a minimal theme stub just for counting (no ANSI styling needed).
+  // We call renderLineCount() instead of render() so the stub-themed output
+  // never enters the shared docRenderCache and cannot poison real renders.
   const stub = {
     bold: (s: string) => s,
+    italic: (s: string) => s,
+    underline: (s: string) => s,
     fg: (_c: string, s: string) => s,
   } as Theme;
   const block = new DescriptionBlock(focusedRow, stub, 0);
-  return block.render(width).length;
+  return block.renderLineCount(width);
 }

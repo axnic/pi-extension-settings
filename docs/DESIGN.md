@@ -493,7 +493,7 @@ All dim.
 - Tooltip: 3-line fixed block below the list, separated by a blank line.
 - Hint bar: last line, separated from the tooltip by a blank line.
 - Minimum usable width: 60 chars; values truncated with `…`.
-- **Description panel** (right column, ~1/3 width): shows the focused setting's `documentation` field (falls back to `description`). Hidden when the right column would be narrower than 20 chars. `PageUp` / `PageDown` (configurable) scroll the description independently of the settings list; the scroll hint is only shown in the hint bar when the focused row actually has documentation.
+- **Description panel** (right column, ~1/3 width): shows the focused setting's `documentation` field (falls back to `description`). Hidden when the right column would be narrower than 20 chars. `PageUp` / `PageDown` (configurable) scroll the description independently of the settings list; the scroll hint is only shown in the hint bar when the focused row actually has documentation. Markdown is rendered with full ANSI styling via `marked` + `marked-terminal`, using pi theme colours (headings in theme accent, bold/italic/code correctly styled).
 
 ---
 
