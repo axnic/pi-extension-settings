@@ -57,7 +57,7 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@mariozechner/pi-coding-agent": "^0.66.1"
+    "@mariozechner/pi-coding-agent": "^0.67.67"
   },
   "engines": {
     "node": ">=24"

@@ -144,3 +144,37 @@ sources = ["sdk/src/**/*.ts", "sdk/index.ts", "sdk/tsconfig.json"]
 description = "Build everything — SDK (→ sdk/dist/) then extension bundle (→ dist/)."
 alias = "b"
 run = "mise run build:sdk && mise run build:extension"
+
+# =============================================================================
+# Dependencies
+# =============================================================================
+# deps:upgrade  (du)  — interactively bump all workspace packages to their
+#                       latest published versions, across both root and sdk/.
+#                       Always run `pnpm test` and `mise run build` afterwards
+#                       to confirm the bump did not break anything.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# pnpm upgrade — interactive dependency upgrade across the whole workspace.
+# Presents each outdated package one by one so you can accept or skip each bump
+# individually. Flags used:
+#
+#   --interactive  — confirm each upgrade individually (skips the prompt-less bulk
+#                    upgrade that would silently overwrite all version specifiers)
+#   --latest       — consider ALL published versions, ignoring the semver range
+#                    written in package.json; useful to cross major-version
+#                    boundaries that a plain `pnpm update` would skip
+#   --recursive    — applies to every workspace package (root + sdk/)
+#
+# After upgrading, always validate with:
+#   pnpm test
+#   mise run build
+#
+# Docs:   https://pnpm.io/cli/upgrade
+# Config: pnpm-workspace.yaml (catalog entries and overrides)
+# -----------------------------------------------------------------------------
+
+[tasks."deps:upgrade"]
+description = "Interactively upgrade all workspace dependencies to their latest versions"
+alias = "du"
+run = "pnpm upgrade --interactive --latest --recursive"
