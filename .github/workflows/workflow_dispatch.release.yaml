@@ -28,10 +28,9 @@
 # automatically when this release is published.
 #
 # Prerequisites:
-#   • GITHUB_TOKEN must be allowed to push directly to the default branch.
-#     If branch-protection rules require PR reviews, store a fine-grained PAT
-#     with "Contents: Read and write" as RELEASE_TOKEN and replace
-#     `secrets.GITHUB_TOKEN` with `secrets.RELEASE_TOKEN` in the checkout step.
+#   • CI_APP_ID and CI_APP_PRIVATE_KEY secrets must be set for the axnic-bot
+#     GitHub App. The app is a bypass actor in the branch ruleset, so it can
+#     push unsigned commits directly to main even when required_signatures is on.
 # =============================================================================
 
 name: Release
@@ -63,14 +62,20 @@ jobs:
     name: 🚀 Create release (${{ inputs.bump }})
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read # GITHUB_TOKEN only needs read; axnic-bot handles the push
 
     steps:
+      - name: 🔑 Generate CI app token
+        id: app-token
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
+        with:
+          app-id: ${{ secrets.CI_APP_ID }}
+          private-key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+
       - name: ⬇️ Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          # Replace with secrets.RELEASE_TOKEN if branch protection is active.
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           fetch-depth: 0
 
       - name: 🔧 Install tools via mise
@@ -197,8 +202,8 @@ jobs:
       # ── Commit, tag, push ──────────────────────────────────────────────────
       - name: 🔧 Configure git identity
         run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name  "axnic-bot[bot]"
+          git config user.email "axnic-bot[bot]@users.noreply.github.com"
 
       - name: 📝 Commit version bump
         run: |
@@ -340,4 +345,4 @@ jobs:
               --draft
           fi
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
