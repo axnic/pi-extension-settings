@@ -202,8 +202,8 @@ jobs:
       # ── Commit, tag, push ──────────────────────────────────────────────────
       - name: 🔧 Configure git identity
         run: |
-          git config user.name  "axnic-bot[bot]"
-          git config user.email "axnic-bot[bot]@users.noreply.github.com"
+          git config user.name  "axnic[bot]"
+          git config user.email "axnic[bot]@users.noreply.github.com"
 
       - name: 📝 Commit version bump
         run: |
