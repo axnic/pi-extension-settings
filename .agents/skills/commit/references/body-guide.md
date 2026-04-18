@@ -19,6 +19,23 @@ Added a null check in registry.ts. Changed the return type to include
 an empty map. Updated the tests to cover the new case.
 ```
 
+## `#` characters must be avoided in the body
+
+The `conventional-commits-parser` that commitlint uses interprets bare `#`
+tokens as issue/PR references. A body line like `(alerts #30 and #31)` or
+`# some heading` can cause the parser to split the body unexpectedly,
+producing a false `footer-leading-blank` error even when the blank line is
+present.
+
+**Rule:** never use `#` in the commit body or footer.
+
+| Instead of           | Write                          |
+| -------------------- | ------------------------------ |
+| `alerts #30 and #31` | `Scorecard alerts 30 and 31`   |
+| `fixes #42`          | `fixes issue 42`               |
+| `# Heading`          | omit headings; use plain prose |
+| `PR #17`             | `pull request 17`              |
+
 ## Full commit example
 
 ```text
