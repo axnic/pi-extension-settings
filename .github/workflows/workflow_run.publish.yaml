@@ -42,7 +42,7 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          ref: ${{ github.event.release.tag_name || github.event.workflow_run.head_branch }}
+          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
 
       - name: 🔧 Install tools via mise
@@ -89,7 +89,7 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          ref: ${{ github.event.release.tag_name || github.event.workflow_run.head_branch }}
+          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
 
       - name: 🔖 Resolve release tag
@@ -125,9 +125,7 @@ jobs:
 
       # ── SBOM generation ──────────────────────────────────────────────────
       - name: 🔧 Install Syft
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh \
-            | sh -s -- -b /usr/local/bin
+        uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
 
       - name: 🧾 Generate CycloneDX SBOMs
         run: |
