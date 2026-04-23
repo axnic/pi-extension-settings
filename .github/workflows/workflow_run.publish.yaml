@@ -33,8 +33,8 @@ jobs:
   # ── Resolve tag ───────────────────────────────────────────────────────────
   # workflow_run.head_sha is the commit that *triggered* the Release workflow,
   # not the version-bump commit the Release workflow creates afterward.
-  # This job resolves the actual release tag (always a descendant of head_sha)
-  # and exposes it so both validate and publish check out the exact same commit.
+  # This job finds the tag whose version-bump commit has head_sha as its direct
+  # parent — unambiguous regardless of git version sort order across platforms.
   resolve-tag:
     name: 🔖 Resolve release tag
     if: github.event.workflow_run.conclusion == 'success'
@@ -55,20 +55,23 @@ jobs:
         id: tag
         run: |
           # head_sha is the commit the Release workflow was dispatched against.
-          # The Release workflow creates a version-bump commit *after* head_sha
-          # and tags it, so we cannot use --exact-match HEAD directly.
-          # Instead: fetch all tags, then find the newest semver tag that is a
-          # descendant of head_sha — that is always the version-bump commit.
+          # The Release workflow always creates a version-bump commit whose first
+          # parent is head_sha, then tags that commit. We resolve the tag by
+          # finding the semver tag whose tagged commit has head_sha as its direct
+          # parent — this is unambiguous and independent of git's version sort
+          # order, which differs between Linux (glibc) and macOS for pre-releases.
+          HEAD="${{ github.event.workflow_run.head_sha }}"
           git fetch --tags origin
-          TAG=$(git tag -l 'v[0-9]*' --sort=-version:refname \
+          TAG=$(git tag -l 'v[0-9]*' \
             | while read -r t; do
-                if git merge-base --is-ancestor \
-                    "${{ github.event.workflow_run.head_sha }}" "$t" 2>/dev/null; then
+                tag_commit=$(git rev-parse "${t}^{}" 2>/dev/null) || continue
+                parent=$(git rev-parse "${tag_commit}^1" 2>/dev/null) || continue
+                if [[ "$parent" == "$HEAD" ]]; then
                   echo "$t"; break
                 fi
               done)
           if [[ -z "$TAG" ]]; then
-            echo "::error::No release tag found that descends from ${{ github.event.workflow_run.head_sha }}. Ensure the Release workflow pushed a tag before completing."
+            echo "::error::No release tag found whose version-bump commit has $HEAD as its parent. Ensure the Release workflow pushed a tag before completing."
             exit 1
           fi
           echo "name=${TAG}" >> "$GITHUB_OUTPUT"
