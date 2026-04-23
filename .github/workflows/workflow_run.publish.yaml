@@ -30,10 +30,53 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # ── Resolve tag ───────────────────────────────────────────────────────────
+  # workflow_run.head_sha is the commit that *triggered* the Release workflow,
+  # not the version-bump commit the Release workflow creates afterward.
+  # This job resolves the actual release tag (always a descendant of head_sha)
+  # and exposes it so both validate and publish check out the exact same commit.
+  resolve-tag:
+    name: 🔖 Resolve release tag
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.tag.outputs.name }}
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: 🔖 Resolve release tag
+        id: tag
+        run: |
+          # head_sha is the commit the Release workflow was dispatched against.
+          # The Release workflow creates a version-bump commit *after* head_sha
+          # and tags it, so we cannot use --exact-match HEAD directly.
+          # Instead: fetch all tags, then find the newest semver tag that is a
+          # descendant of head_sha — that is always the version-bump commit.
+          git fetch --tags origin
+          TAG=$(git tag -l 'v[0-9]*' --sort=-version:refname \
+            | while read -r t; do
+                if git merge-base --is-ancestor \
+                    "${{ github.event.workflow_run.head_sha }}" "$t" 2>/dev/null; then
+                  echo "$t"; break
+                fi
+              done)
+          if [[ -z "$TAG" ]]; then
+            echo "::error::No release tag found that descends from ${{ github.event.workflow_run.head_sha }}. Ensure the Release workflow pushed a tag before completing."
+            exit 1
+          fi
+          echo "name=${TAG}" >> "$GITHUB_OUTPUT"
+
   # ── Validate ──────────────────────────────────────────────────────────────
   validate:
     name: ✅ Validate (typecheck · tests · build)
-    if: github.event.workflow_run.conclusion == 'success'
+    needs: resolve-tag
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -42,7 +85,7 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ needs.resolve-tag.outputs.tag }}
           fetch-depth: 0
 
       - name: 🔧 Install tools via mise
@@ -75,8 +118,7 @@ jobs:
   # ── Publish ───────────────────────────────────────────────────────────────
   publish:
     name: 🚀 Publish all workspace packages
-    if: github.event.workflow_run.conclusion == 'success'
-    needs: validate
+    needs: [resolve-tag, validate]
     runs-on: ubuntu-latest
     environment:
       name: npm
@@ -89,31 +131,8 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ needs.resolve-tag.outputs.tag }}
           fetch-depth: 0
-
-      - name: 🔖 Resolve release tag
-        id: tag
-        run: |
-          # head_sha is the commit the Release workflow was dispatched against.
-          # The Release workflow creates a version-bump commit *after* head_sha
-          # and tags it, so we cannot use --exact-match HEAD directly.
-          # Instead: fetch all tags, then find the newest semver tag that is a
-          # descendant of head_sha — that is always the version-bump commit.
-          git fetch --tags origin
-          TAG=$(git tag -l 'v[0-9]*' --sort=-version:refname \
-            | while read -r t; do
-                if git merge-base --is-ancestor \
-                    "${{ github.event.workflow_run.head_sha }}" "$t" 2>/dev/null; then
-                  echo "$t"; break
-                fi
-              done)
-          if [[ -z "$TAG" ]]; then
-            echo "::error::No release tag found that descends from ${{ github.event.workflow_run.head_sha }}. Ensure the Release workflow pushed a tag before completing."
-            exit 1
-          fi
-          git checkout "$TAG"
-          echo "name=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: 🔧 Install tools via mise
         uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
@@ -154,12 +173,19 @@ jobs:
 
       - name: 🚀 Publish all workspace packages
         run: |
+          TAG="${{ needs.resolve-tag.outputs.tag }}"
+          if [[ "$TAG" == *"-"* ]]; then
+            NPM_TAG="next"
+          else
+            NPM_TAG="latest"
+          fi
           pnpm publish \
             --recursive \
             --provenance \
             --access public \
             --no-git-checks \
-            --report-summary
+            --report-summary \
+            --tag "$NPM_TAG"
 
       # ── Sign artefacts with cosign (keyless OIDC) ────────────────────────
       - name: 🔧 Install cosign
@@ -183,7 +209,7 @@ jobs:
       # ── Attach artefacts and publish release ─────────────────────────────
       - name: 📤 Attach artefacts to GitHub Release
         run: |
-          gh release upload "${{ steps.tag.outputs.name }}" \
+          gh release upload "${{ needs.resolve-tag.outputs.tag }}" \
             sbom-extension.json \
             sbom-extension.json.sig \
             sbom-extension.json.crt \
@@ -198,7 +224,7 @@ jobs:
 
       - name: 🚀 Publish GitHub Release
         run: |
-          TAG="${{ steps.tag.outputs.name }}"
+          TAG="${{ needs.resolve-tag.outputs.tag }}"
           if [[ "$TAG" == *"-rc."* ]]; then
             gh release edit "$TAG" --draft=false --prerelease
           else
